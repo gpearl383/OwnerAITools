@@ -374,6 +374,10 @@ table.compare{width:100%;border-collapse:collapse;font-size:.95rem}
 }
 .field ::placeholder{color:rgba(139,151,168,.6)}
 .form-note{font-size:.78rem;color:var(--muted);margin-top:12px;text-align:center}
+.consent{display:flex;gap:10px;align-items:flex-start;margin:2px 0 18px}
+.consent input{width:16px;height:16px;margin-top:3px;accent-color:var(--accent);flex-shrink:0;cursor:pointer}
+.consent label{font-size:.76rem;color:var(--muted);line-height:1.55;cursor:pointer}
+.consent a{color:var(--accent);text-decoration:underline;text-underline-offset:2px}
 
 /* ============ FOOTER ============ */
 footer{border-top:1px solid var(--border);padding:44px 0;font-size:.88rem;color:var(--muted)}
@@ -897,6 +901,10 @@ footer{border-top:1px solid var(--border);padding:44px 0;font-size:.88rem;color:
         <label for="f-biz">What does your business do?</label>
         <textarea id="f-biz" name="business" rows="3" placeholder="Plumbing company, 4 trucks, Dallas metro" required></textarea>
       </div>
+      <div class="consent">
+        <input type="checkbox" id="f-sms-consent" name="sms_consent">
+        <label for="f-sms-consent">I agree to receive text messages from OwnerAI Tools (CSM Integrated Solutions LLC) at the number provided, including callback and appointment-related messages. Message frequency varies. Msg &amp; data rates may apply. Reply STOP to opt out, HELP for help. Consent is not a condition of purchase. See our <a href="/privacy" target="_blank" rel="noopener">Privacy Policy &amp; SMS Terms</a>.</label>
+      </div>
       <button type="submit" class="btn btn-primary" style="width:100%">Request a callback</button>
       <p class="form-note">Opens a pre-filled email — hit send and you're done.</p>
     </form>
@@ -968,9 +976,11 @@ document.getElementById('fallbackForm').addEventListener('submit', (e) => {
   const name = document.getElementById('f-name').value.trim();
   const phone = document.getElementById('f-phone').value.trim();
   const biz = document.getElementById('f-biz').value.trim();
+  const smsConsent = document.getElementById('f-sms-consent').checked;
   const subject = encodeURIComponent('Callback request — ' + name);
   const body = encodeURIComponent(
     'Name: ' + name + '\nPhone: ' + phone + '\nBusiness: ' + biz +
+    '\nSMS consent: ' + (smsConsent ? 'YES — agreed to receive texts (' + new Date().toISOString() + ')' : 'No') +
     '\n\nSent from the owneraitools.com callback form.'
   );
   window.location.href = 'mailto:info@owneraitools.com?subject=' + subject + '&body=' + body;

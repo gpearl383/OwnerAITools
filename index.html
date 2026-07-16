@@ -500,6 +500,93 @@ footer{border-top:1px solid var(--border);padding:44px 0;font-size:.88rem;color:
 .footer-legal a{text-decoration:underline;text-underline-offset:3px;transition:color .18s ease}
 .footer-legal a:hover{color:var(--accent)}
 
+/* ============ ANNOUNCE BAR ============ */
+.announce{
+  position:relative;z-index:101;text-align:center;padding:9px 16px;
+  font-size:.82rem;font-weight:500;color:#A7F3D0;
+  background:linear-gradient(90deg,rgba(52,211,153,.14),rgba(52,211,153,.05) 60%,rgba(52,211,153,.12));
+  border-bottom:1px solid rgba(52,211,153,.18);
+}
+.announce a{color:var(--accent);font-weight:600}
+.announce a:hover{text-decoration:underline;text-underline-offset:3px}
+
+/* ============ CARD PHOTOS ============ */
+.card-img{
+  margin:-32px -32px 24px;border-radius:var(--radius) var(--radius) 0 0;
+  overflow:hidden;aspect-ratio:16/9;position:relative;
+}
+.card-img img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .6s cubic-bezier(.22,.8,.3,1)}
+.card:hover .card-img img{transform:scale(1.045)}
+.card-img::after{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(180deg,rgba(7,11,18,.05) 45%,rgba(13,19,31,.92));
+}
+
+/* ============ MARQUEE ============ */
+.marquee{overflow:hidden;padding:26px 0;border-bottom:1px solid var(--border);-webkit-mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent);mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent)}
+.marquee-track{display:flex;gap:52px;width:max-content;animation:marquee 38s linear infinite}
+.marquee-track span{
+  font-family:var(--display);font-weight:500;font-size:.85rem;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--muted);white-space:nowrap;opacity:.75;
+  display:flex;align-items:center;gap:52px;
+}
+.marquee-track span::after{content:"·";color:var(--accent);opacity:.9}
+@keyframes marquee{to{transform:translateX(-50%)}}
+
+/* ============ SAMPLE CALL PLAYER ============ */
+.play-sample{
+  display:inline-flex;align-items:center;gap:8px;cursor:pointer;
+  font:inherit;font-size:.8rem;font-weight:600;color:var(--accent);
+  background:var(--accent-dim);border:1px solid rgba(52,211,153,.3);
+  padding:7px 13px;border-radius:999px;transition:background .2s ease,transform .2s ease;
+}
+.play-sample:hover{background:rgba(52,211,153,.18);transform:scale(1.03)}
+.play-sample[hidden]{display:none}
+.play-sample svg{width:11px;height:11px;flex-shrink:0}
+.waveform.paused span{animation-play-state:paused}
+
+/* ============ ROI CALCULATOR ============ */
+.roi-card{max-width:760px;margin:0 auto;padding:40px}
+.roi-sliders{display:grid;grid-template-columns:1fr 1fr;gap:34px;margin-bottom:34px}
+.roi-slider label{display:flex;justify-content:space-between;align-items:baseline;font-size:.88rem;font-weight:600;color:#C4CEDC;margin-bottom:14px}
+.roi-slider label output{font-family:var(--display);font-size:1.25rem;color:var(--accent);font-weight:600}
+.roi-slider input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer;height:26px}
+.roi-result{border-top:1px dashed var(--border-strong);padding-top:28px;text-align:center}
+.roi-lost{font-family:var(--display);font-weight:600;font-size:clamp(2.4rem,5vw,3.4rem);color:var(--accent);letter-spacing:-.02em;line-height:1.1}
+.roi-lost-label{color:var(--muted);font-size:.92rem;margin-top:8px}
+.roi-note{margin-top:18px;font-size:.95rem;color:#C4CEDC}
+.roi-note strong{color:var(--accent)}
+
+/* ============ MINI EMAIL (step 3) ============ */
+.mini-mail{
+  margin-top:20px;padding:14px 16px;border-radius:12px;
+  background:rgba(52,211,153,.05);border:1px solid rgba(52,211,153,.22);
+  font-size:.82rem;opacity:0;transform:translateY(12px);
+}
+.step.is-visible .mini-mail{animation:mail-in .7s cubic-bezier(.22,.8,.3,1) .55s forwards}
+@keyframes mail-in{to{opacity:1;transform:none}}
+.mini-mail-head{display:flex;align-items:center;gap:8px;font-weight:600;color:var(--accent);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px}
+.mm-dot{width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 8px var(--accent)}
+.mini-mail .mm-line{color:#C4CEDC;line-height:1.5}
+.mini-mail .mm-line.dim{color:var(--muted)}
+
+/* ============ INSIGHTS ============ */
+.insight-card{display:flex;flex-direction:column;text-decoration:none;color:inherit}
+.insight-card:hover{transform:translateY(-4px);border-color:rgba(52,211,153,.35)}
+.insight-meta{font-size:.76rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
+.insight-card h3{margin-bottom:10px;line-height:1.35}
+.insight-card p{color:var(--muted);font-size:.93rem;flex:1}
+.read-more{margin-top:18px;font-size:.88rem;font-weight:600;color:var(--accent)}
+
+/* ============ TRUST STRIP ============ */
+.trust-strip{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;margin-top:44px}
+.trust-badge{
+  display:inline-flex;align-items:center;gap:8px;padding:9px 16px;border-radius:999px;
+  border:1px solid var(--border);background:var(--surface);
+  font-size:.8rem;font-weight:500;color:var(--muted);
+}
+.trust-badge svg{width:13px;height:13px;stroke:var(--accent);flex-shrink:0}
+
 /* ============ RESPONSIVE ============ */
 @media (max-width:960px){
   .hero-grid{grid-template-columns:1fr;gap:52px}
@@ -556,6 +643,7 @@ footer{border-top:1px solid var(--border);padding:44px 0;font-size:.88rem;color:
 
 <!-- ══════════ NAV ══════════ -->
 <header class="nav" id="nav">
+  <div class="announce">Don't take our word for it — <a href="tel:+18889211994">call the live demo: (888) 921-1994</a> and try to stump it.</div>
   <div class="container nav-inner">
     <a href="#" class="logo">
       <span class="logo-mark">
@@ -600,6 +688,10 @@ footer{border-top:1px solid var(--border);padding:44px 0;font-size:.88rem;color:
       <div class="call-card">
         <div class="call-card-head">
           <span class="call-status"><span class="pulse-dot"></span> LIVE CALL</span>
+          <button type="button" class="play-sample" id="playSample" hidden>
+            <svg viewBox="0 0 24 24" fill="currentColor" id="playIcon"><polygon points="6 3 20 12 6 21"/></svg>
+            <span id="playLabel">Hear a real call</span>
+          </button>
           <span class="call-time">Saturday · 9:47 PM</span>
         </div>
         <div class="waveform" aria-hidden="true">
@@ -634,24 +726,32 @@ footer{border-top:1px solid var(--border);padding:44px 0;font-size:.88rem;color:
   <div class="container">
     <div class="stat-band reveal">
       <div class="stat">
-        <div class="stat-num">62%</div>
+        <div class="stat-num"><span class="cnt" data-count="62" data-suffix="%">62%</span></div>
         <div class="stat-label">of calls to small businesses go unanswered or to voicemail</div>
       </div>
       <div class="stat">
-        <div class="stat-num">80%</div>
+        <div class="stat-num"><span class="cnt" data-count="80" data-suffix="%">80%</span></div>
         <div class="stat-label">of callers who hit voicemail hang up and call your competitor</div>
       </div>
       <div class="stat">
-        <div class="stat-num">&lt;2s</div>
+        <div class="stat-num"><span class="cnt" data-count="2" data-prefix="&lt;" data-suffix="s">&lt;2s</span></div>
         <div class="stat-label">answer time, every call, 24 hours a day, 365 days a year</div>
       </div>
       <div class="stat">
-        <div class="stat-num">$3,200<span style="font-size:1.2rem">+/mo</span></div>
+        <div class="stat-num"><span class="cnt" data-count="3200" data-prefix="$">$3,200</span><span style="font-size:1.2rem">+/mo</span></div>
         <div class="stat-label">what a human receptionist costs — to cover 40 of the week's 168 hours</div>
       </div>
     </div>
   </div>
 </section>
+
+<!-- ══════════ INDUSTRY MARQUEE ══════════ -->
+<div class="marquee" aria-hidden="true">
+  <div class="marquee-track">
+    <span>Plumbing</span><span>HVAC</span><span>Electrical</span><span>Dental</span><span>Med Spa</span><span>Law Offices</span><span>Salons</span><span>Auto Shops</span><span>Property Management</span><span>Restaurants</span><span>Contractors</span><span>Chiropractic</span>
+    <span>Plumbing</span><span>HVAC</span><span>Electrical</span><span>Dental</span><span>Med Spa</span><span>Law Offices</span><span>Salons</span><span>Auto Shops</span><span>Property Management</span><span>Restaurants</span><span>Contractors</span><span>Chiropractic</span>
+  </div>
+</div>
 
 <!-- ══════════ PAIN ══════════ -->
 <section id="pain">
@@ -663,6 +763,7 @@ footer{border-top:1px solid var(--border);padding:44px 0;font-size:.88rem;color:
     </div>
     <div class="grid-3">
       <div class="card pain-card reveal">
+        <div class="card-img"><img src="/assets/img/pain-on-the-job.jpg" alt="Plumber working under a sink while his phone rings unanswered on the floor" loading="lazy" width="1200" height="900"></div>
         <div class="pain-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
         </div>
@@ -670,6 +771,7 @@ footer{border-top:1px solid var(--border);padding:44px 0;font-size:.88rem;color:
         <p>Hands in a water heater, a patient in the chair, a crew to run. The phone rings, you can't grab it, and that $4,000 job calls the next name on Google. It happens every week — you just never see the invoice you lost.</p>
       </div>
       <div class="card pain-card reveal" data-delay="1">
+        <div class="card-img"><img src="/assets/img/pain-answering-service.jpg" alt="Rows of call center agents reading from scripts under fluorescent lights" loading="lazy" width="1200" height="900"></div>
         <div class="pain-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
         </div>
@@ -677,6 +779,7 @@ footer{border-top:1px solid var(--border);padding:44px 0;font-size:.88rem;color:
         <p>$2–$5 a minute, and yes — they bill you for the spam calls too. The person answering is reading a script, knows nothing about your business, and takes a message you have to chase down anyway.</p>
       </div>
       <div class="card pain-card reveal" data-delay="2">
+        <div class="card-img"><img src="/assets/img/pain-after-hours.jpg" alt="Empty reception desk at night with a phone ringing and nobody to answer" loading="lazy" width="1200" height="900"></div>
         <div class="pain-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
         </div>
@@ -711,6 +814,11 @@ footer{border-top:1px solid var(--border);padding:44px 0;font-size:.88rem;color:
         <span class="step-num">3</span>
         <h3>Leads land in your inbox</h3>
         <p>Every call becomes an email: caller info, what they need, full transcript, and the recording. On higher tiers, appointments hit your calendar and contacts hit your CRM automatically. We review the calls and tune it every month.</p>
+        <div class="mini-mail" aria-hidden="true">
+          <div class="mini-mail-head"><span class="mm-dot"></span> New lead — 9:52 PM</div>
+          <div class="mm-line"><strong>Mike Torres</strong> · (555) 284-9917 · Water heater leak</div>
+          <div class="mm-line dim">Booked Sun 8:00 AM · Transcript + recording attached</div>
+        </div>
       </div>
     </div>
   </div>
@@ -876,6 +984,34 @@ footer{border-top:1px solid var(--border);padding:44px 0;font-size:.88rem;color:
   </div>
 </section>
 
+<!-- ══════════ ROI CALCULATOR ══════════ -->
+<section id="roi">
+  <div class="container">
+    <div class="section-head reveal" style="text-align:center;max-width:640px;margin-left:auto;margin-right:auto">
+      <span class="eyebrow" style="justify-content:center">Do the math</span>
+      <h2>What are missed calls costing you?</h2>
+      <p>Don't trust our stats — use your own numbers.</p>
+    </div>
+    <div class="card roi-card reveal">
+      <div class="roi-sliders">
+        <div class="roi-slider">
+          <label for="roi-calls">Missed calls per week <output id="roi-calls-out">5</output></label>
+          <input type="range" id="roi-calls" min="1" max="25" step="1" value="5">
+        </div>
+        <div class="roi-slider">
+          <label for="roi-value">Average job / customer value <output id="roi-value-out">$600</output></label>
+          <input type="range" id="roi-value" min="100" max="5000" step="100" value="600">
+        </div>
+      </div>
+      <div class="roi-result">
+        <div class="roi-lost" id="roi-lost">$13,000</div>
+        <div class="roi-lost-label">of potential revenue calling your business every month — and hanging up</div>
+        <p class="roi-note" id="roi-note">Win back just <strong>one</strong> of those jobs a month and Basic pays for itself — with change.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- ══════════ VERTICALS ══════════ -->
 <section id="verticals" style="padding-top:0">
   <div class="container">
@@ -885,18 +1021,21 @@ footer{border-top:1px solid var(--border);padding:44px 0;font-size:.88rem;color:
     </div>
     <div class="grid-3">
       <div class="card vertical-card reveal">
+        <div class="card-img"><img src="/assets/img/vertical-home-services.jpg" alt="HVAC technician repairing a rooftop unit at dusk" loading="lazy" width="1200" height="900"></div>
         <div class="v-tag"><span class="chip">Home Services</span></div>
         <h3>Plumbing · HVAC · Electrical</h3>
         <p>Emergencies don't book ahead. When a pipe bursts at 9 PM, the company that answers gets the job — full stop.</p>
         <div class="v-example"><strong>Real scenario:</strong> 9 PM emergency call → caller intake, urgency flagged, booked into your first morning slot, summary in your inbox before you've finished dinner.</div>
       </div>
       <div class="card vertical-card reveal" data-delay="1">
+        <div class="card-img"><img src="/assets/img/vertical-medical.jpg" alt="Modern dental office reception area in the evening" loading="lazy" width="1200" height="900"></div>
         <div class="v-tag"><span class="chip">Medical · Dental · MedSpa</span></div>
         <h3>Practices &amp; clinics</h3>
         <p>Your front desk is buried and every missed call is a patient who books elsewhere. Cut no-shows and fill the schedule without adding headcount.</p>
         <div class="v-example"><strong>Built in:</strong> HIPAA with signed BAA, appointment confirmations that cut no-shows, and bilingual intake for every patient who calls.</div>
       </div>
       <div class="card vertical-card reveal" data-delay="2">
+        <div class="card-img"><img src="/assets/img/vertical-local-business.jpg" alt="Shop owner flipping the sign at closing time" loading="lazy" width="1200" height="900"></div>
         <div class="v-tag"><span class="chip">Every Local Business</span></div>
         <h3>If customers call you, this works</h3>
         <p>Law offices, salons, auto shops, property managers, restaurants. If your phone rings and revenue depends on someone picking it up, this pays for itself.</p>
@@ -975,6 +1114,36 @@ footer{border-top:1px solid var(--border);padding:44px 0;font-size:.88rem;color:
   </div>
 </section>
 
+<!-- ══════════ INSIGHTS ══════════ -->
+<section id="insights" style="padding-top:0">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="eyebrow">Insights</span>
+      <h2>Straight talk on the phone problem.</h2>
+    </div>
+    <div class="grid-3">
+      <a href="/blog/what-a-missed-call-costs" class="card insight-card reveal">
+        <div class="insight-meta">July 16, 2026 · 5 min read</div>
+        <h3>What a missed 9 PM call actually costs a plumbing company</h3>
+        <p>One unanswered emergency call, reconstructed: the job, the lifetime value, and the referral chain that went to whoever picked up.</p>
+        <span class="read-more">Read →</span>
+      </a>
+      <a href="/blog/answering-service-vs-ai-receptionist" class="card insight-card reveal" data-delay="1">
+        <div class="insight-meta">July 16, 2026 · 6 min read</div>
+        <h3>Answering service vs. AI receptionist: the real cost breakdown</h3>
+        <p>Per-minute billing, spam charges, and script-readers — an honest side-by-side, including where humans still win.</p>
+        <span class="read-more">Read →</span>
+      </a>
+      <a href="/blog/stop-losing-patients-to-voicemail" class="card insight-card reveal" data-delay="2">
+        <div class="insight-meta">July 16, 2026 · 5 min read</div>
+        <h3>How to stop losing patients to voicemail: a front-desk playbook</h3>
+        <p>Practices lose patients at the phone, not the chair. Plugging the lunch-hour, overflow, and after-hours leaks.</p>
+        <span class="read-more">Read →</span>
+      </a>
+    </div>
+  </div>
+</section>
+
 <!-- ══════════ FINAL CTA ══════════ -->
 <section id="contact" class="final-cta dotgrid">
   <div class="halo" style="width:700px;height:500px;top:-100px;left:50%;transform:translateX(-50%);background:radial-gradient(circle, rgba(52,211,153,.14), transparent 70%)"></div>
@@ -990,6 +1159,12 @@ footer{border-top:1px solid var(--border);padding:44px 0;font-size:.88rem;color:
       <div class="hero-ctas" style="justify-content:center">
         <a href="https://cal.com/owneraitools/30min" target="_blank" rel="noopener" class="btn btn-primary">Book a free setup call</a>
         <a href="mailto:info@owneraitools.com" class="btn btn-ghost">info@owneraitools.com</a>
+      </div>
+      <div class="trust-strip">
+        <span class="trust-badge"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Encrypted in transit &amp; at rest</span>
+        <span class="trust-badge"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>HIPAA-ready (Expert tier, signed BAA)</span>
+        <span class="trust-badge"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>A2P-compliant SMS</span>
+        <span class="trust-badge"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>30-day money-back guarantee</span>
       </div>
     </div>
 
@@ -1077,6 +1252,81 @@ document.querySelectorAll('.faq-item').forEach((item) => {
     }
   });
 });
+
+const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+// Stat band count-up
+const fmt = (el, val) => {
+  el.textContent = (el.dataset.prefix || '') + Math.round(val).toLocaleString('en-US') + (el.dataset.suffix || '');
+};
+const counterObserver = new IntersectionObserver((entries) => {
+  entries.forEach((entry) => {
+    if (!entry.isIntersecting) return;
+    counterObserver.unobserve(entry.target);
+    const el = entry.target;
+    const target = Number(el.dataset.count);
+    if (reducedMotion) { fmt(el, target); return; }
+    const t0 = performance.now();
+    const dur = 1400;
+    const tick = (t) => {
+      const p = Math.min(1, (t - t0) / dur);
+      fmt(el, target * (1 - Math.pow(1 - p, 3)));
+      if (p < 1) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  });
+}, {threshold: 0.5});
+document.querySelectorAll('.cnt[data-count]').forEach((el) => counterObserver.observe(el));
+
+// ROI calculator
+const roiCalls = document.getElementById('roi-calls');
+const roiValue = document.getElementById('roi-value');
+const updateRoi = () => {
+  const calls = Number(roiCalls.value);
+  const value = Number(roiValue.value);
+  const lost = Math.round(calls * 4.33 * value);
+  document.getElementById('roi-calls-out').textContent = calls;
+  document.getElementById('roi-value-out').textContent = '$' + value.toLocaleString('en-US');
+  document.getElementById('roi-lost').textContent = '$' + lost.toLocaleString('en-US');
+  const multiple = value / 500;
+  document.getElementById('roi-note').innerHTML = multiple >= 2
+    ? 'Win back just <strong>one</strong> of those jobs a month and Basic pays for itself <strong>' + multiple.toFixed(multiple >= 10 ? 0 : 1).replace(/\.0$/, '') + 'x over</strong>.'
+    : 'Win back just <strong>' + Math.ceil(500 / value) + '</strong> of those jobs a month and Basic pays for itself.';
+};
+[roiCalls, roiValue].forEach((el) => el.addEventListener('input', updateRoi));
+updateRoi();
+
+// Sample call player (button stays hidden until /assets/audio/sample-call.mp3 exists)
+const playBtn = document.getElementById('playSample');
+const sampleAudio = new Audio('/assets/audio/sample-call.mp3');
+sampleAudio.preload = 'metadata';
+sampleAudio.addEventListener('loadedmetadata', () => { playBtn.hidden = false; });
+const waveform = document.querySelector('.waveform');
+const playLabel = document.getElementById('playLabel');
+const playIcon = document.getElementById('playIcon');
+const setPlayingUI = (playing) => {
+  playLabel.textContent = playing ? 'Pause' : 'Hear a real call';
+  playIcon.innerHTML = playing
+    ? '<rect x="5" y="3" width="5" height="18"/><rect x="14" y="3" width="5" height="18"/>'
+    : '<polygon points="6 3 20 12 6 21"/>';
+  // While audio is paused mid-listen, freeze the waveform so it reads as a player
+  waveform.classList.toggle('paused', !playing && playBtn.dataset.used === '1');
+};
+playBtn.addEventListener('click', () => {
+  playBtn.dataset.used = '1';
+  if (sampleAudio.paused) { sampleAudio.play(); setPlayingUI(true); }
+  else { sampleAudio.pause(); setPlayingUI(false); }
+});
+sampleAudio.addEventListener('ended', () => setPlayingUI(false));
+
+// Hero halo parallax
+if (!reducedMotion) {
+  const halos = document.querySelectorAll('.hero .halo');
+  window.addEventListener('scroll', () => {
+    const y = window.scrollY;
+    if (y < 1200) halos.forEach((h, i) => { h.style.transform = 'translateY(' + y * (i ? 0.10 : 0.06) + 'px)'; });
+  }, {passive: true});
+}
 
 // Form fallback -> pre-filled mailto
 document.getElementById('fallbackForm').addEventListener('submit', (e) => {

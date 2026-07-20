@@ -8,21 +8,22 @@
 <meta name="robots" content="index, follow">
 <link rel="canonical" href="https://owneraitools.com/privacy">
 
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2334D399'/%3E%3Cpath d='M23.5 20.4v2.1a1.4 1.4 0 0 1-1.53 1.4 13.85 13.85 0 0 1-6.04-2.15 13.65 13.65 0 0 1-4.2-4.2A13.85 13.85 0 0 1 9.58 11.5 1.4 1.4 0 0 1 10.98 10h2.1a1.4 1.4 0 0 1 1.4 1.2c.09.67.25 1.33.49 1.97a1.4 1.4 0 0 1-.32 1.48l-.89.89a11.2 11.2 0 0 0 4.2 4.2l.89-.89a1.4 1.4 0 0 1 1.48-.31c.63.23 1.3.4 1.97.48a1.4 1.4 0 0 1 1.2 1.42z' fill='%2304120C'/%3E%3C/svg%3E">
-<link rel="preconnect" href="https://api.fontshare.com">
-<link href="https://api.fontshare.com/v2/css?f[]=clash-display@500,600,700&f[]=general-sans@400,500,600&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='16' fill='%2314355e'/%3E%3Cpath d='M23.5 20.4v2.1a1.4 1.4 0 0 1-1.53 1.4 13.85 13.85 0 0 1-6.04-2.15 13.65 13.65 0 0 1-4.2-4.2A13.85 13.85 0 0 1 9.58 11.5 1.4 1.4 0 0 1 10.98 10h2.1a1.4 1.4 0 0 1 1.4 1.2c.09.67.25 1.33.49 1.97a1.4 1.4 0 0 1-.32 1.48l-.89.89a11.2 11.2 0 0 0 4.2 4.2l.89-.89a1.4 1.4 0 0 1 1.48-.31c.63.23 1.3.4 1.97.48a1.4 1.4 0 0 1 1.2 1.42z' fill='%23ff9046'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
 <script src="/assets/consent.js" defer></script>
 
 <style>
 :root{
-  --bg: #070B12;
-  --surface: #0D131F;
-  --border: rgba(148,163,184,.12);
-  --text: #E8EDF4;
-  --muted: #8B97A8;
-  --accent: #34D399;
-  --display: "Clash Display", "General Sans", sans-serif;
-  --body: "General Sans", sans-serif;
+  --bg: #ffffff;
+  --surface: #f2f7fc;
+  --border: rgba(20,53,94,.12);
+  --text: #24384f;
+  --muted: #5a6b81;
+  --accent: #1a66b0;
+  --display: "Nunito", ui-sans-serif, system-ui, sans-serif;
+  --body: "Source Sans 3", ui-sans-serif, system-ui, sans-serif;
 }
 *{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth;scroll-padding-top:96px}
@@ -30,13 +31,13 @@ body{
   background:var(--bg);color:var(--text);font-family:var(--body);
   font-size:16.5px;line-height:1.7;-webkit-font-smoothing:antialiased;
 }
-::selection{background:var(--accent);color:#04120C}
+::selection{background:#2680cf;color:#fff}
 a{color:var(--accent);text-decoration:underline;text-underline-offset:3px}
 a:hover{opacity:.85}
 
 .topbar{
   position:sticky;top:0;z-index:10;
-  background:rgba(7,11,18,.85);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  background:rgba(255,255,255,.92);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
   border-bottom:1px solid var(--border);
 }
 .topbar-inner{
@@ -48,7 +49,7 @@ a:hover{opacity:.85}
   color:var(--text);text-decoration:none;display:flex;align-items:center;gap:9px;
 }
 .logo-mark{
-  width:24px;height:24px;border-radius:7px;background:linear-gradient(135deg,var(--accent),#0E9F6E);
+  width:24px;height:24px;border-radius:50%;background:#1a66b0;
   display:flex;align-items:center;justify-content:center;
 }
 .logo-mark svg{width:13px;height:13px;display:block}
@@ -70,19 +71,25 @@ h2{
   margin:56px 0 16px;padding-top:24px;border-top:1px solid var(--border);
 }
 h3{font-family:var(--display);font-weight:600;font-size:1.05rem;margin:28px 0 10px}
-p{margin:0 0 14px;color:#C4CEDC}
-ul{margin:0 0 14px 22px;color:#C4CEDC}
+p{margin:0 0 14px;color:#3d5169}
+ul{margin:0 0 14px 22px;color:#3d5169}
 li{margin-bottom:8px}
 .callout{
   margin:20px 0;padding:18px 22px;border-radius:12px;
-  background:rgba(52,211,153,.07);border:1px solid rgba(52,211,153,.25);
-  color:#D1FAE5;font-size:.95rem;
+  background:#eef6fd;border:1px solid #b6d8f5;
+  color:#17528e;font-size:.95rem;
 }
 .muted{color:var(--muted);font-size:.9rem}
 
 footer{border-top:1px solid var(--border);padding:36px 24px;text-align:center;font-size:.8rem;color:var(--muted);line-height:1.8}
 footer a{color:var(--muted)}
 footer a:hover{color:var(--accent)}
+
+h1,h2,h3{color:#14355e}
+h1{font-weight:900}
+h2,h3{font-weight:800}
+body{font-weight:400}
+.topbar{box-shadow:0 8px 24px -18px rgba(20,53,94,.25)}
 </style>
 </head>
 <body>
@@ -91,7 +98,7 @@ footer a:hover{color:var(--accent)}
   <div class="topbar-inner">
     <a href="/" class="logo">
       <span class="logo-mark">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#04120C" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
       </span>
       OwnerAI Tools
     </a>

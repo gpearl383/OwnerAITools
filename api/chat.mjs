@@ -161,6 +161,39 @@ async function sendLeadEmail(lead, transcript) {
   if (!res.ok) throw new Error(`Resend ${res.status}: ${await res.text()}`);
 }
 
+/* ---------- audit trail ---------- */
+
+// Best-effort insert into the Supabase audit log; never affects the response.
+async function logChatLead(lead) {
+  const url = process.env.SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) return;
+  try {
+    const res = await fetch(`${url}/rest/v1/audit_events`, {
+      method: 'POST',
+      headers: {
+        apikey: key,
+        Authorization: `Bearer ${key}`,
+        'Content-Type': 'application/json',
+        Prefer: 'return=minimal',
+      },
+      body: JSON.stringify([
+        {
+          event_type: 'chat_lead',
+          status: 'ok',
+          caller_name: lead.name || null,
+          from_number: lead.phone || null,
+          detail: lead.business || null,
+          payload: { page: lead.page },
+        },
+      ]),
+    });
+    if (!res.ok) console.error('chat lead audit insert failed:', res.status);
+  } catch (err) {
+    console.error('chat lead audit failed:', err.message);
+  }
+}
+
 /* ---------- handler ---------- */
 
 export async function POST(request) {
@@ -193,6 +226,7 @@ export async function POST(request) {
     }
     try {
       await sendLeadEmail(lead, Array.isArray(payload.transcript) ? payload.transcript : []);
+      await logChatLead(lead);
       return json(200, { ok: true }, origin);
     } catch (err) {
       console.error('chat lead email failed:', err.message);

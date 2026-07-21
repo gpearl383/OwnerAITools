@@ -217,6 +217,29 @@ function json(status, body) {
   });
 }
 
+// Audit trail: one batched insert into Supabase per webhook. Best-effort —
+// a logging failure never affects call handling.
+async function logAuditEvents(rows) {
+  const url = process.env.SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key || !rows.length) return;
+  try {
+    const res = await fetch(`${url}/rest/v1/audit_events`, {
+      method: 'POST',
+      headers: {
+        apikey: key,
+        Authorization: `Bearer ${key}`,
+        'Content-Type': 'application/json',
+        Prefer: 'return=minimal',
+      },
+      body: JSON.stringify(rows),
+    });
+    if (!res.ok) console.error('audit log insert failed:', res.status, await res.text());
+  } catch (err) {
+    console.error('audit log failed:', err.message);
+  }
+}
+
 export async function POST(request) {
   const rawBody = await request.text();
   const signature = request.headers.get('x-retell-signature');
@@ -245,45 +268,94 @@ export async function POST(request) {
       ? `[OwnerAI] Missed demo call (hung up): ${who}`
       : `[OwnerAI] Demo line call: ${who}${data.wants_setup_call ? ' — WANTS SETUP CALL' : ''}`;
 
+  // Common fields stamped onto every audit row for this call.
+  const base = {
+    call_id: call.call_id || null,
+    caller_name: data.name || null,
+    from_number: call.from_number || null,
+    duration_sec: duration || null,
+    wants_setup_call: data.wants_setup_call,
+    wants_sms_confirmation: data.wants_sms_confirmation,
+    lead_quality: data.lead_quality || null,
+    sentiment: data.sentiment || null,
+  };
+  const audit = [
+    {
+      ...base,
+      event_type: 'call_analyzed',
+      status: 'ok',
+      detail: data.call_reason || null,
+      payload: {
+        summary: data.summary,
+        business: data.business,
+        business_type: data.business_type,
+        callback_phone: data.callback_phone,
+        interested_tier: data.interested_tier,
+        did_role_play: data.did_role_play,
+        to_number: call.to_number || null,
+        recording_url: typeof call.recording_url === 'string' ? call.recording_url : null,
+      },
+    },
+  ];
+
   let emailError = null;
   try {
     await sendResendEmail(subject, buildEmailHtml(call, data));
+    audit.push({ ...base, event_type: 'email_sent', status: 'ok', detail: subject });
   } catch (err) {
     emailError = err.message;
     console.error('retell-webhook email failed:', err.message);
+    audit.push({ ...base, event_type: 'email_failed', status: 'failed', detail: err.message.slice(0, 500) });
   }
 
   // SMS legs are best-effort: an SMS failure never fails the webhook, so
   // Retell doesn't retry (which would duplicate the email).
   let smsError = null;
+  const alertPhone = process.env.OWNERAI_ALERT_PHONE;
+  const smsMinSec = Number(process.env.ALERT_SMS_MIN_SECONDS || 12);
   try {
-    const alertPhone = process.env.OWNERAI_ALERT_PHONE;
-    const smsMinSec = Number(process.env.ALERT_SMS_MIN_SECONDS || 12);
     if (!alertPhone) {
       console.warn('OWNERAI_ALERT_PHONE not configured — skipping owner SMS alert');
     } else if (duration > 0 && duration <= smsMinSec) {
       console.log(`owner SMS skipped — call lasted ${duration}s (min ${smsMinSec}s)`);
+      audit.push({
+        ...base,
+        event_type: 'owner_sms_skipped',
+        status: 'skipped',
+        detail: `call lasted ${duration}s (min ${smsMinSec}s)`,
+      });
     } else {
-      await sendRetellSms(alertPhone, {
+      const r = await sendRetellSms(alertPhone, {
         agentId: process.env.RETELL_ALERT_AGENT_ID,
         dynamicVariables: { alert_body: buildAlertSms(data, duration) },
         source: 'owner-call-alert',
       });
+      if (!r.skipped) audit.push({ ...base, event_type: 'owner_sms_sent', status: 'ok', detail: null });
     }
+  } catch (err) {
+    smsError = err.message;
+    console.error('retell-webhook owner SMS failed:', err.message);
+    audit.push({ ...base, event_type: 'sms_failed', status: 'failed', detail: `owner alert: ${err.message.slice(0, 400)}` });
+  }
 
-    // Customer confirmation: only when the caller explicitly said yes to a
-    // text during the call (A2P consent) and left a usable number.
-    if (data.wants_sms_confirmation && data.callback_phone) {
-      await sendRetellSms(data.callback_phone, {
+  // Customer confirmation: only when the caller explicitly said yes to a
+  // text during the call (A2P consent) and left a usable number.
+  if (data.wants_sms_confirmation && data.callback_phone) {
+    try {
+      const r = await sendRetellSms(data.callback_phone, {
         agentId: process.env.RETELL_CONFIRM_AGENT_ID,
         dynamicVariables: { confirm_body: buildConfirmSms(data) },
         source: 'customer-booking-confirmation',
       });
+      if (!r.skipped) audit.push({ ...base, event_type: 'customer_sms_sent', status: 'ok', detail: null });
+    } catch (err) {
+      smsError = err.message;
+      console.error('retell-webhook customer SMS failed:', err.message);
+      audit.push({ ...base, event_type: 'sms_failed', status: 'failed', detail: `customer confirmation: ${err.message.slice(0, 400)}` });
     }
-  } catch (err) {
-    smsError = err.message;
-    console.error('retell-webhook SMS step failed:', err.message);
   }
+
+  await logAuditEvents(audit);
 
   if (emailError && smsError) {
     return json(500, { error: 'Internal error' });

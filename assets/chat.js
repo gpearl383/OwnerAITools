@@ -9,8 +9,8 @@
   'use strict';
 
   var API = '/api/chat';
-  var DEMO_TEL = '+18889211994';
-  var DEMO_DISPLAY = '(888) 921-1994';
+  var DEMO_TEL = '+15169731973';
+  var DEMO_DISPLAY = '(516) 973-1973';
   var CAL_URL = 'https://cal.com/owneraitools/30min';
 
   var GREETING =
@@ -132,7 +132,7 @@
     // Bot messages: escape first, then linkify the demo number and cal.com.
     function botHtml(text) {
       var h = esc(text);
-      h = h.replace(/\(888\)\s?921-1994/g, '<a href="tel:' + DEMO_TEL + '">' + DEMO_DISPLAY + '</a>');
+      h = h.replace(/\(516\)\s?973-1973/g, '<a href="tel:' + DEMO_TEL + '">' + DEMO_DISPLAY + '</a>');
       h = h.replace(/https:\/\/cal\.com\/owneraitools\/30min/g, '<a href="' + CAL_URL + '" target="_blank" rel="noopener">cal.com/owneraitools/30min</a>');
       return h;
     }

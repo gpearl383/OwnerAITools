@@ -1,13 +1,23 @@
-// Retell post-call webhook for the OwnerAI Tools demo line (+1 888-921-1994).
-// Vercel serverless function (web-standard handler). Email-only: sends the
-// owner a summary of every analyzed call via Resend.
+// Retell post-call webhook for the OwnerAI Tools demo line (+1 516-973-1973).
+// Vercel serverless function (web-standard handler). Sends the owner an email
+// summary of every analyzed call via Resend, plus two optional SMS legs
+// through Retell's create-sms-chat API (the number lives in Retell under an
+// approved A2P 10DLC campaign, so all outbound SMS goes through Retell):
+//   1. Owner alert SMS — for calls longer than ALERT_SMS_MIN_SECONDS.
+//   2. Customer confirmation SMS — only when the caller explicitly opted in
+//      during the call (wants_sms_confirmation analysis flag).
 //
 // Required env vars (set in the Vercel project):
-//   RETELL_API_KEY        — verifies the webhook signature from Retell
-//   RESEND_API_KEY        — Resend key for sending email
-// Optional:
-//   OWNERAI_NOTIFY_EMAIL  — recipient (default: info@owneraitools.com)
-//   OWNERAI_RESEND_FROM   — sender (default: OwnerAI Tools <info@owneraitools.com>)
+//   RETELL_API_KEY          — CSM workspace key; verifies webhook signature and sends SMS
+//   RESEND_API_KEY          — Resend key for sending email
+// Optional (SMS legs are skipped when unset):
+//   RETELL_SMS_FROM         — E.164 sending number (+15169731973)
+//   RETELL_ALERT_AGENT_ID   — chat agent for owner alerts ({{alert_body}} template)
+//   RETELL_CONFIRM_AGENT_ID — chat agent for customer confirmations ({{confirm_body}} template)
+//   OWNERAI_ALERT_PHONE     — owner cell for alert texts
+//   ALERT_SMS_MIN_SECONDS   — skip owner SMS for calls at or under this (default 12)
+//   OWNERAI_NOTIFY_EMAIL    — recipient (default: info@owneraitools.com)
+//   OWNERAI_RESEND_FROM     — sender (default: OwnerAI Tools <info@owneraitools.com>)
 
 import crypto from 'node:crypto';
 
@@ -57,6 +67,8 @@ function extractData(call) {
     did_role_play: custom.did_role_play === true || custom.did_role_play === 'true',
     wants_setup_call:
       custom.wants_setup_call === true || custom.wants_setup_call === 'true',
+    wants_sms_confirmation:
+      custom.wants_sms_confirmation === true || custom.wants_sms_confirmation === 'true',
     lead_quality: (custom.lead_quality || '').trim(),
     summary:
       (call?.call_analysis?.call_summary || '').trim() ||
@@ -99,6 +111,77 @@ function buildEmailHtml(call, data) {
       <pre style="white-space:pre-wrap;font-family:sans-serif;font-size:13px;">${e(transcript)}</pre>
     </details>
   `;
+}
+
+function normalizePhone(v) {
+  const digits = String(v ?? '').replace(/[^\d+]/g, '');
+  if (/^\+1\d{10}$/.test(digits)) return digits;
+  if (/^1\d{10}$/.test(digits)) return `+${digits}`;
+  if (/^\d{10}$/.test(digits)) return `+1${digits}`;
+  return null;
+}
+
+// The +15169731973 number lives in Retell (approved A2P 10DLC campaign), so
+// all outbound SMS goes through Retell's create-sms-chat API. Each SMS agent's
+// begin_message is a "{{...}}" template filled via dynamic variables.
+async function sendRetellSms(to, { agentId, dynamicVariables, source }) {
+  const apiKey = process.env.RETELL_API_KEY;
+  const from = process.env.RETELL_SMS_FROM;
+
+  if (!apiKey || !from || !agentId) {
+    console.warn(`Retell SMS env missing — skipping SMS (${source})`);
+    return { skipped: true };
+  }
+
+  const normalized = normalizePhone(to);
+  if (!normalized) return { skipped: true, reason: 'invalid_to' };
+
+  const res = await fetch('https://api.retellai.com/create-sms-chat', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      from_number: from,
+      to_number: normalized,
+      override_agent_id: agentId,
+      metadata: { source: source || 'ownerai-webhook' },
+      ...(dynamicVariables ? { retell_llm_dynamic_variables: dynamicVariables } : {}),
+    }),
+  });
+
+  if (!res.ok) {
+    const t = await res.text();
+    throw new Error(`Retell SMS ${res.status}: ${t}`);
+  }
+  return res.json();
+}
+
+function buildAlertSms(data, duration) {
+  const name = data.name || 'Unknown caller';
+  const hungUpEarly = duration > 0 && duration < 15;
+  const lines = [
+    hungUpEarly
+      ? `OwnerAI: missed demo call (hung up after ${duration}s)`
+      : data.wants_setup_call
+        ? 'OwnerAI: demo call — WANTS SETUP CALL'
+        : 'OwnerAI: new demo call answered',
+    `${name}${data.business ? ' — ' + data.business : ''}`,
+    data.callback_phone ? `Number: ${data.callback_phone}` : '',
+    data.call_reason ? `Re: ${data.call_reason.slice(0, 100)}` : '',
+    'Details in email.',
+  ];
+  return lines.filter(Boolean).join('\n').slice(0, 1000);
+}
+
+function buildConfirmSms(data) {
+  const first = (data.name || '').split(/\s+/)[0];
+  return [
+    `${first ? first + ', thanks' : 'Thanks'} for calling OwnerAI Tools!`,
+    'Book your 15-minute setup call here: https://cal.com/owneraitools/30min',
+    'Questions? info@owneraitools.com. Msg & data rates may apply. Reply STOP to opt out, HELP for help.',
+  ].join(' ');
 }
 
 async function sendResendEmail(subject, html) {
@@ -162,11 +245,48 @@ export async function POST(request) {
       ? `[OwnerAI] Missed demo call (hung up): ${who}`
       : `[OwnerAI] Demo line call: ${who}${data.wants_setup_call ? ' — WANTS SETUP CALL' : ''}`;
 
+  let emailError = null;
   try {
     await sendResendEmail(subject, buildEmailHtml(call, data));
-    return json(200, { ok: true });
   } catch (err) {
+    emailError = err.message;
     console.error('retell-webhook email failed:', err.message);
+  }
+
+  // SMS legs are best-effort: an SMS failure never fails the webhook, so
+  // Retell doesn't retry (which would duplicate the email).
+  let smsError = null;
+  try {
+    const alertPhone = process.env.OWNERAI_ALERT_PHONE;
+    const smsMinSec = Number(process.env.ALERT_SMS_MIN_SECONDS || 12);
+    if (!alertPhone) {
+      console.warn('OWNERAI_ALERT_PHONE not configured — skipping owner SMS alert');
+    } else if (duration > 0 && duration <= smsMinSec) {
+      console.log(`owner SMS skipped — call lasted ${duration}s (min ${smsMinSec}s)`);
+    } else {
+      await sendRetellSms(alertPhone, {
+        agentId: process.env.RETELL_ALERT_AGENT_ID,
+        dynamicVariables: { alert_body: buildAlertSms(data, duration) },
+        source: 'owner-call-alert',
+      });
+    }
+
+    // Customer confirmation: only when the caller explicitly said yes to a
+    // text during the call (A2P consent) and left a usable number.
+    if (data.wants_sms_confirmation && data.callback_phone) {
+      await sendRetellSms(data.callback_phone, {
+        agentId: process.env.RETELL_CONFIRM_AGENT_ID,
+        dynamicVariables: { confirm_body: buildConfirmSms(data) },
+        source: 'customer-booking-confirmation',
+      });
+    }
+  } catch (err) {
+    smsError = err.message;
+    console.error('retell-webhook SMS step failed:', err.message);
+  }
+
+  if (emailError && smsError) {
     return json(500, { error: 'Internal error' });
   }
+  return json(200, { ok: true, ...(emailError && { emailError: true }), ...(smsError && { smsError: true }) });
 }

@@ -248,6 +248,7 @@ tr.detail td{background:var(--mist);font-size:13px;color:var(--muted);white-spac
       { n: st.wantsSetupCall, l: 'Setup-call requests', hot: true },
       { n: st.emailsSent, l: 'Email alerts' },
       { n: st.smsSent, l: 'Texts sent' },
+      { n: st.demoAlerts, l: 'Demo alerts' },
       { n: st.chatLeads, l: 'Chat leads' },
     ];
     if (st.failures) cards.push({ n: st.failures, l: 'Failures', hot: true });
@@ -282,6 +283,7 @@ tr.detail td{background:var(--mist);font-size:13px;color:var(--muted);white-spac
     owner_sms_sent: ['Owner SMS', 'b-sms'],
     owner_sms_skipped: ['SMS skipped', 'b-skip'],
     customer_sms_sent: ['Customer SMS', 'b-sms'],
+    demo_alert_sms_sent: ['Demo alert', 'b-sms'],
     sms_failed: ['SMS', 'b-fail'],
     chat_lead: ['Chat lead', 'b-lead'],
   };

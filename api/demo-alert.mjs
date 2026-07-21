@@ -69,7 +69,7 @@ function allowSend(number) {
 function buildDemoAlertBody(args) {
   const biz = (args.business_name || 'YOUR BUSINESS').toUpperCase().slice(0, 60);
   const lines = [
-    `${biz} — new lead, answered by your AI receptionist`,
+    `[DEMO] ${biz} — new lead, answered by your AI receptionist`,
     [args.customer_name, args.issue, args.urgent ? 'URGENT' : '']
       .filter(Boolean)
       .join(' — '),

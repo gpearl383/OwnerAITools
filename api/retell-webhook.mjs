@@ -70,6 +70,7 @@ function extractData(call) {
     wants_sms_confirmation:
       custom.wants_sms_confirmation === true || custom.wants_sms_confirmation === 'true',
     lead_quality: (custom.lead_quality || '').trim(),
+    setup_call_booked_time: (custom.setup_call_booked_time || '').trim(),
     summary:
       (call?.call_analysis?.call_summary || '').trim() ||
       'No summary available — see transcript below.',
@@ -99,6 +100,7 @@ function buildEmailHtml(call, data) {
       <tr><td><strong>Tier interest</strong></td><td>${e(data.interested_tier) || '—'}</td></tr>
       <tr><td><strong>Did role-play demo</strong></td><td>${data.did_role_play ? 'Yes' : 'No'}</td></tr>
       <tr><td><strong>Wants setup call</strong></td><td>${data.wants_setup_call ? '✅ YES' : 'No'}</td></tr>
+      ${data.setup_call_booked_time ? `<tr><td><strong>Setup call booked</strong></td><td>📅 ${e(data.setup_call_booked_time)}</td></tr>` : ''}
       <tr><td><strong>Lead quality</strong></td><td>${e(data.lead_quality) || '—'}</td></tr>
       <tr><td><strong>Sentiment</strong></td><td>${e(data.sentiment) || '—'}</td></tr>
       <tr><td><strong>Duration</strong></td><td>${duration ? duration + 's' : '—'}</td></tr>
@@ -179,7 +181,9 @@ function buildConfirmSms(data) {
   const first = (data.name || '').split(/\s+/)[0];
   return [
     `${first ? first + ', thanks' : 'Thanks'} for calling OwnerAI Tools!`,
-    'Book your 15-minute setup call here: https://cal.com/owneraitools/30min',
+    data.setup_call_booked_time
+      ? `You're booked for your setup call: ${data.setup_call_booked_time}. Calendar invite is in your email. Need to change it? https://cal.com/owneraitools/30min`
+      : 'Book your 15-minute setup call here: https://cal.com/owneraitools/30min',
     'Questions? info@owneraitools.com. Msg & data rates may apply. Reply STOP to opt out, HELP for help.',
   ].join(' ');
 }
@@ -270,7 +274,13 @@ export async function POST(request) {
   const subject =
     duration > 0 && duration < 15
       ? `[OwnerAI] Missed demo call (hung up): ${who}`
-      : `[OwnerAI] Demo line call: ${who}${data.wants_setup_call ? ' — WANTS SETUP CALL' : ''}`;
+      : `[OwnerAI] Demo line call: ${who}${
+          data.setup_call_booked_time
+            ? ` — BOOKED ${data.setup_call_booked_time}`
+            : data.wants_setup_call
+              ? ' — WANTS SETUP CALL'
+              : ''
+        }`;
 
   // Common fields stamped onto every audit row for this call.
   const base = {

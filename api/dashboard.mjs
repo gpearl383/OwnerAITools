@@ -140,6 +140,7 @@ function computeStats(events, rangeDays) {
     emailsSent: count('email_sent'),
     smsSent: count('owner_sms_sent') + count('customer_sms_sent'),
     demoAlerts: count('demo_alert_sms_sent'),
+    setupCallsBooked: count('setup_call_booked'),
     chatLeads: count('chat_lead'),
     failures: events.filter((e) => e.status === 'failed').length,
     sentiment: bucket('sentiment'),

@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>OwnerAI Tools — Dashboard</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='16' fill='%2314355e'/%3E%3Cpath d='M23.5 20.4v2.1a1.4 1.4 0 0 1-1.53 1.4 13.85 13.85 0 0 1-6.04-2.15 13.65 13.65 0 0 1-4.2-4.2A13.85 13.85 0 0 1 9.58 11.5 1.4 1.4 0 0 1 10.98 10h2.1a1.4 1.4 0 0 1 1.4 1.2c.09.67.25 1.33.49 1.97a1.4 1.4 0 0 1-.32 1.48l-.89.89a11.2 11.2 0 0 0 4.2 4.2l.89-.89a1.4 1.4 0 0 1 1.48-.31c.63.23 1.3.4 1.97.48a1.4 1.4 0 0 1 1.2 1.42z' fill='%23ff9046'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#14355e; --navy-soft:#1d4879; --primary:#2680cf; --primary-600:#1a66b0;
+  --primary-50:#eef6fd; --primary-100:#d9ebfa; --accent:#f97125; --accent-600:#e25a12;
+  --mist:#f2f7fc; --bg:#ffffff; --border:rgba(20,53,94,.10); --border-strong:rgba(20,53,94,.18);
+  --text:#24384f; --muted:#5a6b81;
+  --display:"Nunito",ui-sans-serif,system-ui,sans-serif;
+  --body:"Source Sans 3",ui-sans-serif,system-ui,sans-serif;
+  --radius:16px;
+  --shadow-card:0 14px 40px -18px rgba(20,53,94,.22);
+  --ok:#1a8a4f; --warn:#b45309; --bad:#c0392b;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{overflow-x:clip}
+body{font-family:var(--body);background:var(--mist);color:var(--text);min-height:100vh}
+a{color:var(--primary)}
+h1,h2,h3{font-family:var(--display);color:var(--navy)}
+
+.topbar{background:var(--navy);color:#fff;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.topbar .brand{font-family:var(--display);font-weight:800;font-size:18px;color:#fff;text-decoration:none;display:flex;align-items:center;gap:10px}
+.topbar .brand span{color:var(--accent)}
+.topbar .actions{display:flex;gap:10px;align-items:center}
+.btn{font-family:var(--display);font-weight:700;border:none;border-radius:999px;cursor:pointer;padding:9px 20px;font-size:14px}
+.btn-orange{background:var(--accent);color:#fff}
+.btn-orange:hover{background:var(--accent-600)}
+.btn-ghost{background:transparent;color:#cfe0f2;border:1px solid rgba(255,255,255,.35)}
+.btn-ghost:hover{color:#fff;border-color:#fff}
+
+.wrap{max-width:1100px;margin:0 auto;padding:28px 20px 60px}
+
+/* login */
+.login-card{max-width:400px;margin:10vh auto 0;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-card);padding:36px 32px;text-align:center}
+.login-card h1{font-size:24px;margin-bottom:6px}
+.login-card p{color:var(--muted);font-size:15px;margin-bottom:22px}
+.login-card input{width:100%;padding:13px 16px;font-size:16px;font-family:var(--body);border:1px solid var(--border-strong);border-radius:10px;margin-bottom:14px}
+.login-card input:focus{outline:2px solid var(--primary);border-color:var(--primary)}
+.login-card .btn{width:100%;padding:13px}
+.login-err{color:var(--bad);font-size:14px;margin-top:12px;min-height:18px}
+
+/* dashboard */
+.controls{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:20px}
+.controls h1{font-size:26px}
+.range-tabs{display:flex;gap:6px;background:var(--bg);border:1px solid var(--border);border-radius:999px;padding:4px}
+.range-tabs button{font-family:var(--display);font-weight:700;font-size:13px;border:none;background:transparent;color:var(--muted);border-radius:999px;padding:7px 16px;cursor:pointer}
+.range-tabs button.active{background:var(--primary);color:#fff}
+
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:24px}
+.stat{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-card);padding:18px 20px}
+.stat .num{font-family:var(--display);font-weight:900;font-size:30px;color:var(--navy);line-height:1.1}
+.stat .lbl{font-size:13px;color:var(--muted);font-weight:600;margin-top:4px}
+.stat.hot .num{color:var(--accent)}
+
+.panel{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-card);padding:22px;margin-bottom:24px}
+.panel h2{font-size:17px;margin-bottom:14px}
+
+/* chart */
+.chart{display:flex;align-items:flex-end;gap:3px;height:150px}
+.chart .bar{flex:1;height:100%;background:var(--primary-50);border-radius:4px 4px 0 0;position:relative;min-width:3px;transition:background .15s}
+.chart .bar .fill{position:absolute;bottom:0;left:0;right:0;background:var(--primary);border-radius:4px 4px 0 0}
+.chart .bar:hover .fill{background:var(--accent)}
+.chart .bar .tip{display:none;position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;font-size:11px;font-weight:600;padding:4px 8px;border-radius:6px;white-space:nowrap;z-index:5}
+.chart .bar:hover .tip{display:block}
+.chart-axis{display:flex;justify-content:space-between;color:var(--muted);font-size:11px;margin-top:6px}
+
+/* breakdowns */
+.breakdowns{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.bd-row{display:flex;justify-content:space-between;font-size:14px;padding:6px 0;border-bottom:1px solid var(--border)}
+.bd-row:last-child{border-bottom:none}
+.bd-row .v{font-weight:700;color:var(--navy)}
+
+/* audit table */
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.chip{font-family:var(--display);font-size:12px;font-weight:700;border:1px solid var(--border-strong);background:var(--bg);color:var(--muted);border-radius:999px;padding:6px 13px;cursor:pointer}
+.chip.active{background:var(--navy);border-color:var(--navy);color:#fff}
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{text-align:left;font-family:var(--display);font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);padding:8px 10px;border-bottom:2px solid var(--border-strong)}
+td{padding:10px;border-bottom:1px solid var(--border);vertical-align:top}
+tr.evt{cursor:pointer}
+tr.evt:hover td{background:var(--primary-50)}
+tr.detail td{background:var(--mist);font-size:13px;color:var(--muted);white-space:pre-wrap;word-break:break-word}
+.badge{display:inline-block;font-family:var(--display);font-size:11px;font-weight:800;letter-spacing:.03em;border-radius:999px;padding:3px 10px;white-space:nowrap}
+.b-call{background:var(--primary-100);color:var(--primary-600)}
+.b-email{background:#e7f6ed;color:var(--ok)}
+.b-sms{background:#fdeee3;color:var(--accent-600)}
+.b-lead{background:#efe7fb;color:#6b3fa0}
+.b-skip{background:#f1f3f6;color:var(--muted)}
+.b-fail{background:#fdecea;color:var(--bad)}
+.status-ok{color:var(--ok);font-weight:700}
+.status-skipped{color:var(--warn);font-weight:700}
+.status-failed{color:var(--bad);font-weight:700}
+.empty{color:var(--muted);text-align:center;padding:30px 0;font-size:15px}
+.foot-note{color:var(--muted);font-size:13px;margin-top:10px}
+
+@media (max-width:640px){
+  .breakdowns{grid-template-columns:1fr}
+  .controls h1{font-size:22px}
+  th:nth-child(5),td.c-dur{display:none}
+}
+[hidden]{display:none !important}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <a class="brand" href="/">OwnerAI <span>Tools</span> — Dashboard</a>
+  <div class="actions">
+    <button class="btn btn-ghost" id="refresh-btn" hidden>Refresh</button>
+    <button class="btn btn-ghost" id="logout-btn" hidden>Sign out</button>
+  </div>
+</header>
+
+<!-- Login -->
+<div id="login-view">
+  <div class="login-card">
+    <h1>Owner sign-in</h1>
+    <p>Enter the dashboard password to view call statistics and the audit trail.</p>
+    <form id="login-form">
+      <input type="password" id="pw" placeholder="Password" autocomplete="current-password" required>
+      <button class="btn btn-orange" type="submit">Sign in</button>
+    </form>
+    <div class="login-err" id="login-err"></div>
+  </div>
+</div>
+
+<!-- Dashboard -->
+<main class="wrap" id="dash-view" hidden>
+  <div class="controls">
+    <h1>Call activity</h1>
+    <div class="range-tabs" id="range-tabs">
+      <button data-range="7d">7 days</button>
+      <button data-range="30d" class="active">30 days</button>
+      <button data-range="90d">90 days</button>
+      <button data-range="all">All</button>
+    </div>
+  </div>
+
+  <div class="stats" id="stats"></div>
+
+  <div class="panel">
+    <h2>Calls per day</h2>
+    <div class="chart" id="chart"></div>
+    <div class="chart-axis" id="chart-axis"></div>
+  </div>
+
+  <div class="breakdowns">
+    <div class="panel"><h2>Caller sentiment</h2><div id="bd-sentiment"></div></div>
+    <div class="panel"><h2>Lead quality</h2><div id="bd-quality"></div></div>
+  </div>
+
+  <div class="panel">
+    <h2>Audit trail</h2>
+    <div class="filters" id="filters">
+      <button class="chip active" data-type="">All</button>
+      <button class="chip" data-type="call_analyzed">Calls</button>
+      <button class="chip" data-type="email">Emails</button>
+      <button class="chip" data-type="sms">SMS</button>
+      <button class="chip" data-type="chat_lead">Chat leads</button>
+      <button class="chip" data-type="failed">Failures</button>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Time</th><th>Event</th><th>Caller</th><th>From</th><th>Duration</th><th>Status</th></tr></thead>
+        <tbody id="events-body"></tbody>
+      </table>
+    </div>
+    <div class="empty" id="events-empty" hidden>No events in this range yet.</div>
+    <p class="foot-note">Click a row for details. Showing up to 2,000 most recent events.</p>
+  </div>
+</main>
+
+<script>
+(function () {
+  'use strict';
+  var API = '/api/dashboard';
+  var state = { range: '30d', filter: '', data: null };
+
+  var $ = function (id) { return document.getElementById(id); };
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+    });
+  }
+
+  /* ---------- login flow ---------- */
+
+  function showLogin() { $('login-view').hidden = false; $('dash-view').hidden = true; $('logout-btn').hidden = true; $('refresh-btn').hidden = true; }
+  function showDash() { $('login-view').hidden = true; $('dash-view').hidden = false; $('logout-btn').hidden = false; $('refresh-btn').hidden = false; }
+
+  $('login-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    $('login-err').textContent = '';
+    fetch(API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: $('pw').value }),
+    }).then(function (r) {
+      if (r.ok) { $('pw').value = ''; load(); }
+      else if (r.status === 429) { $('login-err').textContent = 'Too many attempts — wait 15 minutes.'; }
+      else { $('login-err').textContent = 'Wrong password.'; }
+    }).catch(function () { $('login-err').textContent = 'Network error — try again.'; });
+  });
+
+  $('logout-btn').addEventListener('click', function () {
+    fetch(API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ logout: true }) })
+      .then(showLogin);
+  });
+
+  $('refresh-btn').addEventListener('click', load);
+
+  /* ---------- data load ---------- */
+
+  function load() {
+    fetch(API + '?range=' + state.range).then(function (r) {
+      if (r.status === 401) { showLogin(); return null; }
+      return r.json();
+    }).then(function (data) {
+      if (!data) return;
+      state.data = data;
+      showDash();
+      render();
+    }).catch(function () { showLogin(); });
+  }
+
+  /* ---------- render ---------- */
+
+  function fmtDur(s) {
+    if (!s) return '—';
+    return s >= 60 ? Math.floor(s / 60) + 'm ' + (s % 60) + 's' : s + 's';
+  }
+
+  function renderStats(st) {
+    var cards = [
+      { n: st.totalCalls, l: 'Calls answered' },
+      { n: fmtDur(st.avgDurationSec), l: 'Avg duration' },
+      { n: st.wantsSetupCall, l: 'Setup-call requests', hot: true },
+      { n: st.emailsSent, l: 'Email alerts' },
+      { n: st.smsSent, l: 'Texts sent' },
+      { n: st.chatLeads, l: 'Chat leads' },
+    ];
+    if (st.failures) cards.push({ n: st.failures, l: 'Failures', hot: true });
+    $('stats').innerHTML = cards.map(function (c) {
+      return '<div class="stat' + (c.hot ? ' hot' : '') + '"><div class="num">' + esc(c.n) + '</div><div class="lbl">' + esc(c.l) + '</div></div>';
+    }).join('');
+  }
+
+  function renderChart(series) {
+    var max = Math.max.apply(null, series.map(function (d) { return d.calls; }).concat([1]));
+    $('chart').innerHTML = series.map(function (d) {
+      var pct = Math.round((d.calls / max) * 100);
+      return '<div class="bar"><div class="fill" style="height:' + pct + '%"></div><div class="tip">' + esc(d.day) + ': ' + d.calls + ' call' + (d.calls === 1 ? '' : 's') + '</div></div>';
+    }).join('');
+    var first = series[0], last = series[series.length - 1];
+    $('chart-axis').innerHTML = '<span>' + esc(first ? first.day : '') + '</span><span>' + esc(last ? last.day : '') + '</span>';
+  }
+
+  function renderBreakdown(el, obj) {
+    var keys = Object.keys(obj);
+    if (!keys.length) { el.innerHTML = '<div class="empty">No data yet</div>'; return; }
+    keys.sort(function (a, b) { return obj[b] - obj[a]; });
+    el.innerHTML = keys.map(function (k) {
+      return '<div class="bd-row"><span>' + esc(k.charAt(0).toUpperCase() + k.slice(1)) + '</span><span class="v">' + obj[k] + '</span></div>';
+    }).join('');
+  }
+
+  var BADGES = {
+    call_analyzed: ['Call', 'b-call'],
+    email_sent: ['Email', 'b-email'],
+    email_failed: ['Email', 'b-fail'],
+    owner_sms_sent: ['Owner SMS', 'b-sms'],
+    owner_sms_skipped: ['SMS skipped', 'b-skip'],
+    customer_sms_sent: ['Customer SMS', 'b-sms'],
+    sms_failed: ['SMS', 'b-fail'],
+    chat_lead: ['Chat lead', 'b-lead'],
+  };
+
+  function matchesFilter(e) {
+    var f = state.filter;
+    if (!f) return true;
+    if (f === 'email') return e.event_type.indexOf('email') === 0;
+    if (f === 'sms') return e.event_type.indexOf('sms') !== -1;
+    if (f === 'failed') return e.status === 'failed';
+    return e.event_type === f;
+  }
+
+  function renderEvents(events) {
+    var rows = events.filter(matchesFilter);
+    $('events-empty').hidden = rows.length > 0;
+    $('events-body').innerHTML = rows.map(function (e, i) {
+      var b = BADGES[e.event_type] || [e.event_type, 'b-skip'];
+      var t = new Date(e.created_at);
+      var time = t.toLocaleDateString([], { month: 'short', day: 'numeric' }) + ' ' + t.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+      return '<tr class="evt" data-i="' + i + '">' +
+        '<td style="white-space:nowrap">' + esc(time) + '</td>' +
+        '<td><span class="badge ' + b[1] + '">' + esc(b[0]) + '</span></td>' +
+        '<td>' + esc(e.caller_name || '—') + '</td>' +
+        '<td>' + esc(e.from_number || '—') + '</td>' +
+        '<td class="c-dur">' + (e.event_type === 'call_analyzed' ? esc(fmtDur(e.duration_sec)) : '—') + '</td>' +
+        '<td class="status-' + esc(e.status) + '">' + esc(e.status) + '</td></tr>';
+    }).join('');
+
+    var visible = rows;
+    $('events-body').querySelectorAll('tr.evt').forEach(function (tr) {
+      tr.addEventListener('click', function () {
+        var next = tr.nextElementSibling;
+        if (next && next.classList.contains('detail')) { next.remove(); return; }
+        var e = visible[Number(tr.dataset.i)];
+        var parts = [];
+        if (e.detail) parts.push(e.detail);
+        if (e.lead_quality) parts.push('Lead quality: ' + e.lead_quality);
+        if (e.sentiment) parts.push('Sentiment: ' + e.sentiment);
+        if (e.payload) {
+          var p = e.payload;
+          if (p.summary) parts.push('Summary: ' + p.summary);
+          if (p.business) parts.push('Business: ' + p.business + (p.business_type ? ' (' + p.business_type + ')' : ''));
+          if (p.callback_phone) parts.push('Callback: ' + p.callback_phone);
+          if (p.interested_tier) parts.push('Tier interest: ' + p.interested_tier);
+          if (p.page) parts.push('Page: ' + p.page);
+        }
+        if (e.call_id) parts.push('Call ID: ' + e.call_id);
+        var d = document.createElement('tr');
+        d.className = 'detail';
+        d.innerHTML = '<td colspan="6">' + esc(parts.join('\n') || 'No additional detail.') + '</td>';
+        tr.after(d);
+      });
+    });
+  }
+
+  function render() {
+    renderStats(state.data.stats);
+    renderChart(state.data.stats.series);
+    renderBreakdown($('bd-sentiment'), state.data.stats.sentiment);
+    renderBreakdown($('bd-quality'), state.data.stats.leadQuality);
+    renderEvents(state.data.events);
+  }
+
+  /* ---------- controls ---------- */
+
+  $('range-tabs').addEventListener('click', function (e) {
+    var btn = e.target.closest('button[data-range]');
+    if (!btn) return;
+    $('range-tabs').querySelectorAll('button').forEach(function (b) { b.classList.remove('active'); });
+    btn.classList.add('active');
+    state.range = btn.dataset.range;
+    load();
+  });
+
+  $('filters').addEventListener('click', function (e) {
+    var chip = e.target.closest('button[data-type]');
+    if (!chip) return;
+    $('filters').querySelectorAll('.chip').forEach(function (c) { c.classList.remove('active'); });
+    chip.classList.add('active');
+    state.filter = chip.dataset.type;
+    if (state.data) renderEvents(state.data.events);
+  });
+
+  // Try an existing session first; fall back to login.
+  load();
+})();
+</script>
+</body>
+</html>

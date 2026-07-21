@@ -244,7 +244,11 @@ export async function POST(request) {
   const rawBody = await request.text();
   const signature = request.headers.get('x-retell-signature');
 
-  if (!verifyRetellSignature(rawBody, process.env.RETELL_API_KEY, signature)) {
+  // Retell signs webhooks with the workspace's designated "webhook key",
+  // which may differ from the API key used for sends. Accept either.
+  const verifyKeys = [process.env.RETELL_WEBHOOK_KEY, process.env.RETELL_API_KEY].filter(Boolean);
+  if (!verifyKeys.some((k) => verifyRetellSignature(rawBody, k, signature))) {
+    console.warn('retell-webhook: signature verification failed');
     return json(401, { error: 'Invalid signature' });
   }
 

@@ -5,8 +5,10 @@
 // independent and best-effort, while the prospect is still on the call:
 //   1. [DEMO] lead-alert SMS to the prospect's phone
 //   2. [DEMO] appointment-booked SMS (when the role-play booked a slot)
-//   3. Real Cal.com calendar invite for the pretend customer's appointment,
-//      sent to the prospect's email (attendee email = prospect)
+//   3. Real calendar invite (ICS attachment via Resend) for the pretend
+//      customer's appointment, sent to the prospect's email. Deliberately NOT
+//      a Cal.com booking: demo bookings were verified to block real
+//      setup-call availability on the owner's calendar.
 //   4. [DEMO] sample owner lead email via Resend to the prospect's email
 // Legs 3-4 only run when the caller volunteered an email.
 //
@@ -15,8 +17,7 @@
 //   RETELL_SMS_FROM                     — sending number (+15169731973)
 //   RETELL_DEMO_ALERT_AGENT_ID          — chat agent with {{demo_alert_body}} template
 // Optional (legs skipped when unset):
-//   CAL_API_KEY + CAL_DEMO_EVENT_TYPE_ID     — demo calendar invite
-//   RESEND_API_KEY (+ OWNERAI_RESEND_FROM)   — sample owner email
+//   RESEND_API_KEY (+ OWNERAI_RESEND_FROM)   — invite + sample owner email
 //   SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY — audit trail logging
 
 import crypto from 'node:crypto';
@@ -176,31 +177,87 @@ async function sendDemoSms(to, body, source) {
   return res.json();
 }
 
-async function bookDemoAppointment({ startIso, customerName, email, businessName }) {
-  const res = await fetch('https://api.cal.com/v2/bookings', {
+// ICS timestamp: 20260722T130000Z
+function icsUtc(date) {
+  return date.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+}
+
+function icsEscape(v) {
+  return String(v ?? '').replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\n/g, '\\n');
+}
+
+function buildInviteIcs({ startIso, args, toEmail, fromEmail, uid }) {
+  const start = new Date(startIso);
+  const end = new Date(start.getTime() + 30 * 60 * 1000);
+  const summary = `[DEMO] ${args.customer_name || 'Customer'} — ${args.issue || 'appointment'}`;
+  const description =
+    `Sample appointment from your OwnerAI Tools demo call. ` +
+    `In the real product, appointments your AI receptionist books land on your calendar automatically like this. ` +
+    `Customer: ${args.customer_name || '—'} · ${args.customer_phone || '—'}. Not a real appointment.`;
+  return [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//OwnerAI Tools//Demo//EN',
+    'METHOD:REQUEST',
+    'BEGIN:VEVENT',
+    `UID:${uid}`,
+    `DTSTAMP:${icsUtc(new Date())}`,
+    `DTSTART:${icsUtc(start)}`,
+    `DTEND:${icsUtc(end)}`,
+    `SUMMARY:${icsEscape(summary)}`,
+    `DESCRIPTION:${icsEscape(description)}`,
+    ...(args.address ? [`LOCATION:${icsEscape(args.address)}`] : []),
+    `ORGANIZER;CN=${icsEscape((args.business_name || 'OwnerAI Tools Demo') + ' (via OwnerAI)')}:mailto:${fromEmail}`,
+    `ATTENDEE;CN=Business Owner;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=TRUE:mailto:${toEmail}`,
+    'STATUS:CONFIRMED',
+    'END:VEVENT',
+    'END:VCALENDAR',
+  ].join('\r\n');
+}
+
+// Sends the demo appointment as a real ICS calendar invite via Resend. This
+// intentionally does not create a Cal.com booking — demo bookings block real
+// setup-call slots on the owner's calendar (verified in testing).
+async function sendDemoInvite(toEmail, args, startIso) {
+  const from = process.env.OWNERAI_RESEND_FROM || 'OwnerAI Tools <info@owneraitools.com>';
+  const fromEmail = (/<([^>]+)>/.exec(from) || [null, from])[1];
+  const uid = `demo-${crypto.randomUUID()}@owneraitools.com`;
+  const ics = buildInviteIcs({ startIso, args, toEmail, fromEmail, uid });
+  const when = speakableTime(startIso);
+  const res = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: {
-      Authorization: `Bearer ${process.env.CAL_API_KEY}`,
-      'cal-api-version': '2024-08-13',
+      Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      eventTypeId: Number(process.env.CAL_DEMO_EVENT_TYPE_ID),
-      start: new Date(startIso).toISOString(),
-      attendee: {
-        name: customerName || 'Demo Customer',
-        email,
-        timeZone: TZ,
-      },
-      metadata: {
-        source: 'ownerai-demo-roleplay',
-        ...(businessName ? { business: String(businessName).slice(0, 100) } : {}),
-      },
+      from,
+      to: [toEmail],
+      subject: `[DEMO] Appointment booked: ${args.customer_name || 'customer'} — ${when}`,
+      html: `
+        <p style="font-family:sans-serif;font-size:14px;">
+          Your AI receptionist just booked this appointment during the demo role-play —
+          open the attached invite to add it to your calendar, exactly like the real product does automatically.
+        </p>
+        <p style="font-family:sans-serif;font-size:14px;">
+          <strong>${escapeHtml(args.customer_name) || 'Customer'}</strong> — ${escapeHtml(args.issue) || 'appointment'}<br/>
+          ${escapeHtml(when)}${args.address ? `<br/>${escapeHtml(args.address)}` : ''}
+        </p>
+        <p style="font-family:sans-serif;font-size:12px;color:#6b7280;">
+          Sample from the OwnerAI Tools demo, sent at your request. Not a real appointment.
+        </p>
+      `,
+      attachments: [
+        {
+          filename: 'invite.ics',
+          content: Buffer.from(ics).toString('base64'),
+          contentType: 'text/calendar; method=REQUEST',
+        },
+      ],
     }),
   });
-  const text = await res.text();
-  if (!res.ok) throw new Error(`Cal.com ${res.status}: ${text.slice(0, 300)}`);
-  return JSON.parse(text);
+  if (!res.ok) throw new Error(`Resend invite ${res.status}: ${await res.text()}`);
+  return res.json();
 }
 
 async function sendDemoEmail(toEmail, args) {
@@ -335,21 +392,16 @@ export async function POST(request) {
     }
   }
 
-  // Leg 3 — real Cal.com invite for the pretend customer's appointment
-  if (email && apptStart && process.env.CAL_API_KEY && process.env.CAL_DEMO_EVENT_TYPE_ID) {
+  // Leg 3 — real calendar invite (ICS) for the pretend customer's appointment
+  if (email && apptStart && process.env.RESEND_API_KEY) {
     try {
-      const booking = await bookDemoAppointment({
-        startIso: apptStart,
-        customerName: args.customer_name,
-        email,
-        businessName: args.business_name,
-      });
+      await sendDemoInvite(email, args, apptStart);
       audit.push({
         ...base,
-        event_type: 'demo_invite_booked',
+        event_type: 'demo_invite_sent',
         status: 'ok',
         detail: `${speakableTime(apptStart)} — invite to ${email}`,
-        payload: { ...rolePlay, booking_uid: booking?.data?.uid || null, slot_start: apptStart },
+        payload: { ...rolePlay, slot_start: apptStart },
       });
       sent.push('the calendar invite');
     } catch (err) {

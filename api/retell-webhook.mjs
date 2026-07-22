@@ -190,39 +190,15 @@ async function persistCallRecord({ id, kind, callerName, fromNumber, summary, tr
 
 /* ---------- email bodies ---------- */
 
-// Slim owner email: contact info, summary, and durable links to the hosted
-// call-detail page. `record` comes from persistCallRecord; when persistence
-// failed we fall back to the legacy full email so nothing is lost.
+// Owner email: structured lead details + summary, with transcript/recording
+// behind durable links (never inlined — sensitive content stays off email).
+// Falls back to buildLegacyEmailHtml when persistence failed.
 function buildEmailHtml(call, data, record) {
   const e = escapeHtml;
   const duration = callDurationSec(call);
   const name = data.name || '(name not captured)';
 
   if (!record?.url) return buildLegacyEmailHtml(call, data);
-
-  return `
-    <h2>OwnerAI Tools — Demo Line Call</h2>
-    ${duration > 0 && duration < 15 ? '<p style="color:#b45309;"><strong>⚠ Caller hung up early</strong> — details may be incomplete.</p>' : ''}
-    <p><strong>${e(name)}</strong>${data.business ? ` · ${e(data.business)}` : ''}</p>
-    <p><strong>Callback:</strong> ${e(data.callback_phone) || '—'}</p>
-    <p><strong>Summary</strong><br/>${e(data.summary).replace(/\n/g, '<br/>')}</p>
-    <p>
-      <a href="${e(record.url)}#transcript">View full transcript</a>
-      ${record.hasRecording ? ` &nbsp;·&nbsp; <a href="${e(record.url)}#recording">Listen to recording</a>` : ''}
-    </p>
-  `;
-}
-
-// Legacy full email — used only when the call record couldn't be persisted.
-function buildLegacyEmailHtml(call, data) {
-  const e = escapeHtml;
-  const duration = callDurationSec(call);
-  const name = data.name || '(name not captured)';
-  const recordingUrl =
-    typeof call.recording_url === 'string' && /^https:\/\//.test(call.recording_url)
-      ? call.recording_url
-      : null;
-  const transcript = (call.transcript || '').slice(0, 8000);
 
   return `
     <h2>OwnerAI Tools — Demo Line Call</h2>
@@ -240,14 +216,46 @@ function buildLegacyEmailHtml(call, data) {
       <tr><td><strong>Lead quality</strong></td><td>${e(data.lead_quality) || '—'}</td></tr>
       <tr><td><strong>Sentiment</strong></td><td>${e(data.sentiment) || '—'}</td></tr>
       <tr><td><strong>Duration</strong></td><td>${duration ? duration + 's' : '—'}</td></tr>
-      <tr><td><strong>Retell call ID</strong></td><td>${e(call.call_id) || '—'}</td></tr>
+    </table>
+    <p><strong>Summary</strong><br/>${e(data.summary).replace(/\n/g, '<br/>')}</p>
+    <p>
+      <a href="${e(record.url)}#transcript">View full transcript</a>
+      ${record.hasRecording ? ` &nbsp;·&nbsp; <a href="${e(record.url)}#recording">Listen to recording</a>` : ''}
+    </p>
+  `;
+}
+
+// Fallback when the call record couldn't be persisted — same details, no
+// inline transcript (privacy). Retell's recording link is expiring.
+function buildLegacyEmailHtml(call, data) {
+  const e = escapeHtml;
+  const duration = callDurationSec(call);
+  const name = data.name || '(name not captured)';
+  const recordingUrl =
+    typeof call.recording_url === 'string' && /^https:\/\//.test(call.recording_url)
+      ? call.recording_url
+      : null;
+
+  return `
+    <h2>OwnerAI Tools — Demo Line Call</h2>
+    ${duration > 0 && duration < 15 ? '<p style="color:#b45309;"><strong>⚠ Caller hung up early</strong> — details may be incomplete.</p>' : ''}
+    <p><strong>${e(name)}</strong>${data.business ? ` · ${e(data.business)}` : ''}</p>
+    <table cellpadding="6" style="font-family:sans-serif;font-size:14px;">
+      <tr><td><strong>From</strong></td><td>${e(call.from_number) || '—'}</td></tr>
+      <tr><td><strong>Callback</strong></td><td>${e(data.callback_phone) || '—'}</td></tr>
+      <tr><td><strong>Business type</strong></td><td>${e(data.business_type) || '—'}</td></tr>
+      <tr><td><strong>Reason</strong></td><td>${e(data.call_reason) || '—'}</td></tr>
+      <tr><td><strong>Tier interest</strong></td><td>${e(data.interested_tier) || '—'}</td></tr>
+      <tr><td><strong>Did role-play demo</strong></td><td>${data.did_role_play ? 'Yes' : 'No'}</td></tr>
+      <tr><td><strong>Wants setup call</strong></td><td>${data.wants_setup_call ? '✅ YES' : 'No'}</td></tr>
+      ${data.setup_call_booked_time ? `<tr><td><strong>Setup call booked</strong></td><td>📅 ${e(data.setup_call_booked_time)}</td></tr>` : ''}
+      <tr><td><strong>Lead quality</strong></td><td>${e(data.lead_quality) || '—'}</td></tr>
+      <tr><td><strong>Sentiment</strong></td><td>${e(data.sentiment) || '—'}</td></tr>
+      <tr><td><strong>Duration</strong></td><td>${duration ? duration + 's' : '—'}</td></tr>
     </table>
     <p><strong>Summary</strong><br/>${e(data.summary).replace(/\n/g, '<br/>')}</p>
     ${recordingUrl ? `<p><a href="${e(recordingUrl)}">Recording (expiring link)</a></p>` : ''}
-    <details>
-      <summary style="cursor:pointer;font-weight:bold;">Transcript</summary>
-      <pre style="white-space:pre-wrap;font-family:sans-serif;font-size:13px;">${e(transcript)}</pre>
-    </details>
+    <p style="color:#6b7280;font-size:13px;">Transcript page unavailable for this call — not included in email for privacy.</p>
   `;
 }
 
@@ -447,27 +455,14 @@ function countProspectMessages(chat) {
   return ((chat?.transcript || '').match(/^User:/gm) || []).length;
 }
 
-// Slim owner email for text conversations; falls back to the legacy full
-// email when the chat record couldn't be persisted.
+// Owner email for text conversations: detail table + summary, message log
+// behind a durable link. Falls back when the chat record couldn't be persisted.
 function buildChatEmailHtml(chat, data, record) {
   const e = escapeHtml;
   const name = data.name || '(name not captured)';
 
   if (!record?.url) return buildLegacyChatEmailHtml(chat, data);
 
-  return `
-    <h2>OwnerAI Tools — Demo Line Text Conversation</h2>
-    <p><strong>${e(name)}</strong>${data.business ? ` · ${e(data.business)}` : ''}</p>
-    <p><strong>Callback:</strong> ${e(data.callback_phone) || '—'}</p>
-    <p><strong>Summary</strong><br/>${e(data.summary).replace(/\n/g, '<br/>')}</p>
-    <p><a href="${e(record.url)}#transcript">View full message log</a></p>
-  `;
-}
-
-function buildLegacyChatEmailHtml(chat, data) {
-  const e = escapeHtml;
-  const name = data.name || '(name not captured)';
-  const transcript = (chat.transcript || '').slice(0, 8000);
   return `
     <h2>OwnerAI Tools — Demo Line Text Conversation</h2>
     <p><strong>${e(name)}</strong>${data.business ? ` · ${e(data.business)}` : ''}</p>
@@ -481,13 +476,31 @@ function buildLegacyChatEmailHtml(chat, data) {
       ${data.setup_call_booked_time ? `<tr><td><strong>Setup call booked</strong></td><td>📅 ${e(data.setup_call_booked_time)}</td></tr>` : ''}
       <tr><td><strong>Lead quality</strong></td><td>${e(data.lead_quality) || '—'}</td></tr>
       <tr><td><strong>Sentiment</strong></td><td>${e(data.sentiment) || '—'}</td></tr>
-      <tr><td><strong>Retell chat ID</strong></td><td>${e(chat.chat_id) || '—'}</td></tr>
     </table>
     <p><strong>Summary</strong><br/>${e(data.summary).replace(/\n/g, '<br/>')}</p>
-    <details>
-      <summary style="cursor:pointer;font-weight:bold;">Message log</summary>
-      <pre style="white-space:pre-wrap;font-family:sans-serif;font-size:13px;">${e(transcript)}</pre>
-    </details>
+    <p><a href="${e(record.url)}#transcript">View full message log</a></p>
+  `;
+}
+
+function buildLegacyChatEmailHtml(chat, data) {
+  const e = escapeHtml;
+  const name = data.name || '(name not captured)';
+  return `
+    <h2>OwnerAI Tools — Demo Line Text Conversation</h2>
+    <p><strong>${e(name)}</strong>${data.business ? ` · ${e(data.business)}` : ''}</p>
+    <table cellpadding="6" style="font-family:sans-serif;font-size:14px;">
+      <tr><td><strong>From</strong></td><td>${e(data.prospect_number) || '—'}</td></tr>
+      <tr><td><strong>Callback</strong></td><td>${e(data.callback_phone) || '—'}</td></tr>
+      <tr><td><strong>Business type</strong></td><td>${e(data.business_type) || '—'}</td></tr>
+      <tr><td><strong>Reason</strong></td><td>${e(data.call_reason) || '—'}</td></tr>
+      <tr><td><strong>Tier interest</strong></td><td>${e(data.interested_tier) || '—'}</td></tr>
+      <tr><td><strong>Wants setup call</strong></td><td>${data.wants_setup_call ? '✅ YES' : 'No'}</td></tr>
+      ${data.setup_call_booked_time ? `<tr><td><strong>Setup call booked</strong></td><td>📅 ${e(data.setup_call_booked_time)}</td></tr>` : ''}
+      <tr><td><strong>Lead quality</strong></td><td>${e(data.lead_quality) || '—'}</td></tr>
+      <tr><td><strong>Sentiment</strong></td><td>${e(data.sentiment) || '—'}</td></tr>
+    </table>
+    <p><strong>Summary</strong><br/>${e(data.summary).replace(/\n/g, '<br/>')}</p>
+    <p style="color:#6b7280;font-size:13px;">Message log page unavailable for this conversation — not included in email for privacy.</p>
   `;
 }
 

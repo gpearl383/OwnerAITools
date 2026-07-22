@@ -80,7 +80,10 @@ h1,h2,h3{font-family:var(--display);color:var(--navy)}
 .chart{display:flex;align-items:flex-end;gap:4px;height:164px;padding-top:12px;background:repeating-linear-gradient(to top,transparent 0,transparent 39px,rgba(38,128,207,.08) 40px)}
 .chart .bar{flex:1;height:100%;background:rgba(255,255,255,.08);border-radius:5px 5px 0 0;position:relative;min-width:3px;transition:background .15s}
 .chart .bar .fill{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(to top,var(--primary),#62b3ef);border-radius:5px 5px 0 0;box-shadow:0 -5px 14px rgba(98,179,239,.22)}
+.chart .bar .fill.fill-chat{background:linear-gradient(to top,var(--accent),#ffb27d);border-radius:5px 5px 0 0;box-shadow:none}
 .chart .bar:hover .fill{background:var(--accent)}
+.chart-legend{display:flex;gap:16px;margin-top:8px;color:#c6dcef;font-size:11px;font-weight:600}
+.chart-legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
 .chart .bar .tip{display:none;position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;font-size:11px;font-weight:600;padding:4px 8px;border-radius:6px;white-space:nowrap;z-index:5}
 .chart .bar:hover .tip{display:block}
 .chart-axis{display:flex;justify-content:space-between;color:#c6dcef;font-size:11px;margin-top:8px}
@@ -177,6 +180,7 @@ tr.detail td{background:var(--mist);font-size:13px;color:var(--muted);white-spac
         <p class="panel-note">Daily answered calls across the selected period.</p>
         <div class="chart" id="chart"></div>
         <div class="chart-axis" id="chart-axis"></div>
+        <div class="chart-legend"><span><i style="background:var(--primary)"></i>Calls</span><span><i style="background:var(--accent)"></i>Text conversations</span></div>
       </div>
       <div class="intel-summary">
         <p class="panel-kicker">Priority pipeline</p>
@@ -203,6 +207,7 @@ tr.detail td{background:var(--mist);font-size:13px;color:var(--muted);white-spac
     <div class="filters" id="filters">
       <button class="chip active" data-type="">All</button>
       <button class="chip" data-type="call_analyzed">Calls</button>
+      <button class="chip" data-type="sms_chat_analyzed">Texts</button>
       <button class="chip" data-type="email">Emails</button>
       <button class="chip" data-type="sms">SMS</button>
       <button class="chip" data-type="chat_lead">Chat leads</button>
@@ -283,7 +288,8 @@ tr.detail td{background:var(--mist);font-size:13px;color:var(--muted);white-spac
   function renderStats(st) {
     var cards = [
       { n: st.totalCalls, l: 'Calls answered', i: '☎' },
-      { n: fmtDur(st.avgDurationSec), l: 'Avg duration', i: '◷' },
+      { n: st.totalChats || 0, l: 'Text conversations', i: '✆' },
+      { n: fmtDur(st.avgDurationSec), l: 'Avg call duration', i: '◷' },
       { n: st.wantsSetupCall, l: 'Setup-call requests', hot: true, i: '↗' },
       { n: st.setupCallsBooked, l: 'Setup calls booked', i: '✓' },
       { n: st.emailsSent, l: 'Email alerts', i: '✉' },
@@ -302,10 +308,17 @@ tr.detail td{background:var(--mist);font-size:13px;color:var(--muted);white-spac
   }
 
   function renderChart(series) {
-    var max = Math.max.apply(null, series.map(function (d) { return d.calls; }).concat([1]));
+    var max = Math.max.apply(null, series.map(function (d) { return d.calls + (d.chats || 0); }).concat([1]));
     $('chart').innerHTML = series.map(function (d) {
-      var pct = Math.round((d.calls / max) * 100);
-      return '<div class="bar"><div class="fill" style="height:' + pct + '%"></div><div class="tip">' + esc(d.day) + ': ' + d.calls + ' call' + (d.calls === 1 ? '' : 's') + '</div></div>';
+      var chats = d.chats || 0;
+      var callPct = Math.round((d.calls / max) * 100);
+      var chatPct = Math.round((chats / max) * 100);
+      var tip = esc(d.day) + ': ' + d.calls + ' call' + (d.calls === 1 ? '' : 's') +
+        (chats ? ' · ' + chats + ' text' + (chats === 1 ? '' : 's') : '');
+      return '<div class="bar">' +
+        '<div class="fill" style="height:' + callPct + '%"></div>' +
+        (chats ? '<div class="fill fill-chat" style="height:' + chatPct + '%;bottom:' + callPct + '%"></div>' : '') +
+        '<div class="tip">' + tip + '</div></div>';
     }).join('');
     var first = series[0], last = series[series.length - 1];
     $('chart-axis').innerHTML = '<span>' + esc(first ? first.day : '') + '</span><span>' + esc(last ? last.day : '') + '</span>';
@@ -324,6 +337,7 @@ tr.detail td{background:var(--mist);font-size:13px;color:var(--muted);white-spac
 
   var BADGES = {
     call_analyzed: ['Call', 'b-call'],
+    sms_chat_analyzed: ['Text convo', 'b-call'],
     email_sent: ['Email', 'b-email'],
     email_failed: ['Email', 'b-fail'],
     owner_sms_sent: ['Owner SMS', 'b-sms'],

@@ -106,37 +106,46 @@ async function fetchEvents(rangeDays) {
 
 function computeStats(events, rangeDays) {
   const calls = events.filter((e) => e.event_type === 'call_analyzed');
+  const chats = events.filter((e) => e.event_type === 'sms_chat_analyzed');
+  const conversations = [...calls, ...chats];
   const durations = calls.map((c) => c.duration_sec || 0).filter((d) => d > 0);
   const count = (type) => events.filter((e) => e.event_type === type).length;
 
+  // Sentiment/lead-quality buckets cover voice calls AND text conversations.
   const bucket = (field) => {
     const out = {};
-    for (const c of calls) {
+    for (const c of conversations) {
       const v = (c[field] || '').toLowerCase();
       if (v) out[v] = (out[v] || 0) + 1;
     }
     return out;
   };
 
-  // Calls-per-day series covering the full range (max 90 bars).
+  // Per-day series covering the full range (max 90 bars), calls + texts.
   const days = Math.min(rangeDays, 90);
   const series = [];
   const byDay = {};
+  const chatsByDay = {};
   for (const c of calls) {
     const day = (c.created_at || '').slice(0, 10);
     byDay[day] = (byDay[day] || 0) + 1;
   }
+  for (const c of chats) {
+    const day = (c.created_at || '').slice(0, 10);
+    chatsByDay[day] = (chatsByDay[day] || 0) + 1;
+  }
   for (let i = days - 1; i >= 0; i--) {
     const day = new Date(Date.now() - i * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
-    series.push({ day, calls: byDay[day] || 0 });
+    series.push({ day, calls: byDay[day] || 0, chats: chatsByDay[day] || 0 });
   }
 
   return {
     totalCalls: calls.length,
+    totalChats: chats.length,
     avgDurationSec: durations.length
       ? Math.round(durations.reduce((a, b) => a + b, 0) / durations.length)
       : 0,
-    wantsSetupCall: calls.filter((c) => c.wants_setup_call === true).length,
+    wantsSetupCall: conversations.filter((c) => c.wants_setup_call === true).length,
     emailsSent: count('email_sent'),
     smsSent: count('owner_sms_sent') + count('customer_sms_sent'),
     demoAlerts: count('demo_alert_sms_sent'),

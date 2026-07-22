@@ -7,6 +7,9 @@
 //   2. Customer confirmation SMS — only when the caller explicitly opted in
 //      during the call (wants_sms_confirmation analysis flag).
 //
+// Also handles chat_analyzed events from the SMS receptionist agent (texting
+// the demo line): owner summary email + owner alert SMS + audit trail.
+//
 // Required env vars (set in the Vercel project):
 //   RETELL_API_KEY          — CSM workspace key; verifies webhook signature and sends SMS
 //   RESEND_API_KEY          — Resend key for sending email
@@ -16,6 +19,7 @@
 //   RETELL_CONFIRM_AGENT_ID — chat agent for customer confirmations ({{confirm_body}} template)
 //   OWNERAI_ALERT_PHONE     — owner cell for alert texts
 //   ALERT_SMS_MIN_SECONDS   — skip owner SMS for calls at or under this (default 12)
+//   RETELL_SMS_AGENT_ID     — SMS receptionist chat agent (chat_analyzed pipeline)
 //   OWNERAI_NOTIFY_EMAIL    — recipient (default: info@owneraitools.com)
 //   OWNERAI_RESEND_FROM     — sender (default: OwnerAI Tools <info@owneraitools.com>)
 
@@ -157,7 +161,26 @@ async function sendRetellSms(to, { agentId, dynamicVariables, source }) {
     const t = await res.text();
     throw new Error(`Retell SMS ${res.status}: ${t}`);
   }
-  return res.json();
+  const chat = await res.json();
+  // Thread hygiene: the template message is out — end the chat so a later
+  // reply from this number starts a fresh thread with the SMS receptionist
+  // instead of hitting the stale one-shot template bot.
+  await endRetellChat(chat?.chat_id);
+  return chat;
+}
+
+// Best-effort: ends an outbound template chat after its single message is sent.
+async function endRetellChat(chatId) {
+  const apiKey = process.env.RETELL_API_KEY;
+  if (!apiKey || !chatId) return;
+  try {
+    await fetch(`https://api.retellai.com/end-chat/${chatId}`, {
+      method: 'PATCH',
+      headers: { Authorization: `Bearer ${apiKey}` },
+    });
+  } catch (err) {
+    console.warn('end-chat failed (non-fatal):', err.message);
+  }
 }
 
 function buildAlertSms(data, duration) {
@@ -244,6 +267,172 @@ async function logAuditEvents(rows) {
   }
 }
 
+/* ---------- SMS receptionist (chat_analyzed) ---------- */
+
+function extractChatData(chat) {
+  const custom = chat?.chat_analysis?.custom_analysis_data || {};
+  // Inbound SMS chat: from_number is the prospect; outbound would be reversed.
+  const ourNumber = process.env.RETELL_SMS_FROM;
+  const prospectNumber =
+    chat?.from_number && chat.from_number !== ourNumber ? chat.from_number : chat?.to_number || '';
+  return {
+    name: (custom.caller_name || '').trim(),
+    business: (custom.business_name || '').trim(),
+    business_type: (custom.business_type || '').trim(),
+    callback_phone: (custom.callback_phone || prospectNumber || '').trim(),
+    call_reason: (custom.call_reason || '').trim(),
+    interested_tier: (custom.interested_tier || '').trim(),
+    wants_setup_call:
+      custom.wants_setup_call === true || custom.wants_setup_call === 'true',
+    lead_quality: (custom.lead_quality || '').trim(),
+    setup_call_booked_time: (custom.setup_call_booked_time || '').trim(),
+    summary:
+      (chat?.chat_analysis?.chat_summary || '').trim() ||
+      'No summary available — see message log below.',
+    sentiment: (chat?.chat_analysis?.user_sentiment || '').trim(),
+    prospect_number: prospectNumber,
+  };
+}
+
+function countProspectMessages(chat) {
+  const msgs = chat?.message_with_tool_calls;
+  if (Array.isArray(msgs)) return msgs.filter((m) => m?.role === 'user').length;
+  // Fallback when the webhook payload omits the message list.
+  return ((chat?.transcript || '').match(/^User:/gm) || []).length;
+}
+
+function buildChatEmailHtml(chat, data) {
+  const e = escapeHtml;
+  const name = data.name || '(name not captured)';
+  const transcript = (chat.transcript || '').slice(0, 8000);
+  return `
+    <h2>OwnerAI Tools — Demo Line Text Conversation</h2>
+    <p><strong>${e(name)}</strong>${data.business ? ` · ${e(data.business)}` : ''}</p>
+    <table cellpadding="6" style="font-family:sans-serif;font-size:14px;">
+      <tr><td><strong>From</strong></td><td>${e(data.prospect_number) || '—'}</td></tr>
+      <tr><td><strong>Callback</strong></td><td>${e(data.callback_phone) || '—'}</td></tr>
+      <tr><td><strong>Business type</strong></td><td>${e(data.business_type) || '—'}</td></tr>
+      <tr><td><strong>Reason</strong></td><td>${e(data.call_reason) || '—'}</td></tr>
+      <tr><td><strong>Tier interest</strong></td><td>${e(data.interested_tier) || '—'}</td></tr>
+      <tr><td><strong>Wants setup call</strong></td><td>${data.wants_setup_call ? '✅ YES' : 'No'}</td></tr>
+      ${data.setup_call_booked_time ? `<tr><td><strong>Setup call booked</strong></td><td>📅 ${e(data.setup_call_booked_time)}</td></tr>` : ''}
+      <tr><td><strong>Lead quality</strong></td><td>${e(data.lead_quality) || '—'}</td></tr>
+      <tr><td><strong>Sentiment</strong></td><td>${e(data.sentiment) || '—'}</td></tr>
+      <tr><td><strong>Retell chat ID</strong></td><td>${e(chat.chat_id) || '—'}</td></tr>
+    </table>
+    <p><strong>Summary</strong><br/>${e(data.summary).replace(/\n/g, '<br/>')}</p>
+    <details>
+      <summary style="cursor:pointer;font-weight:bold;">Message log</summary>
+      <pre style="white-space:pre-wrap;font-family:sans-serif;font-size:13px;">${e(transcript)}</pre>
+    </details>
+  `;
+}
+
+function buildChatAlertSms(data) {
+  const name = data.name || 'Unknown texter';
+  const lines = [
+    data.setup_call_booked_time
+      ? 'OwnerAI: text conversation — BOOKED SETUP CALL'
+      : data.wants_setup_call
+        ? 'OwnerAI: text conversation — WANTS SETUP CALL'
+        : 'OwnerAI: new text conversation',
+    `${name}${data.business ? ' — ' + data.business : ''}`,
+    data.callback_phone ? `Number: ${data.callback_phone}` : '',
+    data.call_reason ? `Re: ${data.call_reason.slice(0, 100)}` : '',
+    'Details in email.',
+  ];
+  return lines.filter(Boolean).join('\n').slice(0, 1000);
+}
+
+async function handleChatAnalyzed(chat) {
+  // Only the SMS receptionist agent gets the full pipeline; ended template
+  // threads (owner alert / confirm / demo alert bots) are ignored.
+  const smsAgentId = process.env.RETELL_SMS_AGENT_ID;
+  if (!smsAgentId || chat?.agent_id !== smsAgentId) return json(204, null);
+
+  const data = extractChatData(chat);
+  const prospectMessages = countProspectMessages(chat);
+  const who = data.name || data.prospect_number || 'Unknown texter';
+  const subject = `[OwnerAI] Text conversation: ${who}${
+    data.setup_call_booked_time
+      ? ` — BOOKED ${data.setup_call_booked_time}`
+      : data.wants_setup_call
+        ? ' — WANTS SETUP CALL'
+        : ''
+  }`;
+
+  const base = {
+    call_id: chat.chat_id || null,
+    caller_name: data.name || null,
+    from_number: data.prospect_number || null,
+    duration_sec: null,
+    wants_setup_call: data.wants_setup_call,
+    wants_sms_confirmation: false,
+    lead_quality: data.lead_quality || null,
+    sentiment: data.sentiment || null,
+  };
+  const audit = [
+    {
+      ...base,
+      event_type: 'sms_chat_analyzed',
+      status: 'ok',
+      detail: data.call_reason || null,
+      payload: {
+        summary: data.summary,
+        business: data.business,
+        business_type: data.business_type,
+        callback_phone: data.callback_phone,
+        interested_tier: data.interested_tier,
+        prospect_messages: prospectMessages,
+        setup_call_booked_time: data.setup_call_booked_time || null,
+      },
+    },
+  ];
+
+  let emailError = null;
+  try {
+    await sendResendEmail(subject, buildChatEmailHtml(chat, data));
+    audit.push({ ...base, event_type: 'email_sent', status: 'ok', detail: subject });
+  } catch (err) {
+    emailError = err.message;
+    console.error('retell-webhook chat email failed:', err.message);
+    audit.push({ ...base, event_type: 'email_failed', status: 'failed', detail: err.message.slice(0, 500) });
+  }
+
+  // Owner alert SMS — gate on real engagement (2+ prospect messages) instead
+  // of call duration, so a single stray "hi" doesn't cost an alert text.
+  let smsError = null;
+  const alertPhone = process.env.OWNERAI_ALERT_PHONE;
+  try {
+    if (!alertPhone) {
+      console.warn('OWNERAI_ALERT_PHONE not configured — skipping owner SMS alert');
+    } else if (prospectMessages < 2) {
+      audit.push({
+        ...base,
+        event_type: 'owner_sms_skipped',
+        status: 'skipped',
+        detail: `only ${prospectMessages} prospect message(s) (min 2)`,
+      });
+    } else {
+      const r = await sendRetellSms(alertPhone, {
+        agentId: process.env.RETELL_ALERT_AGENT_ID,
+        dynamicVariables: { alert_body: buildChatAlertSms(data) },
+        source: 'owner-sms-chat-alert',
+      });
+      if (!r.skipped) audit.push({ ...base, event_type: 'owner_sms_sent', status: 'ok', detail: null });
+    }
+  } catch (err) {
+    smsError = err.message;
+    console.error('retell-webhook chat owner SMS failed:', err.message);
+    audit.push({ ...base, event_type: 'sms_failed', status: 'failed', detail: `owner alert: ${err.message.slice(0, 400)}` });
+  }
+
+  await logAuditEvents(audit);
+
+  if (emailError && smsError) return json(500, { error: 'Internal error' });
+  return json(200, { ok: true, ...(emailError && { emailError: true }), ...(smsError && { smsError: true }) });
+}
+
 export async function POST(request) {
   const rawBody = await request.text();
   const signature = request.headers.get('x-retell-signature');
@@ -261,6 +450,10 @@ export async function POST(request) {
     payload = JSON.parse(rawBody);
   } catch {
     return json(400, { error: 'Invalid JSON' });
+  }
+
+  if (payload.event === 'chat_analyzed') {
+    return handleChatAnalyzed(payload.chat || {});
   }
 
   if (payload.event !== 'call_analyzed') {

@@ -174,7 +174,21 @@ async function sendDemoSms(to, body, source) {
     }),
   });
   if (!res.ok) throw new Error(`Retell SMS ${res.status}: ${await res.text()}`);
-  return res.json();
+  const chat = await res.json();
+  // Thread hygiene: end the one-shot template chat immediately so a later
+  // reply from the prospect starts a fresh thread with the SMS receptionist
+  // instead of hitting this stale template bot.
+  if (chat?.chat_id) {
+    try {
+      await fetch(`https://api.retellai.com/end-chat/${chat.chat_id}`, {
+        method: 'PATCH',
+        headers: { Authorization: `Bearer ${process.env.RETELL_API_KEY}` },
+      });
+    } catch (err) {
+      console.warn('end-chat failed (non-fatal):', err.message);
+    }
+  }
+  return chat;
 }
 
 // ICS timestamp: 20260722T130000Z

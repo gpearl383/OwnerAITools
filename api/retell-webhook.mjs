@@ -22,6 +22,9 @@
 //   RETELL_SMS_AGENT_ID     — SMS receptionist chat agent (chat_analyzed pipeline)
 //   OWNERAI_NOTIFY_EMAIL    — recipient (default: info@owneraitools.com)
 //   OWNERAI_RESEND_FROM     — sender (default: OwnerAI Tools <info@owneraitools.com>)
+//   CALL_LINK_SECRET        — HMAC key for /api/call links (durable transcript/recording page);
+//                             when unset, a key is derived from SUPABASE_SERVICE_ROLE_KEY
+//   OWNERAI_SITE_URL        — base URL for links (default: https://owneraitools.com)
 
 import crypto from 'node:crypto';
 
@@ -82,7 +85,127 @@ function extractData(call) {
   };
 }
 
-function buildEmailHtml(call, data) {
+/* ---------- call record persistence (durable transcript + recording) ---------- */
+
+// Signing key for /api/call links. Prefers CALL_LINK_SECRET; otherwise
+// derives a key from the Supabase service-role key (already in the env) so
+// no extra configuration is needed. Note: rotating the Supabase key breaks
+// previously emailed links unless CALL_LINK_SECRET is set.
+function callLinkSecret() {
+  if (process.env.CALL_LINK_SECRET) return process.env.CALL_LINK_SECRET;
+  const srk = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!srk) return null;
+  return crypto.createHash('sha256').update(`ownerai-call-link:${srk}`).digest('hex');
+}
+
+function callLinkToken(id) {
+  const secret = callLinkSecret();
+  if (!secret || !id) return null;
+  return crypto.createHmac('sha256', secret).update(String(id)).digest('hex');
+}
+
+function callDetailUrl(id) {
+  const token = callLinkToken(id);
+  if (!token) return null;
+  const base = (process.env.OWNERAI_SITE_URL || 'https://owneraitools.com').replace(/\/$/, '');
+  return `${base}/api/call?id=${encodeURIComponent(id)}&t=${token}`;
+}
+
+// Copies the (expiring) Retell recording into Supabase Storage and stores the
+// full transcript + summary in call_records, so the email links never die.
+// Returns { url, hasRecording } on success, or null when persistence isn't
+// configured or failed — the email then falls back to the legacy full body.
+async function persistCallRecord({ id, kind, callerName, fromNumber, summary, transcript, recordingUrl }) {
+  const url = process.env.SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key || !id || !callLinkToken(id)) return null;
+
+  // Copy the recording while Retell's signed URL is still valid.
+  let recordingPath = null;
+  if (recordingUrl && /^https:\/\//.test(recordingUrl)) {
+    try {
+      const audio = await fetch(recordingUrl);
+      if (audio.ok) {
+        const bytes = await audio.arrayBuffer();
+        const contentType = audio.headers.get('content-type') || 'audio/wav';
+        const path = `${id}.wav`;
+        const up = await fetch(`${url}/storage/v1/object/call-recordings/${encodeURIComponent(path)}`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${key}`,
+            'Content-Type': contentType,
+            'x-upsert': 'true',
+          },
+          body: bytes,
+        });
+        if (up.ok) recordingPath = path;
+        else console.error('recording upload failed:', up.status, await up.text());
+      } else {
+        console.error('recording download failed:', audio.status);
+      }
+    } catch (err) {
+      console.error('recording copy failed:', err.message);
+    }
+  }
+
+  try {
+    const res = await fetch(`${url}/rest/v1/call_records`, {
+      method: 'POST',
+      headers: {
+        apikey: key,
+        Authorization: `Bearer ${key}`,
+        'Content-Type': 'application/json',
+        Prefer: 'resolution=merge-duplicates,return=minimal',
+      },
+      body: JSON.stringify({
+        id,
+        kind,
+        caller_name: callerName || null,
+        from_number: fromNumber || null,
+        summary: summary || null,
+        transcript: transcript || null,
+        recording_path: recordingPath,
+      }),
+    });
+    if (!res.ok) {
+      console.error('call_records insert failed:', res.status, await res.text());
+      return null;
+    }
+  } catch (err) {
+    console.error('call_records insert failed:', err.message);
+    return null;
+  }
+
+  return { url: callDetailUrl(id), hasRecording: !!recordingPath };
+}
+
+/* ---------- email bodies ---------- */
+
+// Slim owner email: contact info, summary, and durable links to the hosted
+// call-detail page. `record` comes from persistCallRecord; when persistence
+// failed we fall back to the legacy full email so nothing is lost.
+function buildEmailHtml(call, data, record) {
+  const e = escapeHtml;
+  const duration = callDurationSec(call);
+  const name = data.name || '(name not captured)';
+
+  if (!record?.url) return buildLegacyEmailHtml(call, data);
+
+  return `
+    <h2>OwnerAI Tools — Demo Line Call</h2>
+    ${duration > 0 && duration < 15 ? '<p style="color:#b45309;"><strong>⚠ Caller hung up early</strong> — details may be incomplete.</p>' : ''}
+    <p><strong>${e(name)}</strong>${data.business ? ` · ${e(data.business)}` : ''}</p>
+    <p><strong>Callback:</strong> ${e(data.callback_phone) || '—'}</p>
+    <p><strong>Summary</strong><br/>${e(data.summary).replace(/\n/g, '<br/>')}</p>
+    <p>
+      <a href="${e(record.url)}#transcript">View full transcript</a>
+      ${record.hasRecording ? ` &nbsp;·&nbsp; <a href="${e(record.url)}#recording">Listen to recording</a>` : ''}
+    </p>
+  `;
+}
+
+// Legacy full email — used only when the call record couldn't be persisted.
+function buildLegacyEmailHtml(call, data) {
   const e = escapeHtml;
   const duration = callDurationSec(call);
   const name = data.name || '(name not captured)';
@@ -301,7 +424,24 @@ function countProspectMessages(chat) {
   return ((chat?.transcript || '').match(/^User:/gm) || []).length;
 }
 
-function buildChatEmailHtml(chat, data) {
+// Slim owner email for text conversations; falls back to the legacy full
+// email when the chat record couldn't be persisted.
+function buildChatEmailHtml(chat, data, record) {
+  const e = escapeHtml;
+  const name = data.name || '(name not captured)';
+
+  if (!record?.url) return buildLegacyChatEmailHtml(chat, data);
+
+  return `
+    <h2>OwnerAI Tools — Demo Line Text Conversation</h2>
+    <p><strong>${e(name)}</strong>${data.business ? ` · ${e(data.business)}` : ''}</p>
+    <p><strong>Callback:</strong> ${e(data.callback_phone) || '—'}</p>
+    <p><strong>Summary</strong><br/>${e(data.summary).replace(/\n/g, '<br/>')}</p>
+    <p><a href="${e(record.url)}#transcript">View full message log</a></p>
+  `;
+}
+
+function buildLegacyChatEmailHtml(chat, data) {
   const e = escapeHtml;
   const name = data.name || '(name not captured)';
   const transcript = (chat.transcript || '').slice(0, 8000);
@@ -389,9 +529,21 @@ async function handleChatAnalyzed(chat) {
     },
   ];
 
+  // Persist the message log so the email can link to it instead of
+  // embedding it. Best-effort; falls back to the legacy full email.
+  const record = await persistCallRecord({
+    id: chat.chat_id,
+    kind: 'chat',
+    callerName: data.name,
+    fromNumber: data.prospect_number,
+    summary: data.summary,
+    transcript: chat.transcript || '',
+    recordingUrl: null,
+  });
+
   let emailError = null;
   try {
-    await sendResendEmail(subject, buildChatEmailHtml(chat, data));
+    await sendResendEmail(subject, buildChatEmailHtml(chat, data, record));
     audit.push({ ...base, event_type: 'email_sent', status: 'ok', detail: subject });
   } catch (err) {
     emailError = err.message;
@@ -505,9 +657,22 @@ export async function POST(request) {
     },
   ];
 
+  // Persist the full transcript + a durable copy of the recording so the
+  // email can carry links instead of the raw content. Best-effort: on
+  // failure the email falls back to the legacy full body.
+  const record = await persistCallRecord({
+    id: call.call_id,
+    kind: 'call',
+    callerName: data.name,
+    fromNumber: call.from_number,
+    summary: data.summary,
+    transcript: call.transcript || '',
+    recordingUrl: typeof call.recording_url === 'string' ? call.recording_url : null,
+  });
+
   let emailError = null;
   try {
-    await sendResendEmail(subject, buildEmailHtml(call, data));
+    await sendResendEmail(subject, buildEmailHtml(call, data, record));
     audit.push({ ...base, event_type: 'email_sent', status: 'ok', detail: subject });
   } catch (err) {
     emailError = err.message;

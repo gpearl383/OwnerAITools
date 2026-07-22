@@ -293,6 +293,20 @@ async function sendDemoEmail(toEmail, args) {
   return res.json();
 }
 
+// PostgREST batch inserts require every object to share the same keys
+// (PGRST102 otherwise). Fill missing keys with null.
+function normalizeAuditRows(rows) {
+  const keys = new Set();
+  for (const row of rows) {
+    for (const k of Object.keys(row)) keys.add(k);
+  }
+  return rows.map((row) => {
+    const out = {};
+    for (const k of keys) out[k] = row[k] !== undefined ? row[k] : null;
+    return out;
+  });
+}
+
 async function logAuditBatch(rows) {
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -306,7 +320,7 @@ async function logAuditBatch(rows) {
         'Content-Type': 'application/json',
         Prefer: 'return=minimal',
       },
-      body: JSON.stringify(rows),
+      body: JSON.stringify(normalizeAuditRows(rows)),
     });
     if (!res.ok) console.error('demo-alert audit insert failed:', res.status);
   } catch (err) {

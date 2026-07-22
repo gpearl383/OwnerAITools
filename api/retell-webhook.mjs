@@ -126,18 +126,27 @@ async function persistCallRecord({ id, kind, callerName, fromNumber, summary, tr
     try {
       const audio = await fetch(recordingUrl);
       if (audio.ok) {
-        const bytes = await audio.arrayBuffer();
-        const contentType = audio.headers.get('content-type') || 'audio/wav';
+        const bytes = Buffer.from(await audio.arrayBuffer());
+        // Storage rejects Content-Type params (e.g. "; codecs=...") and needs
+        // both apikey + Authorization — missing apikey surfaces as
+        // "Invalid Compact JWS".
+        const contentType = (audio.headers.get('content-type') || 'audio/wav')
+          .split(';')[0]
+          .trim() || 'audio/wav';
         const path = `${id}.wav`;
-        const up = await fetch(`${url}/storage/v1/object/call-recordings/${encodeURIComponent(path)}`, {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${key}`,
-            'Content-Type': contentType,
-            'x-upsert': 'true',
-          },
-          body: bytes,
-        });
+        const up = await fetch(
+          `${url}/storage/v1/object/call-recordings/${encodeURIComponent(path)}?upsert=true`,
+          {
+            method: 'POST',
+            headers: {
+              apikey: key,
+              Authorization: `Bearer ${key}`,
+              'Content-Type': contentType,
+              'x-upsert': 'true',
+            },
+            body: bytes,
+          }
+        );
         if (up.ok) recordingPath = path;
         else console.error('recording upload failed:', up.status, await up.text());
       } else {
@@ -367,6 +376,20 @@ function json(status, body) {
   });
 }
 
+// PostgREST batch inserts require every object to share the same keys
+// (PGRST102 otherwise). Fill missing keys with null.
+function normalizeAuditRows(rows) {
+  const keys = new Set();
+  for (const row of rows) {
+    for (const k of Object.keys(row)) keys.add(k);
+  }
+  return rows.map((row) => {
+    const out = {};
+    for (const k of keys) out[k] = row[k] !== undefined ? row[k] : null;
+    return out;
+  });
+}
+
 // Audit trail: one batched insert into Supabase per webhook. Best-effort —
 // a logging failure never affects call handling.
 async function logAuditEvents(rows) {
@@ -382,7 +405,7 @@ async function logAuditEvents(rows) {
         'Content-Type': 'application/json',
         Prefer: 'return=minimal',
       },
-      body: JSON.stringify(rows),
+      body: JSON.stringify(normalizeAuditRows(rows)),
     });
     if (!res.ok) console.error('audit log insert failed:', res.status, await res.text());
   } catch (err) {

@@ -132,7 +132,7 @@ export async function GET(request) {
     const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
     const audio = await fetch(
       `${url}/storage/v1/object/call-recordings/${encodeURIComponent(record.recording_path)}`,
-      { headers: { Authorization: `Bearer ${key}` } }
+      { headers: { apikey: key, Authorization: `Bearer ${key}` } }
     );
     if (!audio.ok) {
       console.error('recording fetch failed:', audio.status);

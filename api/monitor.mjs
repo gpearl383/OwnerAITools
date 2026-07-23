@@ -72,7 +72,12 @@ async function checkDemoLine() {
   });
   if (!res.ok) throw new Error(`phone ${line} ${res.status}`);
   const phone = await res.json();
-  const agent = phone?.inbound_agent_id || phone?.outbound_agent_id;
+  // Retell may return legacy inbound_agent_id or weighted inbound_agents[].
+  const agent =
+    phone?.inbound_agent_id ||
+    phone?.outbound_agent_id ||
+    phone?.inbound_agents?.[0]?.agent_id ||
+    phone?.inbound_sms_agents?.[0]?.agent_id;
   if (!agent) throw new Error(`${line} has no bound agent`);
   return `${line} → ${agent}`;
 }

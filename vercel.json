@@ -7,7 +7,7 @@
       "schedule": "0 7 * * *"
     },
     {
-      "path": "/api/monitor?mode=digest",
+      "path": "/api/monitor",
       "schedule": "0 12 * * *"
     }
   ],

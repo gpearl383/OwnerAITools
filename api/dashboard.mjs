@@ -11,6 +11,12 @@
 //   SUPABASE_SERVICE_ROLE_KEY — server-side only; never sent to the browser
 
 import crypto from 'node:crypto';
+import {
+  fetchLeads,
+  enrichLeadForClient,
+  setLeadStatus,
+  logLeadAudit,
+} from './lib/leads.mjs';
 
 const SESSION_TTL_MS = 24 * 60 * 60 * 1000;
 const COOKIE_NAME = 'oat_dash';
@@ -193,14 +199,50 @@ export async function GET(request) {
     return json(401, { error: 'Not signed in' });
   }
 
-  const range = new URL(request.url).searchParams.get('range') || '30d';
+  const url = new URL(request.url);
+  const range = url.searchParams.get('range') || '30d';
   const rangeDays = RANGES[range] || 30;
+  const includeDone = url.searchParams.get('queue') === 'all';
 
   try {
-    const events = await fetchEvents(rangeDays);
-    return json(200, { stats: computeStats(events, rangeDays), events });
+    const [events, rawLeads] = await Promise.all([
+      fetchEvents(rangeDays),
+      fetchLeads({ includeDone }),
+    ]);
+    const leads = rawLeads.map(enrichLeadForClient);
+    return json(200, { stats: computeStats(events, rangeDays), events, leads });
   } catch (err) {
     console.error('dashboard fetch failed:', err.message);
     return json(500, { error: 'Failed to load data' });
   }
+}
+
+export async function PATCH(request) {
+  const secret = process.env.DASHBOARD_SESSION_SECRET;
+  if (!hasValidSession(request, secret)) {
+    return json(401, { error: 'Not signed in' });
+  }
+
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return json(400, { error: 'Invalid request' });
+  }
+
+  const id = typeof body.id === 'string' ? body.id : '';
+  const status = typeof body.status === 'string' ? body.status : '';
+  if (!id || !status) return json(400, { error: 'id and status required' });
+
+  const lead = await setLeadStatus(id, status, 'dashboard');
+  if (!lead) return json(404, { error: 'Lead not found or invalid status' });
+
+  await logLeadAudit({
+    lead,
+    eventType: status === 'done' ? 'lead_marked_done' : 'lead_status_changed',
+    detail: `Status → ${status}`,
+    via: 'dashboard',
+  });
+
+  return json(200, { ok: true, lead: enrichLeadForClient(lead) });
 }

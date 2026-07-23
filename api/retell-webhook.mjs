@@ -27,6 +27,11 @@
 //   OWNERAI_SITE_URL        — base URL for links (default: https://owneraitools.com)
 
 import crypto from 'node:crypto';
+import {
+  upsertLead,
+  leadActionUrl,
+  callDetailUrl as sharedCallDetailUrl,
+} from './lib/leads.mjs';
 
 function verifyRetellSignature(rawBody, apiKey, signature) {
   if (!apiKey || !signature || typeof signature !== 'string') return false;
@@ -193,12 +198,12 @@ async function persistCallRecord({ id, kind, callerName, fromNumber, summary, tr
 // Owner email: structured lead details + summary, with transcript/recording
 // behind durable links (never inlined — sensitive content stays off email).
 // Falls back to buildLegacyEmailHtml when persistence failed.
-function buildEmailHtml(call, data, record) {
+function buildEmailHtml(call, data, record, lead) {
   const e = escapeHtml;
   const duration = callDurationSec(call);
   const name = data.name || '(name not captured)';
 
-  if (!record?.url) return buildLegacyEmailHtml(call, data);
+  if (!record?.url) return buildLegacyEmailHtml(call, data, lead);
 
   return `
     <h2>OwnerAI Tools — Demo Line Call</h2>
@@ -222,12 +227,38 @@ function buildEmailHtml(call, data, record) {
       <a href="${e(record.url)}#transcript">View full transcript</a>
       ${record.hasRecording ? ` &nbsp;·&nbsp; <a href="${e(record.url)}#recording">Listen to recording</a>` : ''}
     </p>
+    ${ownerActionLinksHtml(data, record, lead)}
+    <p style="color:#6b7280;font-size:13px;">Links expire 30 days after the call.</p>
   `;
+}
+
+function ownerActionLinksHtml(data, record, lead) {
+  const e = escapeHtml;
+  const parts = [];
+  const phone = normalizePhone(data.callback_phone);
+  if (phone) parts.push(`<a href="tel:${e(phone)}">Call back</a>`);
+  const transcript = record?.url || (lead?.last_call_id ? sharedCallDetailUrl(lead.last_call_id) : null);
+  if (transcript) parts.push(`<a href="${e(transcript)}#transcript">Transcript</a>`);
+  const doneUrl = lead?.id ? leadActionUrl(lead.id, 'done') : null;
+  if (doneUrl) parts.push(`<a href="${e(doneUrl)}">Mark done</a>`);
+  if (!parts.length) return '';
+  return `<p><strong>Actions</strong> — ${parts.join(' &nbsp;·&nbsp; ')}</p>`;
+}
+
+function ownerActionLinksSms(data, record, lead) {
+  const bits = [];
+  const phone = normalizePhone(data.callback_phone);
+  if (phone) bits.push(`Call: tel:${phone}`);
+  const transcript = record?.url || (lead?.last_call_id ? sharedCallDetailUrl(lead.last_call_id) : null);
+  if (transcript) bits.push(`Transcript: ${transcript}`);
+  const doneUrl = lead?.id ? leadActionUrl(lead.id, 'done') : null;
+  if (doneUrl) bits.push(`Done: ${doneUrl}`);
+  return bits.join('\n');
 }
 
 // Fallback when the call record couldn't be persisted — same details, no
 // inline transcript (privacy). Retell's recording link is expiring.
-function buildLegacyEmailHtml(call, data) {
+function buildLegacyEmailHtml(call, data, lead) {
   const e = escapeHtml;
   const duration = callDurationSec(call);
   const name = data.name || '(name not captured)';
@@ -255,6 +286,7 @@ function buildLegacyEmailHtml(call, data) {
     </table>
     <p><strong>Summary</strong><br/>${e(data.summary).replace(/\n/g, '<br/>')}</p>
     ${recordingUrl ? `<p><a href="${e(recordingUrl)}">Recording (expiring link)</a></p>` : ''}
+    ${ownerActionLinksHtml(data, null, lead)}
     <p style="color:#6b7280;font-size:13px;">Transcript page unavailable for this call — not included in email for privacy.</p>
   `;
 }
@@ -323,7 +355,7 @@ async function endRetellChat(chatId) {
   }
 }
 
-function buildAlertSms(data, duration) {
+function buildAlertSms(data, duration, record, lead) {
   const name = data.name || 'Unknown caller';
   const hungUpEarly = duration > 0 && duration < 15;
   const lines = [
@@ -334,8 +366,8 @@ function buildAlertSms(data, duration) {
         : 'OwnerAI: new demo call answered',
     `${name}${data.business ? ' — ' + data.business : ''}`,
     data.callback_phone ? `Number: ${data.callback_phone}` : '',
-    data.call_reason ? `Re: ${data.call_reason.slice(0, 100)}` : '',
-    'Details in email.',
+    data.call_reason ? `Re: ${data.call_reason.slice(0, 80)}` : '',
+    ownerActionLinksSms(data, record, lead),
   ];
   return lines.filter(Boolean).join('\n').slice(0, 1000);
 }
@@ -457,11 +489,11 @@ function countProspectMessages(chat) {
 
 // Owner email for text conversations: detail table + summary, message log
 // behind a durable link. Falls back when the chat record couldn't be persisted.
-function buildChatEmailHtml(chat, data, record) {
+function buildChatEmailHtml(chat, data, record, lead) {
   const e = escapeHtml;
   const name = data.name || '(name not captured)';
 
-  if (!record?.url) return buildLegacyChatEmailHtml(chat, data);
+  if (!record?.url) return buildLegacyChatEmailHtml(chat, data, lead);
 
   return `
     <h2>OwnerAI Tools — Demo Line Text Conversation</h2>
@@ -479,10 +511,12 @@ function buildChatEmailHtml(chat, data, record) {
     </table>
     <p><strong>Summary</strong><br/>${e(data.summary).replace(/\n/g, '<br/>')}</p>
     <p><a href="${e(record.url)}#transcript">View full message log</a></p>
+    ${ownerActionLinksHtml(data, record, lead)}
+    <p style="color:#6b7280;font-size:13px;">Link expires 30 days after the conversation.</p>
   `;
 }
 
-function buildLegacyChatEmailHtml(chat, data) {
+function buildLegacyChatEmailHtml(chat, data, lead) {
   const e = escapeHtml;
   const name = data.name || '(name not captured)';
   return `
@@ -500,11 +534,12 @@ function buildLegacyChatEmailHtml(chat, data) {
       <tr><td><strong>Sentiment</strong></td><td>${e(data.sentiment) || '—'}</td></tr>
     </table>
     <p><strong>Summary</strong><br/>${e(data.summary).replace(/\n/g, '<br/>')}</p>
+    ${ownerActionLinksHtml(data, null, lead)}
     <p style="color:#6b7280;font-size:13px;">Message log page unavailable for this conversation — not included in email for privacy.</p>
   `;
 }
 
-function buildChatAlertSms(data) {
+function buildChatAlertSms(data, record, lead) {
   const name = data.name || 'Unknown texter';
   const lines = [
     data.setup_call_booked_time
@@ -514,8 +549,8 @@ function buildChatAlertSms(data) {
         : 'OwnerAI: new text conversation',
     `${name}${data.business ? ' — ' + data.business : ''}`,
     data.callback_phone ? `Number: ${data.callback_phone}` : '',
-    data.call_reason ? `Re: ${data.call_reason.slice(0, 100)}` : '',
-    'Details in email.',
+    data.call_reason ? `Re: ${data.call_reason.slice(0, 80)}` : '',
+    ownerActionLinksSms(data, record, lead),
   ];
   return lines.filter(Boolean).join('\n').slice(0, 1000);
 }
@@ -577,9 +612,24 @@ async function handleChatAnalyzed(chat) {
     recordingUrl: null,
   });
 
+  const lead = await upsertLead({
+    phone: data.callback_phone || data.prospect_number,
+    name: data.name,
+    business: data.business,
+    business_type: data.business_type,
+    channel: 'sms',
+    callId: chat.chat_id,
+    summary: data.summary,
+    reason: data.call_reason,
+    wantsSetup: data.wants_setup_call,
+    leadQuality: data.lead_quality,
+    sentiment: data.sentiment,
+    bookedLabel: data.setup_call_booked_time || null,
+  });
+
   let emailError = null;
   try {
-    await sendResendEmail(subject, buildChatEmailHtml(chat, data, record));
+    await sendResendEmail(subject, buildChatEmailHtml(chat, data, record, lead));
     audit.push({ ...base, event_type: 'email_sent', status: 'ok', detail: subject });
   } catch (err) {
     emailError = err.message;
@@ -604,7 +654,7 @@ async function handleChatAnalyzed(chat) {
     } else {
       const r = await sendRetellSms(alertPhone, {
         agentId: process.env.RETELL_ALERT_AGENT_ID,
-        dynamicVariables: { alert_body: buildChatAlertSms(data) },
+        dynamicVariables: { alert_body: buildChatAlertSms(data, record, lead) },
         source: 'owner-sms-chat-alert',
       });
       if (!r.skipped) audit.push({ ...base, event_type: 'owner_sms_sent', status: 'ok', detail: null });
@@ -706,9 +756,25 @@ export async function POST(request) {
     recordingUrl: typeof call.recording_url === 'string' ? call.recording_url : null,
   });
 
+  const lead = await upsertLead({
+    phone: data.callback_phone || call.from_number,
+    name: data.name,
+    business: data.business,
+    business_type: data.business_type,
+    channel: 'call',
+    callId: call.call_id,
+    summary: data.summary,
+    reason: data.call_reason,
+    durationSec: duration,
+    wantsSetup: data.wants_setup_call,
+    leadQuality: data.lead_quality,
+    sentiment: data.sentiment,
+    bookedLabel: data.setup_call_booked_time || null,
+  });
+
   let emailError = null;
   try {
-    await sendResendEmail(subject, buildEmailHtml(call, data, record));
+    await sendResendEmail(subject, buildEmailHtml(call, data, record, lead));
     audit.push({ ...base, event_type: 'email_sent', status: 'ok', detail: subject });
   } catch (err) {
     emailError = err.message;
@@ -735,7 +801,7 @@ export async function POST(request) {
     } else {
       const r = await sendRetellSms(alertPhone, {
         agentId: process.env.RETELL_ALERT_AGENT_ID,
-        dynamicVariables: { alert_body: buildAlertSms(data, duration) },
+        dynamicVariables: { alert_body: buildAlertSms(data, duration, record, lead) },
         source: 'owner-call-alert',
       });
       if (!r.skipped) audit.push({ ...base, event_type: 'owner_sms_sent', status: 'ok', detail: null });

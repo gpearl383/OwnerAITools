@@ -79,6 +79,7 @@ function speakableTime(iso) {
 /* ---------- rate limiting (per warm instance) ---------- */
 
 const perNumber = new Map();
+const perCall = new Map();
 const globalHits = { start: 0, count: 0 };
 
 function allowSend(number) {
@@ -96,6 +97,19 @@ function allowSend(number) {
   globalHits.count += 1;
   if (perNumber.size > 2000) perNumber.clear();
   return true;
+}
+
+// One successful demo-alert per Retell call_id (prevents re-spam mid-call).
+function alreadySentForCall(callId) {
+  if (!callId) return false;
+  const prev = perCall.get(callId);
+  return !!(prev && Date.now() - prev < 24 * 60 * 60 * 1000);
+}
+
+function markSentForCall(callId) {
+  if (!callId) return;
+  perCall.set(callId, Date.now());
+  if (perCall.size > 5000) perCall.clear();
 }
 
 /* ---------- message bodies ---------- */
@@ -355,6 +369,7 @@ export async function POST(request) {
   const args = payload.args || payload;
   const call = payload.call || {};
   const to = normalizePhone(args.prospect_mobile);
+  const from = normalizePhone(call.from_number);
   const email = validEmail(args.prospect_email);
   const apptStart =
     args.appointment_start && !Number.isNaN(new Date(args.appointment_start).getTime())
@@ -364,9 +379,19 @@ export async function POST(request) {
   if (!to) {
     return toolResult('That mobile number did not look valid. Ask the caller to repeat it.');
   }
+  // Only text the number currently on the call — blocks third-party SMS abuse
+  // if the model is steered to invent a different prospect_mobile.
+  if (!from || to !== from) {
+    return toolResult(
+      'The sample text can only be sent to the phone number this person is calling from. Ask them to confirm they want it on this phone, then retry with that number.'
+    );
+  }
   if (!process.env.RETELL_SMS_FROM || !process.env.RETELL_DEMO_ALERT_AGENT_ID) {
     console.error('demo-alert: SMS env vars missing');
     return toolResult('The sample text is unavailable right now. Continue without it.');
+  }
+  if (alreadySentForCall(call.call_id)) {
+    return toolResult('A sample alert was already sent on this call. Continue without sending another.');
   }
   if (!allowSend(to)) {
     return toolResult('A sample alert was already sent to that number recently. Continue without sending another.');
@@ -389,6 +414,7 @@ export async function POST(request) {
   // Leg 1 — [DEMO] lead-alert SMS
   try {
     await sendDemoSms(to, buildDemoAlertBody(args), 'demo-lead-alert');
+    markSentForCall(call.call_id);
     audit.push({
       ...base,
       event_type: 'demo_alert_sms_sent',

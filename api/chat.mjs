@@ -1,3 +1,5 @@
+import { upsertLead, leadActionUrl, normalizePhone } from './lib/leads.mjs';
+
 // OwnerAI Assistant — Vercel serverless proxy for Anthropic, plus chat lead
 // capture emailed via Resend.
 //
@@ -124,7 +126,7 @@ function escapeHtml(v) {
   );
 }
 
-async function sendLeadEmail(lead, transcript) {
+async function sendLeadEmail(lead, transcript, queueLead) {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) throw new Error('RESEND_API_KEY missing');
   const to = process.env.OWNERAI_NOTIFY_EMAIL || 'info@owneraitools.com';
@@ -137,6 +139,12 @@ async function sendLeadEmail(lead, transcript) {
     .join('\n')
     .slice(0, 6000);
 
+  const actions = [];
+  const phone = normalizePhone(lead.phone);
+  if (phone) actions.push(`<a href="tel:${e(phone)}">Call back</a>`);
+  const doneUrl = queueLead?.id ? leadActionUrl(queueLead.id, 'done') : null;
+  if (doneUrl) actions.push(`<a href="${e(doneUrl)}">Mark done</a>`);
+
   const html = `
     <h2>OwnerAI Tools — Website Chat Lead</h2>
     <table cellpadding="6" style="font-family:sans-serif;font-size:14px;">
@@ -145,6 +153,7 @@ async function sendLeadEmail(lead, transcript) {
       <tr><td><strong>Business</strong></td><td>${e(lead.business) || '—'}</td></tr>
       <tr><td><strong>Page</strong></td><td>${e(lead.page) || '—'}</td></tr>
     </table>
+    ${actions.length ? `<p><strong>Actions</strong> — ${actions.join(' &nbsp;·&nbsp; ')}</p>` : ''}
     ${convo ? `<details open><summary style="cursor:pointer;font-weight:bold;">Chat transcript</summary><pre style="white-space:pre-wrap;font-family:sans-serif;font-size:13px;">${e(convo)}</pre></details>` : ''}
   `;
 
@@ -225,7 +234,21 @@ export async function POST(request) {
       return json(400, { error: 'Name or phone required' }, origin);
     }
     try {
-      await sendLeadEmail(lead, Array.isArray(payload.transcript) ? payload.transcript : []);
+      const queueLead = await upsertLead({
+        phone: lead.phone,
+        name: lead.name,
+        business: lead.business,
+        channel: 'chat',
+        reason: lead.business || 'Website chat lead',
+        summary: `Chat lead from ${lead.page || 'site'}`,
+        wantsSetup: false,
+        leadQuality: 'warm',
+      });
+      await sendLeadEmail(
+        lead,
+        Array.isArray(payload.transcript) ? payload.transcript : [],
+        queueLead,
+      );
       await logChatLead(lead);
       return json(200, { ok: true }, origin);
     } catch (err) {

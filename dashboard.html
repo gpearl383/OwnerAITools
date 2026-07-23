@@ -117,6 +117,22 @@ tr.detail td{background:var(--mist);font-size:13px;color:var(--muted);white-spac
 .empty{color:var(--muted);text-align:center;padding:30px 0;font-size:15px}
 .foot-note{color:var(--muted);font-size:13px;margin-top:10px}
 
+/* action queue */
+.queue-row{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;padding:14px 0;border-bottom:1px solid var(--border)}
+.queue-row:last-child{border-bottom:none}
+.queue-main{min-width:0;flex:1}
+.queue-name{font-family:var(--display);font-weight:800;font-size:16px;color:var(--navy)}
+.queue-meta{color:var(--muted);font-size:13px;margin-top:3px}
+.queue-summary{font-size:14px;margin-top:7px;color:var(--text);line-height:1.4}
+.queue-actions{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end}
+.queue-actions .btn{padding:8px 14px;font-size:13px;text-decoration:none;display:inline-flex;align-items:center}
+.btn-navy{background:var(--navy);color:#fff}
+.btn-navy:hover{background:var(--navy-deep)}
+.btn-outline{background:#fff;color:var(--navy);border:1px solid var(--border-strong)}
+.prio{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;border-radius:999px;padding:2px 8px;margin-left:6px;vertical-align:middle}
+.prio-hot{background:#fff0e6;color:var(--accent-600)}
+.prio-warm{background:var(--primary-50);color:var(--primary-600)}
+
 @media (max-width:800px){.stats{grid-template-columns:repeat(2,1fr)}.intelligence-grid{grid-template-columns:1fr}.intel-summary{border-left:0;border-top:1px solid rgba(255,255,255,.18);padding:20px 0 0}}
 @media (max-width:640px){
   .breakdowns{grid-template-columns:1fr}
@@ -124,6 +140,7 @@ tr.detail td{background:var(--mist);font-size:13px;color:var(--muted);white-spac
   .control-right{width:100%;justify-content:space-between}.range-tabs{max-width:100%;overflow:auto}.range-tabs button{padding:7px 12px}
   .intelligence{padding:20px}.intelligence h2{font-size:19px}.intel-summary .intel-num{font-size:35px}
   th:nth-child(5),td.c-dur{display:none}
+  .queue-row{flex-direction:column}.queue-actions{justify-content:flex-start}
 }
 [hidden]{display:none !important}
 </style>
@@ -171,6 +188,24 @@ tr.detail td{background:var(--mist);font-size:13px;color:var(--muted);white-spac
   </div>
 
   <div class="stats" id="stats"></div>
+
+  <div class="panel" id="queue-panel">
+    <div class="panel-head">
+      <div>
+        <h2>Action queue</h2>
+        <p class="panel-note">Needs callback, booked, and early hangups — one-tap follow-up.</p>
+      </div>
+      <span class="panel-kicker" id="queue-count">0 open</span>
+    </div>
+    <div class="filters" id="queue-filters">
+      <button class="chip active" data-queue="needs_callback">Needs callback</button>
+      <button class="chip" data-queue="booked">Booked</button>
+      <button class="chip" data-queue="hung_up">Hung up</button>
+      <button class="chip" data-queue="done">Done</button>
+    </div>
+    <div id="queue-body"></div>
+    <div class="empty" id="queue-empty" hidden>No leads in this bucket.</div>
+  </div>
 
   <section class="intelligence">
     <div class="intelligence-grid">
@@ -228,7 +263,7 @@ tr.detail td{background:var(--mist);font-size:13px;color:var(--muted);white-spac
 (function () {
   'use strict';
   var API = '/api/dashboard';
-  var state = { range: '30d', filter: '', data: null };
+  var state = { range: '30d', filter: '', queue: 'needs_callback', data: null };
 
   var $ = function (id) { return document.getElementById(id); };
 
@@ -267,7 +302,8 @@ tr.detail td{background:var(--mist);font-size:13px;color:var(--muted);white-spac
   /* ---------- data load ---------- */
 
   function load() {
-    fetch(API + '?range=' + state.range).then(function (r) {
+    var q = state.queue === 'done' ? '&queue=all' : '';
+    fetch(API + '?range=' + state.range + q).then(function (r) {
       if (r.status === 401) { showLogin(); return null; }
       return r.json();
     }).then(function (data) {
@@ -276,6 +312,18 @@ tr.detail td{background:var(--mist);font-size:13px;color:var(--muted);white-spac
       showDash();
       render();
     }).catch(function () { showLogin(); });
+  }
+
+  function markDone(id) {
+    fetch(API, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: id, status: 'done' }),
+    }).then(function (r) {
+      if (r.status === 401) { showLogin(); return; }
+      if (!r.ok) return;
+      load();
+    });
   }
 
   /* ---------- render ---------- */
@@ -353,6 +401,8 @@ tr.detail td{background:var(--mist);font-size:13px;color:var(--muted);white-spac
     booking_failed: ['Booking', 'b-fail'],
     sms_failed: ['SMS', 'b-fail'],
     chat_lead: ['Chat lead', 'b-lead'],
+    lead_marked_done: ['Lead done', 'b-skip'],
+    lead_status_changed: ['Lead status', 'b-skip'],
   };
 
   function matchesFilter(e) {
@@ -408,8 +458,58 @@ tr.detail td{background:var(--mist);font-size:13px;color:var(--muted);white-spac
     });
   }
 
+  function relTime(iso) {
+    if (!iso) return '';
+    var ms = Date.now() - new Date(iso).getTime();
+    if (ms < 0) ms = 0;
+    var m = Math.floor(ms / 60000);
+    if (m < 1) return 'just now';
+    if (m < 60) return m + 'm ago';
+    var h = Math.floor(m / 60);
+    if (h < 48) return h + 'h ago';
+    return Math.floor(h / 24) + 'd ago';
+  }
+
+  function renderQueue(leads) {
+    var all = leads || [];
+    var open = all.filter(function (l) { return l.status !== 'done'; });
+    $('queue-count').textContent = open.length + ' open';
+    var rows = all.filter(function (l) { return l.status === state.queue; });
+    $('queue-empty').hidden = rows.length > 0;
+    $('queue-body').innerHTML = rows.map(function (l) {
+      var prio = '';
+      if (l.priority >= 3 || l.wants_setup_call) prio = '<span class="prio prio-hot">Hot</span>';
+      else if (l.priority === 2) prio = '<span class="prio prio-warm">Warm</span>';
+      var channel = l.last_channel || '—';
+      var meta = [channel, l.phone || l.email || '', relTime(l.last_event_at)].filter(Boolean).join(' · ');
+      var summary = l.last_reason || l.last_summary || '';
+      if (summary.length > 160) summary = summary.slice(0, 157) + '…';
+      var actions = '';
+      if (l.callbackTel) actions += '<a class="btn btn-navy" href="' + esc(l.callbackTel) + '">Call back</a>';
+      if (l.transcriptUrl) actions += '<a class="btn btn-outline" href="' + esc(l.transcriptUrl) + '" target="_blank" rel="noopener">Transcript</a>';
+      if (l.status !== 'done') actions += '<button class="btn btn-orange" type="button" data-done="' + esc(l.id) + '">Mark done</button>';
+      return '<div class="queue-row">' +
+        '<div class="queue-main">' +
+          '<div class="queue-name">' + esc(l.name || l.phone || 'Unknown') +
+            (l.business ? ' · ' + esc(l.business) : '') + prio + '</div>' +
+          '<div class="queue-meta">' + esc(meta) +
+            (l.lead_quality ? ' · ' + esc(l.lead_quality) : '') +
+            (l.setup_call_booked_label ? ' · Booked ' + esc(l.setup_call_booked_label) : '') +
+          '</div>' +
+          (summary ? '<div class="queue-summary">' + esc(summary) + '</div>' : '') +
+        '</div>' +
+        '<div class="queue-actions">' + actions + '</div>' +
+      '</div>';
+    }).join('');
+
+    $('queue-body').querySelectorAll('[data-done]').forEach(function (btn) {
+      btn.addEventListener('click', function () { markDone(btn.getAttribute('data-done')); });
+    });
+  }
+
   function render() {
     renderStats(state.data.stats);
+    renderQueue(state.data.leads || []);
     renderChart(state.data.stats.series);
     renderBreakdown($('bd-sentiment'), state.data.stats.sentiment);
     renderBreakdown($('bd-quality'), state.data.stats.leadQuality);
@@ -425,6 +525,18 @@ tr.detail td{background:var(--mist);font-size:13px;color:var(--muted);white-spac
     btn.classList.add('active');
     state.range = btn.dataset.range;
     load();
+  });
+
+  $('queue-filters').addEventListener('click', function (e) {
+    var chip = e.target.closest('button[data-queue]');
+    if (!chip) return;
+    $('queue-filters').querySelectorAll('.chip').forEach(function (c) { c.classList.remove('active'); });
+    chip.classList.add('active');
+    var next = chip.dataset.queue;
+    var needReload = (state.queue === 'done') !== (next === 'done');
+    state.queue = next;
+    if (needReload) load();
+    else if (state.data) renderQueue(state.data.leads || []);
   });
 
   $('filters').addEventListener('click', function (e) {

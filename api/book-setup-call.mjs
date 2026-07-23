@@ -14,6 +14,7 @@
 //   SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY — audit trail logging
 
 import crypto from 'node:crypto';
+import { upsertLead } from './lib/leads.mjs';
 
 const TZ = 'America/New_York';
 
@@ -126,6 +127,51 @@ async function createBooking({ slotStart, name, email, phone, businessName }) {
   });
 }
 
+// Re-check Cal.com that the exact slot is still bookable (blocks invented times).
+async function isSlotStillOpen(slotStart) {
+  const start = new Date(slotStart);
+  const t = start.getTime();
+  if (Number.isNaN(t)) return false;
+  const now = Date.now();
+  if (t < now + 30 * 60 * 1000) return false;
+  if (t > now + 7 * 24 * 60 * 60 * 1000) return false;
+
+  const day = dateOnly(start);
+  const end = dateOnly(new Date(t + 24 * 60 * 60 * 1000));
+  const out = await calFetch(
+    `/slots?eventTypeId=${process.env.CAL_EVENT_TYPE_ID}&start=${day}&end=${end}&timeZone=${encodeURIComponent(TZ)}`,
+    { version: '2024-09-04' },
+  );
+  const daySlots = out.data?.[day] || out.data?.[dateOnly(start)] || [];
+  return daySlots.some((s) => {
+    const iso = typeof s === 'string' ? s : s.start;
+    return new Date(iso).getTime() === t;
+  });
+}
+
+async function alreadyBookedForCall(callId) {
+  if (!callId) return false;
+  const url = process.env.SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) return false;
+  try {
+    const qs = new URLSearchParams({
+      select: 'id',
+      event_type: 'eq.setup_call_booked',
+      call_id: `eq.${callId}`,
+      limit: '1',
+    });
+    const res = await fetch(`${url}/rest/v1/audit_events?${qs}`, {
+      headers: { apikey: key, Authorization: `Bearer ${key}` },
+    });
+    if (!res.ok) return false;
+    const rows = await res.json();
+    return rows.length > 0;
+  } catch {
+    return false;
+  }
+}
+
 /* ---------- rate limiting (per warm instance) ---------- */
 
 const hits = { start: 0, count: 0 };
@@ -188,14 +234,29 @@ async function handleCheckAvailability() {
 }
 
 async function handleBook(args, call) {
-  const name = String(args.name || '').trim();
-  const email = String(args.email || '').trim();
+  const name = String(args.name || '').trim().slice(0, 120);
+  const email = String(args.email || '').trim().toLowerCase().slice(0, 200);
   const slotStart = String(args.slot_start || '').trim();
   const phone = normalizePhone(args.phone || call.from_number);
 
-  if (!name || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || Number.isNaN(new Date(slotStart).getTime())) {
+  if (
+    !name ||
+    name.length < 2 ||
+    !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ||
+    Number.isNaN(new Date(slotStart).getTime())
+  ) {
     return toolResult(
       'Missing or invalid details. Confirm the caller\'s full name, a valid email address for the calendar invite, and which time slot they picked, then try again.',
+    );
+  }
+  if (await alreadyBookedForCall(call.call_id)) {
+    return toolResult(
+      'A setup call was already booked on this phone call. Confirm the existing time with the caller instead of booking again.',
+    );
+  }
+  if (!(await isSlotStillOpen(slotStart))) {
+    return toolResult(
+      'That time is not an open slot. Call check_availability again and offer the caller one of the exact times returned.',
     );
   }
   if (!allowBooking()) {
@@ -226,6 +287,17 @@ async function handleBook(args, call) {
         slot_start: slotStart,
         business_name: args.business_name || null,
       },
+    });
+    await upsertLead({
+      phone: phone || call.from_number,
+      email,
+      name,
+      business: args.business_name,
+      channel: 'call',
+      callId: call.call_id,
+      wantsSetup: true,
+      bookedLabel: when,
+      bookedAt: new Date(slotStart).toISOString(),
     });
     return toolResult(
       `Booked for ${when} Eastern. A calendar invite is on its way to ${email}. Confirm the time back to the caller.`,

@@ -3,9 +3,9 @@
 //   GET /api/call?id=<call_id>&t=<token>          -> HTML page (summary, audio player, transcript)
 //   GET /api/call?id=<call_id>&t=<token>&audio=1  -> streams the recording from Supabase Storage
 //
-// The token is HMAC-SHA256(call_id, CALL_LINK_SECRET) — links are unguessable
-// and never expire. Records are written by api/retell-webhook.mjs into the
-// call_records table + call-recordings bucket.
+// The token is HMAC-SHA256(call_id, CALL_LINK_SECRET) — links are unguessable.
+// Access expires 30 days after the record was created (LINK_TTL_MS). Storage is
+// purged separately at 120 days by /api/purge-call-records.
 //
 // Required env vars:
 //   CALL_LINK_SECRET          — HMAC key shared with the webhook
@@ -13,6 +13,8 @@
 //   SUPABASE_SERVICE_ROLE_KEY — server-side only
 
 import crypto from 'node:crypto';
+
+const LINK_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 
 // Must mirror callLinkSecret() in api/retell-webhook.mjs: prefer
 // CALL_LINK_SECRET, otherwise derive from the Supabase service-role key.
@@ -32,6 +34,13 @@ function validToken(id, token) {
   } catch {
     return false;
   }
+}
+
+function isLinkExpired(record) {
+  if (!record?.created_at) return true;
+  const created = new Date(record.created_at).getTime();
+  if (Number.isNaN(created)) return true;
+  return Date.now() - created > LINK_TTL_MS;
 }
 
 function escapeHtml(v) {
@@ -123,6 +132,13 @@ export async function GET(request) {
     return htmlResponse(500, '<h1>Something went wrong — try again shortly.</h1>');
   }
   if (!record) return htmlResponse(404, '<h1>Not found</h1>');
+
+  if (isLinkExpired(record)) {
+    return htmlResponse(
+      410,
+      '<h1>Link expired</h1><p>Call recordings and transcripts are available for 30 days after the call.</p>'
+    );
+  }
 
   // Audio streaming leg: proxy the private recording through this endpoint
   // so the browser only ever talks to our own origin (CSP: default-src 'self').

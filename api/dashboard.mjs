@@ -17,7 +17,7 @@ import {
   setLeadStatus,
   logLeadAudit,
 } from './lib/leads.mjs';
-import { listIncidents } from './lib/notify.mjs';
+import { listIncidents } from '../lib/notify.mjs';
 
 const SESSION_TTL_MS = 24 * 60 * 60 * 1000;
 const COOKIE_NAME = 'oat_dash';

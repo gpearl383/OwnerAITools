@@ -19,7 +19,7 @@ import {
   recordProbeResult,
   listIncidents,
   DEMO_LINE,
-} from './lib/notify.mjs';
+} from '../lib/notify.mjs';
 
 function unauthorized() {
   return new Response(JSON.stringify({ error: 'Unauthorized' }), {

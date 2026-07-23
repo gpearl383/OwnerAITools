@@ -1,5 +1,6 @@
 // Shared lead upsert + action-token helpers for the OwnerAI demo queue.
 import crypto from 'node:crypto';
+import { isHungUpCall } from './alerts.mjs';
 
 const ACTION_TTL_SEC = 7 * 24 * 60 * 60;
 
@@ -18,7 +19,7 @@ export function normalizeEmail(v) {
 
 export function classifyStatus({ durationSec, booked, channel }) {
   if (booked) return 'booked';
-  if (channel === 'call' && durationSec > 0 && durationSec < 15) return 'hung_up';
+  if (channel === 'call' && isHungUpCall(durationSec)) return 'hung_up';
   return 'needs_callback';
 }
 

@@ -3,8 +3,9 @@
 // summary of every analyzed call via Resend, plus two optional SMS legs
 // through Retell's create-sms-chat API (the number lives in Retell under an
 // approved A2P 10DLC campaign, so all outbound SMS goes through Retell):
-//   1. Owner alert SMS — for calls longer than ALERT_SMS_MIN_SECONDS.
-//   2. Customer confirmation SMS — only when the caller explicitly opted in
+//   1. Owner alert SMS — every non-hangup call (hangup = duration 1–14s).
+//   2. Hangup nurture SMS — prospect text on early hangups (≥5s + name/business).
+//   3. Customer confirmation SMS — only when the caller explicitly opted in
 //      during the call (wants_sms_confirmation analysis flag).
 //
 // Also handles chat_analyzed events from the SMS receptionist agent (texting
@@ -16,9 +17,8 @@
 // Optional (SMS legs are skipped when unset):
 //   RETELL_SMS_FROM         — E.164 sending number (+15169731973)
 //   RETELL_ALERT_AGENT_ID   — chat agent for owner alerts ({{alert_body}} template)
-//   RETELL_CONFIRM_AGENT_ID — chat agent for customer confirmations ({{confirm_body}} template)
+//   RETELL_CONFIRM_AGENT_ID — chat agent for customer confirmations + hangup nurture ({{confirm_body}})
 //   OWNERAI_ALERT_PHONE     — owner cell for alert texts
-//   ALERT_SMS_MIN_SECONDS   — skip owner SMS for calls at or under this (default 12)
 //   RETELL_SMS_AGENT_ID     — SMS receptionist chat agent (chat_analyzed pipeline)
 //   OWNERAI_NOTIFY_EMAIL    — recipient (default: info@owneraitools.com)
 //   OWNERAI_RESEND_FROM     — sender (default: OwnerAI Tools <info@owneraitools.com>)
@@ -32,6 +32,24 @@ import {
   leadActionUrl,
   callDetailUrl as sharedCallDetailUrl,
 } from './lib/leads.mjs';
+import {
+  isHungUpCall,
+  shouldSendHangupNurture,
+  buildHangupNurtureSms,
+} from './lib/alerts.mjs';
+
+// One hangup-nurture SMS per call_id (per warm instance).
+const nurtureSentForCall = new Map();
+function alreadyNurtured(callId) {
+  if (!callId) return false;
+  const prev = nurtureSentForCall.get(callId);
+  return !!(prev && Date.now() - prev < 24 * 60 * 60 * 1000);
+}
+function markNurtured(callId) {
+  if (!callId) return;
+  nurtureSentForCall.set(callId, Date.now());
+  if (nurtureSentForCall.size > 5000) nurtureSentForCall.clear();
+}
 
 function verifyRetellSignature(rawBody, apiKey, signature) {
   if (!apiKey || !signature || typeof signature !== 'string') return false;
@@ -786,17 +804,17 @@ export async function POST(request) {
   // Retell doesn't retry (which would duplicate the email).
   let smsError = null;
   const alertPhone = process.env.OWNERAI_ALERT_PHONE;
-  const smsMinSec = Number(process.env.ALERT_SMS_MIN_SECONDS || 12);
+  const hungUp = isHungUpCall(duration);
   try {
     if (!alertPhone) {
       console.warn('OWNERAI_ALERT_PHONE not configured — skipping owner SMS alert');
-    } else if (duration > 0 && duration <= smsMinSec) {
-      console.log(`owner SMS skipped — call lasted ${duration}s (min ${smsMinSec}s)`);
+    } else if (hungUp) {
+      console.log(`owner SMS skipped — hung up early (${duration}s)`);
       audit.push({
         ...base,
         event_type: 'owner_sms_skipped',
         status: 'skipped',
-        detail: `call lasted ${duration}s (min ${smsMinSec}s)`,
+        detail: `hung_up early (${duration}s)`,
       });
     } else {
       const r = await sendRetellSms(alertPhone, {
@@ -812,9 +830,88 @@ export async function POST(request) {
     audit.push({ ...base, event_type: 'sms_failed', status: 'failed', detail: `owner alert: ${err.message.slice(0, 400)}` });
   }
 
+  // Hangup nurture: text the prospect when they dropped early but looked real.
+  // Skipped for non-hangups (those may get customer confirmation instead).
+  if (hungUp) {
+    const nurtureTo = normalizePhone(data.callback_phone || call.from_number);
+    const ownerNorm = normalizePhone(alertPhone);
+    const fromNorm = normalizePhone(process.env.RETELL_SMS_FROM);
+    try {
+      if (!shouldSendHangupNurture({
+        durationSec: duration,
+        name: data.name,
+        business: data.business,
+      })) {
+        audit.push({
+          ...base,
+          event_type: 'hangup_nurture_sms_skipped',
+          status: 'skipped',
+          detail:
+            duration > 0 && duration < 5
+              ? `pocket dial (${duration}s)`
+              : 'no name or business captured',
+        });
+      } else if (!nurtureTo) {
+        audit.push({
+          ...base,
+          event_type: 'hangup_nurture_sms_skipped',
+          status: 'skipped',
+          detail: 'invalid prospect number',
+        });
+      } else if (nurtureTo === ownerNorm || nurtureTo === fromNorm) {
+        audit.push({
+          ...base,
+          event_type: 'hangup_nurture_sms_skipped',
+          status: 'skipped',
+          detail: 'refusing to nurture owner or our own number',
+        });
+      } else if (alreadyNurtured(call.call_id)) {
+        audit.push({
+          ...base,
+          event_type: 'hangup_nurture_sms_skipped',
+          status: 'skipped',
+          detail: 'already sent for this call',
+        });
+      } else {
+        const r = await sendRetellSms(nurtureTo, {
+          agentId: process.env.RETELL_CONFIRM_AGENT_ID,
+          dynamicVariables: { confirm_body: buildHangupNurtureSms() },
+          source: 'hangup-nurture',
+        });
+        if (!r.skipped) {
+          markNurtured(call.call_id);
+          audit.push({
+            ...base,
+            event_type: 'hangup_nurture_sms_sent',
+            status: 'ok',
+            detail: nurtureTo,
+          });
+        } else {
+          audit.push({
+            ...base,
+            event_type: 'hangup_nurture_sms_skipped',
+            status: 'skipped',
+            detail: r.reason || 'sms env missing or invalid',
+          });
+        }
+      }
+    } catch (err) {
+      smsError = err.message;
+      console.error('retell-webhook hangup nurture SMS failed:', err.message);
+      audit.push({
+        ...base,
+        event_type: 'sms_failed',
+        status: 'failed',
+        detail: `hangup nurture: ${err.message.slice(0, 400)}`,
+      });
+    }
+  }
+
   // Customer confirmation: only when the caller explicitly said yes to a
   // text during the call (A2P consent) and left a usable number.
-  if (data.wants_sms_confirmation && data.callback_phone) {
+  // Hangups never reach this path with a real booking confirmation in practice,
+  // but we still gate so nurture and confirm never both fire on a hung-up call.
+  if (!hungUp && data.wants_sms_confirmation && data.callback_phone) {
     try {
       const r = await sendRetellSms(data.callback_phone, {
         agentId: process.env.RETELL_CONFIRM_AGENT_ID,

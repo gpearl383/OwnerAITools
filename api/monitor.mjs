@@ -288,13 +288,26 @@ async function handle(request) {
   // Vercel Cron hits /api/monitor daily (x-vercel-cron: 1) → digest.
   // GitHub Actions / manual ?mode=digest also request digest.
   // Default (GHA every 5m) is probe-only.
+  const requested = url.searchParams.get('mode') || '';
   const mode =
-    url.searchParams.get('mode') === 'digest' ||
-    request.headers.get('x-vercel-cron') === '1'
+    requested === 'digest' || request.headers.get('x-vercel-cron') === '1'
       ? 'digest'
-      : 'probe';
+      : requested === 'test-alert'
+        ? 'test-alert'
+        : 'probe';
 
   try {
+    if (mode === 'test-alert') {
+      const result = await notifyOwner({
+        key: 'test:manual',
+        subject: 'Monitor test alert',
+        sms: 'Test alert from OwnerAI monitor — ignore if unexpected.',
+        detail: `Forced test at ${new Date().toISOString()}`,
+        force: true,
+      });
+      return json(200, { ok: true, mode, at: new Date().toISOString(), result });
+    }
+
     const probes = await runProbes();
     const sweep = await sweepFailedRows();
     const incidents = await listIncidents();

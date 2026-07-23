@@ -1,5 +1,5 @@
 import { upsertLead, leadActionUrl, normalizePhone } from './lib/leads.mjs';
-import { notifyOwner } from '../lib/notify.mjs';
+import { notifyOwner } from './lib/notify.mjs';
 
 // OwnerAI Assistant — Vercel serverless proxy for Anthropic, plus chat lead
 // capture emailed via Resend.

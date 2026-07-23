@@ -15,7 +15,7 @@
 
 import crypto from 'node:crypto';
 import { upsertLead } from './lib/leads.mjs';
-import { notifyOwner } from '../lib/notify.mjs';
+import { notifyOwner } from './lib/notify.mjs';
 
 const TZ = 'America/New_York';
 

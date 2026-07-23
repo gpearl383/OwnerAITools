@@ -8,6 +8,10 @@
     },
     {
       "path": "/api/monitor",
+      "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/api/monitor-digest",
       "schedule": "0 12 * * *"
     }
   ],

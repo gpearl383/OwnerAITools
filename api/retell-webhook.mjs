@@ -37,7 +37,7 @@ import {
   shouldSendHangupNurture,
   buildHangupNurtureSms,
 } from './lib/alerts.mjs';
-import { notifyOwner } from '../lib/notify.mjs';
+import { notifyOwner } from './lib/notify.mjs';
 
 /** Best-effort owner alert for any failed audit rows in a batch. */
 async function alertFailedAudit(audit, context = {}) {

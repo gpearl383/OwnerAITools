@@ -1,9 +1,10 @@
 // OwnerAI agent health monitor.
 //
-//   GET|POST /api/monitor            — run probes + failed-row sweep (CRON_SECRET)
-//   GET|POST /api/monitor?mode=digest — daily digest email + probes
+//   GET|POST /api/monitor              — probes + failed-row sweep (CRON_SECRET)
+//   GET|POST /api/monitor?mode=digest   — same as /api/monitor-digest
+//   GET|POST /api/monitor?mode=test-alert — forced owner SMS+email
 //
-// Triggered every 5 minutes by GitHub Actions; daily digest by Vercel Cron.
+// Vercel Cron: every 5 minutes → /api/monitor; daily → /api/monitor-digest.
 //
 // Required env vars:
 //   CRON_SECRET
@@ -19,7 +20,7 @@ import {
   recordProbeResult,
   listIncidents,
   DEMO_LINE,
-} from '../lib/notify.mjs';
+} from './lib/notify.mjs';
 
 function unauthorized() {
   return new Response(JSON.stringify({ error: 'Unauthorized' }), {
@@ -281,20 +282,25 @@ function escapeHtml(v) {
   );
 }
 
-async function handle(request) {
+/**
+ * Shared monitor runner.
+ * @param {Request} request
+ * @param {{ mode?: 'probe' | 'digest' | 'test-alert' }} [opts]
+ *   When opts.mode is set (e.g. from /api/monitor-digest), it wins over ?mode=.
+ *   Vercel Cron on /api/monitor is always probe — digest is a separate path.
+ */
+export async function runMonitor(request, opts = {}) {
   if (!authorized(request)) return unauthorized();
 
   const url = new URL(request.url);
-  // Vercel Cron hits /api/monitor daily (x-vercel-cron: 1) → digest.
-  // GitHub Actions / manual ?mode=digest also request digest.
-  // Default (GHA every 5m) is probe-only.
   const requested = url.searchParams.get('mode') || '';
   const mode =
-    requested === 'digest' || request.headers.get('x-vercel-cron') === '1'
+    opts.mode ||
+    (requested === 'digest'
       ? 'digest'
       : requested === 'test-alert'
         ? 'test-alert'
-        : 'probe';
+        : 'probe');
 
   try {
     if (mode === 'test-alert') {
@@ -342,9 +348,9 @@ async function handle(request) {
 }
 
 export async function GET(request) {
-  return handle(request);
+  return runMonitor(request);
 }
 
 export async function POST(request) {
-  return handle(request);
+  return runMonitor(request);
 }

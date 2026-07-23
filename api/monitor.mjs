@@ -280,7 +280,14 @@ async function handle(request) {
   if (!authorized(request)) return unauthorized();
 
   const url = new URL(request.url);
-  const mode = url.searchParams.get('mode') || 'probe';
+  // Vercel Cron hits /api/monitor daily (x-vercel-cron: 1) → digest.
+  // GitHub Actions / manual ?mode=digest also request digest.
+  // Default (GHA every 5m) is probe-only.
+  const mode =
+    url.searchParams.get('mode') === 'digest' ||
+    request.headers.get('x-vercel-cron') === '1'
+      ? 'digest'
+      : 'probe';
 
   try {
     const probes = await runProbes();

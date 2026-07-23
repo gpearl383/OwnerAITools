@@ -1,5 +1,6 @@
 User-agent: *
 Allow: /
 Disallow: /dashboard
+Disallow: /billing
 
 Sitemap: https://owneraitools.com/sitemap.xml

@@ -30,11 +30,12 @@ function sign(value, secret) {
 function makeSessionCookie(secret) {
   const exp = String(Date.now() + SESSION_TTL_MS);
   const token = `${exp}.${sign(exp, secret)}`;
-  return `${COOKIE_NAME}=${token}; Path=/api/dashboard; Max-Age=86400; HttpOnly; Secure; SameSite=Strict`;
+  // Path=/ so the same session works for /dashboard and /billing.
+  return `${COOKIE_NAME}=${token}; Path=/; Max-Age=86400; HttpOnly; Secure; SameSite=Strict`;
 }
 
 function clearSessionCookie() {
-  return `${COOKIE_NAME}=; Path=/api/dashboard; Max-Age=0; HttpOnly; Secure; SameSite=Strict`;
+  return `${COOKIE_NAME}=; Path=/; Max-Age=0; HttpOnly; Secure; SameSite=Strict`;
 }
 
 function hasValidSession(request, secret) {

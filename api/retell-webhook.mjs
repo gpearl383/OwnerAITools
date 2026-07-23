@@ -581,6 +581,13 @@ async function handleChatAnalyzed(chat) {
 
   const data = extractChatData(chat);
   const prospectMessages = countProspectMessages(chat);
+  const ourNumber = process.env.RETELL_SMS_FROM || null;
+  // Inbound SMS: our line is usually to_number; outbound template threads reverse it.
+  const lineNumber =
+    ourNumber ||
+    (chat?.to_number && chat.to_number !== data.prospect_number ? chat.to_number : null) ||
+    (chat?.from_number && chat.from_number !== data.prospect_number ? chat.from_number : null) ||
+    null;
   const who = data.name || data.prospect_number || 'Unknown texter';
   const subject = `[OwnerAI] Text conversation: ${who}${
     data.setup_call_booked_time
@@ -614,6 +621,8 @@ async function handleChatAnalyzed(chat) {
         interested_tier: data.interested_tier,
         prospect_messages: prospectMessages,
         setup_call_booked_time: data.setup_call_booked_time || null,
+        // Our line (not the prospect) — used by billing to map usage to a client.
+        to_number: lineNumber,
       },
     },
   ];

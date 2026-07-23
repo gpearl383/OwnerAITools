@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>OwnerAI Tools — Billing</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='16' fill='%2314355e'/%3E%3Cpath d='M23.5 20.4v2.1a1.4 1.4 0 0 1-1.53 1.4 13.85 13.85 0 0 1-6.04-2.15 13.65 13.65 0 0 1-4.2-4.2A13.85 13.85 0 0 1 9.58 11.5 1.4 1.4 0 0 1 10.98 10h2.1a1.4 1.4 0 0 1 1.4 1.2c.09.67.25 1.33.49 1.97a1.4 1.4 0 0 1-.32 1.48l-.89.89a11.2 11.2 0 0 0 4.2 4.2l.89-.89a1.4 1.4 0 0 1 1.48-.31c.63.23 1.3.4 1.97.48a1.4 1.4 0 0 1 1.2 1.42z' fill='%23ff9046'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#14355e; --navy-deep:#0d2748; --navy-soft:#1d4879; --primary:#2680cf; --primary-600:#1a66b0;
+  --primary-50:#eef6fd; --primary-100:#d9ebfa; --accent:#f97125; --accent-600:#e25a12;
+  --mist:#f2f7fc; --bg:#ffffff; --border:rgba(20,53,94,.10); --border-strong:rgba(20,53,94,.18);
+  --text:#24384f; --muted:#5a6b81; --display:"Nunito",ui-sans-serif,system-ui,sans-serif;
+  --body:"Source Sans 3",ui-sans-serif,system-ui,sans-serif; --radius:18px;
+  --shadow-card:0 16px 42px -22px rgba(20,53,94,.28); --ok:#1a8a4f; --warn:#b45309; --bad:#c0392b;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{overflow-x:clip}
+body{font-family:var(--body);background:linear-gradient(135deg,#eef6fd 0%,var(--mist) 48%,#f8fbfe 100%);color:var(--text);min-height:100vh}
+a{color:var(--primary)}
+h1,h2,h3{font-family:var(--display);color:var(--navy)}
+
+.topbar{background:linear-gradient(110deg,var(--navy-deep),var(--navy) 62%,var(--navy-soft));color:#fff;padding:15px 24px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;box-shadow:0 5px 20px rgba(13,39,72,.18)}
+.topbar .brand{font-family:var(--display);font-weight:800;font-size:18px;color:#fff;text-decoration:none}
+.topbar .brand span{color:var(--accent)}
+.topbar .actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.nav-link{font-family:var(--display);font-weight:700;font-size:13px;color:#cfe0f2;text-decoration:none;padding:8px 14px;border:1px solid rgba(255,255,255,.28);border-radius:999px}
+.nav-link:hover,.nav-link.active{color:#fff;border-color:#fff}
+.btn{font-family:var(--display);font-weight:700;border:none;border-radius:999px;cursor:pointer;padding:9px 20px;font-size:14px}
+.btn-orange{background:var(--accent);color:#fff}
+.btn-orange:hover{background:var(--accent-600)}
+.btn-ghost{background:transparent;color:#cfe0f2;border:1px solid rgba(255,255,255,.35)}
+.btn-ghost:hover{color:#fff;border-color:#fff}
+
+.wrap{max-width:1220px;margin:0 auto;padding:32px 20px 68px}
+
+.login-card{max-width:400px;margin:10vh auto 0;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-card);padding:36px 32px;text-align:center}
+.login-card h1{font-size:24px;margin-bottom:6px}
+.login-card p{color:var(--muted);font-size:15px;margin-bottom:22px}
+.login-card input{width:100%;padding:13px 16px;font-size:16px;font-family:var(--body);border:1px solid var(--border-strong);border-radius:10px;margin-bottom:14px}
+.login-card input:focus{outline:2px solid var(--primary);border-color:var(--primary)}
+.login-card .btn{width:100%;padding:13px}
+.login-err{color:var(--bad);font-size:14px;margin-top:12px;min-height:18px}
+
+.controls{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:22px}
+.eyebrow{color:var(--primary-600);font-family:var(--display);font-weight:900;font-size:11px;letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+.controls h1{font-size:31px;letter-spacing:-.03em}
+.controls .subhead{color:var(--muted);font-size:15px;margin-top:4px}
+.control-right{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.select{font-family:var(--display);font-weight:700;font-size:14px;border:1px solid var(--border-strong);background:var(--bg);color:var(--navy);border-radius:999px;padding:9px 16px;cursor:pointer}
+.cycle-pill{font-family:var(--display);font-weight:800;font-size:12px;color:var(--navy);padding:8px 12px;background:rgba(255,255,255,.7);border:1px solid var(--border);border-radius:999px}
+
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px}
+.stat{position:relative;overflow:hidden;background:rgba(255,255,255,.9);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-card);padding:18px;min-height:110px}
+.stat:after{content:"";position:absolute;inset:auto -16px -25px auto;width:76px;height:76px;border-radius:50%;background:var(--primary-50);opacity:.9}
+.stat .num{font-family:var(--display);font-weight:900;font-size:31px;color:var(--navy);line-height:1.1;position:relative;z-index:1}
+.stat .lbl{font-size:12px;color:var(--muted);font-weight:800;margin-top:4px;position:relative;z-index:1}
+.stat.hot .num{color:var(--accent)}
+.stat.warn .num{color:var(--warn)}
+
+.panel{background:rgba(255,255,255,.94);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-card);padding:22px;margin-bottom:24px}
+.panel-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:16px}
+.panel h2{font-size:17px;margin-bottom:2px}
+.panel .panel-note{font-size:13px;color:var(--muted)}
+.panel-kicker{font-family:var(--display);font-size:11px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:var(--primary-600)}
+
+.progress-wrap{margin:8px 0 4px}
+.progress{height:14px;border-radius:999px;background:var(--primary-50);overflow:hidden;border:1px solid var(--border)}
+.progress i{display:block;height:100%;background:linear-gradient(90deg,var(--primary),#65b6ef);border-radius:999px;transition:width .3s}
+.progress.over i{background:linear-gradient(90deg,var(--accent),#ffb27d)}
+.progress-meta{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin-top:8px;font-weight:600}
+
+.intelligence{position:relative;overflow:hidden;background:linear-gradient(120deg,var(--navy-deep),var(--navy) 58%,#235889);color:#fff;padding:26px;margin-bottom:24px;border-radius:var(--radius);box-shadow:0 18px 42px -22px rgba(13,39,72,.65)}
+.intelligence:before,.intelligence:after{content:"";position:absolute;border:1px solid rgba(255,255,255,.11);border-radius:50%;pointer-events:none}
+.intelligence:before{width:410px;height:410px;right:-180px;top:-240px}
+.intelligence:after{width:280px;height:280px;right:-90px;bottom:-210px}
+.intelligence .panel-kicker{color:#99cffb}
+.intelligence h2{color:#fff;font-size:22px;margin:4px 0}
+.intelligence .panel-note{color:#c6dcef}
+.chart{display:flex;align-items:flex-end;gap:4px;height:164px;padding-top:12px;background:repeating-linear-gradient(to top,transparent 0,transparent 39px,rgba(38,128,207,.08) 40px);position:relative;z-index:1}
+.chart .bar{flex:1;height:100%;background:rgba(255,255,255,.08);border-radius:5px 5px 0 0;position:relative;min-width:3px}
+.chart .bar .fill{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(to top,var(--primary),#62b3ef);border-radius:5px 5px 0 0}
+.chart .bar .tip{display:none;position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;font-size:11px;font-weight:600;padding:4px 8px;border-radius:6px;white-space:nowrap;z-index:5}
+.chart .bar:hover .tip{display:block}
+.chart-axis{display:flex;justify-content:space-between;color:#c6dcef;font-size:11px;margin-top:8px;position:relative;z-index:1}
+
+.meta-row{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:18px}
+.chip{font-family:var(--display);font-size:12px;font-weight:700;border:1px solid var(--border-strong);background:var(--bg);color:var(--muted);border-radius:999px;padding:6px 13px}
+.chip.plan{background:var(--primary-50);color:var(--primary-600);border-color:transparent}
+
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{text-align:left;font-family:var(--display);font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);padding:8px 10px 11px;border-bottom:2px solid var(--border-strong)}
+td{padding:13px 10px;border-bottom:1px solid var(--border);vertical-align:top}
+.badge{display:inline-block;font-family:var(--display);font-size:11px;font-weight:800;letter-spacing:.03em;border-radius:999px;padding:3px 10px;white-space:nowrap}
+.b-call{background:var(--primary-100);color:var(--primary-600)}
+.b-sms{background:#fdeee3;color:var(--accent-600)}
+.empty{color:var(--muted);text-align:center;padding:30px 0;font-size:15px}
+.foot-note{color:var(--muted);font-size:13px;margin-top:10px}
+.disclaimer{font-size:13px;color:var(--muted);background:var(--primary-50);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:22px}
+
+@media (max-width:800px){.stats{grid-template-columns:repeat(2,1fr)}.controls h1{font-size:22px}}
+@media (max-width:520px){.stats{grid-template-columns:1fr}}
+[hidden]{display:none !important}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <a class="brand" href="/">OwnerAI <span>Tools</span> — Billing</a>
+  <div class="actions">
+    <a class="nav-link" href="/dashboard">Dashboard</a>
+    <a class="nav-link active" href="/billing">Billing</a>
+    <button class="btn btn-ghost" id="refresh-btn" hidden>Refresh</button>
+    <button class="btn btn-ghost" id="logout-btn" hidden>Sign out</button>
+  </div>
+</header>
+
+<div id="login-view">
+  <div class="login-card">
+    <h1>Billing sign-in</h1>
+    <p>Same password as the operations dashboard. Usage tracking only — no payments.</p>
+    <form id="login-form">
+      <input type="password" id="pw" placeholder="Password" autocomplete="current-password" required>
+      <button class="btn btn-orange" type="submit">Sign in</button>
+    </form>
+    <div class="login-err" id="login-err"></div>
+  </div>
+</div>
+
+<main class="wrap" id="dash-view" hidden>
+  <div class="controls">
+    <div>
+      <p class="eyebrow">Usage billing</p>
+      <h1>Plan usage</h1>
+      <p class="subhead">Minutes and text conversations against plan allowances. Estimates only — not invoices.</p>
+    </div>
+    <div class="control-right">
+      <select class="select" id="client-select" aria-label="Client"></select>
+      <div class="cycle-pill" id="cycle-pill">—</div>
+    </div>
+  </div>
+
+  <div class="disclaimer">
+    Overage dollars are <strong>estimates</strong> at the plan’s per-minute rate. No charges are processed from this page.
+  </div>
+
+  <div class="meta-row" id="meta-row"></div>
+  <div class="stats" id="stats"></div>
+
+  <div class="panel">
+    <div class="panel-head">
+      <div>
+        <h2>Included minutes</h2>
+        <p class="panel-note">Billable voice minutes this cycle (each call rounds up to a full minute).</p>
+      </div>
+      <span class="panel-kicker" id="pct-label">0%</span>
+    </div>
+    <div class="progress-wrap">
+      <div class="progress" id="progress"><i id="progress-fill" style="width:0%"></i></div>
+      <div class="progress-meta">
+        <span id="progress-used">0 used</span>
+        <span id="progress-included">0 included</span>
+      </div>
+    </div>
+  </div>
+
+  <section class="intelligence">
+    <p class="panel-kicker">Cycle velocity</p>
+    <h2>Daily billable minutes</h2>
+    <p class="panel-note">Voice minutes per day in the current billing cycle.</p>
+    <div class="chart" id="chart"></div>
+    <div class="chart-axis" id="chart-axis"></div>
+  </section>
+
+  <div class="panel">
+    <div class="panel-head">
+      <div>
+        <h2>Recent activity</h2>
+        <p class="panel-note">Billable calls and text conversations attributed to this client’s numbers.</p>
+      </div>
+      <span class="panel-kicker" id="activity-count">0</span>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>When</th>
+            <th>Type</th>
+            <th>Who</th>
+            <th>Minutes</th>
+            <th>Detail</th>
+          </tr>
+        </thead>
+        <tbody id="activity-body"></tbody>
+      </table>
+    </div>
+    <div class="empty" id="activity-empty" hidden>No billable activity in this cycle yet.</div>
+    <p class="foot-note">SMS conversations are tracked for activity but not priced in this version.</p>
+  </div>
+</main>
+
+<script>
+(function () {
+  var API = '/api/billing';
+  var state = { clients: [], selected: null, slug: null };
+
+  function $(id) { return document.getElementById(id); }
+  function esc(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+  function money(n) {
+    return '$' + (Number(n) || 0).toFixed(2);
+  }
+  function fmtDay(iso) {
+    if (!iso) return '—';
+    var d = new Date(iso);
+    return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+  }
+  function fmtWhen(iso) {
+    if (!iso) return '—';
+    var d = new Date(iso);
+    return d.toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+  }
+  function tierLabel(t) {
+    return (t || 'custom').charAt(0).toUpperCase() + (t || 'custom').slice(1);
+  }
+
+  function showLogin() {
+    $('login-view').hidden = false;
+    $('dash-view').hidden = true;
+    $('refresh-btn').hidden = true;
+    $('logout-btn').hidden = true;
+  }
+  function showDash() {
+    $('login-view').hidden = true;
+    $('dash-view').hidden = false;
+    $('refresh-btn').hidden = false;
+    $('logout-btn').hidden = false;
+  }
+
+  function querySlug() {
+    var q = new URLSearchParams(location.search).get('client');
+    return q || null;
+  }
+
+  function load() {
+    var slug = state.slug || querySlug();
+    var qs = slug ? ('?client=' + encodeURIComponent(slug)) : '?cycle=current';
+    return fetch(API + qs, { credentials: 'same-origin' }).then(function (r) {
+      if (r.status === 401) { showLogin(); return null; }
+      if (!r.ok) throw new Error('Failed to load');
+      return r.json();
+    }).then(function (data) {
+      if (!data) return;
+      state.clients = data.clients || [];
+      state.selected = data.selected;
+      state.slug = data.selected ? data.selected.slug : slug;
+      showDash();
+      render();
+    }).catch(function () {
+      $('login-err').textContent = 'Could not load billing data.';
+      showLogin();
+    });
+  }
+
+  function render() {
+    var sel = state.selected;
+    var select = $('client-select');
+    select.innerHTML = state.clients.map(function (c) {
+      return '<option value="' + esc(c.slug) + '"' + (sel && c.slug === sel.slug ? ' selected' : '') + '>' +
+        esc(c.name) + '</option>';
+    }).join('');
+
+    if (!sel) return;
+
+    $('cycle-pill').textContent =
+      'Cycle ' + fmtDay(sel.cycle.start) + ' – ' + fmtDay(sel.cycle.end);
+
+    $('meta-row').innerHTML =
+      '<span class="chip plan">' + esc(tierLabel(sel.plan_tier)) + ' plan</span>' +
+      '<span class="chip">' + esc((sel.numbers || []).map(function (n) { return n.e164; }).join(' · ') || 'No numbers') + '</span>' +
+      '<span class="chip">Overage est. ' + money(sel.overage_rate_cents / 100) + '/min</span>';
+
+    var cards = [
+      { n: sel.minutes_used, l: 'Minutes used', hot: sel.overage_minutes > 0 },
+      { n: sel.included_minutes, l: 'Minutes included' },
+      { n: sel.minutes_remaining, l: 'Minutes remaining' },
+      { n: money(sel.estimated_overage_dollars), l: 'Est. overage', hot: sel.estimated_overage_dollars > 0 },
+      { n: sel.call_count, l: 'Calls' },
+      { n: sel.sms_conversation_count, l: 'Text conversations' },
+    ];
+    $('stats').innerHTML = cards.map(function (c) {
+      return '<div class="stat' + (c.hot ? ' hot' : '') + '"><div class="num">' + esc(c.n) +
+        '</div><div class="lbl">' + esc(c.l) + '</div></div>';
+    }).join('');
+
+    var pct = sel.included_minutes
+      ? Math.min(100, Math.round((sel.minutes_used / sel.included_minutes) * 100))
+      : (sel.minutes_used ? 100 : 0);
+    var over = sel.overage_minutes > 0;
+    $('progress').className = 'progress' + (over ? ' over' : '');
+    $('progress-fill').style.width = (over ? 100 : pct) + '%';
+    $('pct-label').textContent = over ? (pct + '% · overage') : (pct + '%');
+    $('progress-used').textContent = sel.minutes_used + ' used' +
+      (over ? ' (' + sel.overage_minutes + ' over)' : '');
+    $('progress-included').textContent = sel.included_minutes + ' included';
+
+    var series = sel.series || [];
+    var max = Math.max.apply(null, series.map(function (d) { return d.minutes; }).concat([1]));
+    $('chart').innerHTML = series.map(function (d) {
+      var h = Math.round((d.minutes / max) * 100);
+      return '<div class="bar"><div class="fill" style="height:' + h + '%"></div>' +
+        '<div class="tip">' + esc(d.day) + ': ' + d.minutes + ' min · ' + d.calls + ' calls</div></div>';
+    }).join('');
+    var first = series[0], last = series[series.length - 1];
+    $('chart-axis').innerHTML = '<span>' + esc(first ? first.day : '') + '</span><span>' +
+      esc(last ? last.day : '') + '</span>';
+
+    var rows = sel.activity || [];
+    $('activity-count').textContent = rows.length + ' recent';
+    $('activity-empty').hidden = rows.length > 0;
+    $('activity-body').innerHTML = rows.map(function (e) {
+      var isCall = e.event_type === 'call_analyzed';
+      var badge = isCall ? ['Call', 'b-call'] : ['Text', 'b-sms'];
+      var who = e.caller_name || e.from_number || '—';
+      return '<tr><td>' + esc(fmtWhen(e.created_at)) + '</td>' +
+        '<td><span class="badge ' + badge[1] + '">' + badge[0] + '</span></td>' +
+        '<td>' + esc(who) + '</td>' +
+        '<td>' + (isCall ? esc(e.minutes) : '—') + '</td>' +
+        '<td>' + esc(e.detail || '') + '</td></tr>';
+    }).join('');
+  }
+
+  $('login-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    $('login-err').textContent = '';
+    fetch(API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify({ password: $('pw').value }),
+    }).then(function (r) {
+      if (r.ok) return load();
+      if (r.status === 429) $('login-err').textContent = 'Too many attempts — wait 15 minutes.';
+      else $('login-err').textContent = 'Wrong password.';
+    }).catch(function () {
+      $('login-err').textContent = 'Sign-in failed.';
+    });
+  });
+
+  $('logout-btn').addEventListener('click', function () {
+    fetch(API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify({ logout: true }),
+    }).then(function () { showLogin(); });
+  });
+
+  $('refresh-btn').addEventListener('click', function () { load(); });
+
+  $('client-select').addEventListener('change', function () {
+    state.slug = this.value;
+    var url = new URL(location.href);
+    url.searchParams.set('client', state.slug);
+    history.replaceState(null, '', url.pathname + '?' + url.searchParams.toString());
+    load();
+  });
+
+  load();
+})();
+</script>
+</body>
+</html>

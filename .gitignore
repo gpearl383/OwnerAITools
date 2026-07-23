@@ -2,3 +2,4 @@ screenshots/
 .playwright-mcp/
 .DS_Store
 .vercel
+.env*

@@ -133,6 +133,16 @@ tr.detail td{background:var(--mist);font-size:13px;color:var(--muted);white-spac
 .prio-hot{background:#fff0e6;color:var(--accent-600)}
 .prio-warm{background:var(--primary-50);color:var(--primary-600)}
 
+/* system health */
+.health-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-top:4px}
+.health-chip{border:1px solid var(--border);border-radius:14px;padding:12px 14px;background:#fff;box-shadow:0 8px 20px -16px rgba(20,53,94,.35)}
+.health-chip .hk{font-family:var(--display);font-weight:800;font-size:13px;color:var(--navy);word-break:break-word}
+.health-chip .hd{color:var(--muted);font-size:12px;margin-top:4px;line-height:1.35;max-height:2.7em;overflow:hidden}
+.health-chip .hs{display:inline-block;margin-top:8px;font-family:var(--display);font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;border-radius:999px;padding:3px 9px}
+.hs-ok,.hs-recovered{background:#e7f6ed;color:var(--ok)}
+.hs-open{background:#fdecea;color:var(--bad)}
+.health-meta{color:var(--muted);font-size:13px;margin-top:10px}
+
 @media (max-width:800px){.stats{grid-template-columns:repeat(2,1fr)}.intelligence-grid{grid-template-columns:1fr}.intel-summary{border-left:0;border-top:1px solid rgba(255,255,255,.18);padding:20px 0 0}}
 @media (max-width:640px){
   .breakdowns{grid-template-columns:1fr}
@@ -189,6 +199,19 @@ tr.detail td{background:var(--mist);font-size:13px;color:var(--muted);white-spac
   </div>
 
   <div class="stats" id="stats"></div>
+
+  <div class="panel" id="health-panel">
+    <div class="panel-head">
+      <div>
+        <h2>System health</h2>
+        <p class="panel-note">Active probes for Retell, phone line, Supabase, Resend, Anthropic, Cal.com, and chat.</p>
+      </div>
+      <span class="panel-kicker" id="health-count">No checks yet</span>
+    </div>
+    <div class="health-grid" id="health-grid"></div>
+    <div class="empty" id="health-empty" hidden>No probe results yet — the 5-minute monitor has not run.</div>
+    <p class="health-meta" id="health-meta"></p>
+  </div>
 
   <div class="panel" id="queue-panel">
     <div class="panel-head">
@@ -510,8 +533,37 @@ tr.detail td{background:var(--mist);font-size:13px;color:var(--muted);white-spac
     });
   }
 
+  function renderHealth(health) {
+    health = health || { checks: [], openCount: 0, lastCheckedAt: '' };
+    var checks = (health.checks || []).filter(function (c) {
+      // Hide one-shot inline/digest keys from the status strip; keep probe keys.
+      return c.key && c.key.indexOf('inline:') !== 0 && c.key.indexOf('audit:') !== 0 && c.key.indexOf('digest:') !== 0;
+    });
+    $('health-empty').hidden = checks.length > 0;
+    $('health-grid').innerHTML = checks.map(function (c) {
+      var st = c.status || 'ok';
+      var label = st === 'open' ? 'Down' : st === 'recovered' ? 'Recovered' : 'OK';
+      return '<div class="health-chip">' +
+        '<div class="hk">' + esc(c.key) + '</div>' +
+        '<div class="hd">' + esc(c.detail || '—') + '</div>' +
+        '<span class="hs hs-' + esc(st) + '">' + esc(label) + '</span>' +
+        '</div>';
+    }).join('');
+    var open = health.openCount || 0;
+    $('health-count').textContent = checks.length
+      ? (open ? open + ' open' : 'All green') + ' · ' + checks.length + ' checks'
+      : 'No checks yet';
+    $('health-meta').textContent = health.lastCheckedAt
+      ? 'Last probe ' + relTime(health.lastCheckedAt) + ' · alerts SMS + email with 30-minute cooldown'
+      : 'Waiting for the first monitor run (GitHub Actions every 5 minutes).';
+    if (open) {
+      $('health-text').textContent = open + ' dependency' + (open === 1 ? '' : 's') + ' down';
+    }
+  }
+
   function render() {
     renderStats(state.data.stats);
+    renderHealth(state.data.health);
     renderQueue(state.data.leads || []);
     renderChart(state.data.stats.series);
     renderBreakdown($('bd-sentiment'), state.data.stats.sentiment);

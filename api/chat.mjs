@@ -1,4 +1,5 @@
 import { upsertLead, leadActionUrl, normalizePhone } from './lib/leads.mjs';
+import { notifyOwner } from './lib/notify.mjs';
 
 // OwnerAI Assistant — Vercel serverless proxy for Anthropic, plus chat lead
 // capture emailed via Resend.
@@ -253,6 +254,12 @@ export async function POST(request) {
       return json(200, { ok: true }, origin);
     } catch (err) {
       console.error('chat lead email failed:', err.message);
+      await notifyOwner({
+        key: `inline:chat_lead_failed:${lead.phone || lead.name || 'unknown'}`,
+        subject: `chat_lead_failed — ${lead.name || lead.phone || 'unknown'}`,
+        sms: `chat lead email failed for ${lead.name || lead.phone || 'visitor'}: ${err.message.slice(0, 160)}`,
+        detail: err.message,
+      });
       return json(500, { error: 'Internal error' }, origin);
     }
   }

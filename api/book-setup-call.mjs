@@ -15,6 +15,7 @@
 
 import crypto from 'node:crypto';
 import { upsertLead } from './lib/leads.mjs';
+import { notifyOwner } from './lib/notify.mjs';
 
 const TZ = 'America/New_York';
 
@@ -309,6 +310,12 @@ async function handleBook(args, call) {
       event_type: 'booking_failed',
       status: 'failed',
       detail: err.message.slice(0, 400),
+    });
+    await notifyOwner({
+      key: `inline:booking_failed:${call.call_id || email || 'unknown'}`,
+      subject: `booking_failed — ${name || email || 'unknown'}`,
+      sms: `booking_failed for ${name || email || 'caller'}: ${err.message.slice(0, 160)}`,
+      detail: err.message,
     });
     if (/no_available_users|already|conflict|unavailable/i.test(err.message)) {
       return toolResult('That slot was just taken. Call check_availability again and offer the caller a fresh set of times.');

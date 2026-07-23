@@ -37,6 +37,21 @@ import {
   shouldSendHangupNurture,
   buildHangupNurtureSms,
 } from './lib/alerts.mjs';
+import { notifyOwner } from './lib/notify.mjs';
+
+/** Best-effort owner alert for any failed audit rows in a batch. */
+async function alertFailedAudit(audit, context = {}) {
+  const failed = (audit || []).filter((r) => r.status === 'failed');
+  for (const row of failed) {
+    const who = row.caller_name || row.from_number || context.who || 'unknown';
+    await notifyOwner({
+      key: `inline:${row.event_type}:${row.call_id || who}`,
+      subject: `${row.event_type} — ${who}`,
+      sms: `${row.event_type} for ${who}: ${(row.detail || '').slice(0, 160)}`,
+      detail: row.detail || '',
+    });
+  }
+}
 
 // One hangup-nurture SMS per call_id (per warm instance).
 const nurtureSentForCall = new Map();
@@ -693,6 +708,7 @@ async function handleChatAnalyzed(chat) {
   }
 
   await logAuditEvents(audit);
+  await alertFailedAudit(audit, { who: data.name || chat.from_number });
 
   if (emailError && smsError) return json(500, { error: 'Internal error' });
   return json(200, { ok: true, ...(emailError && { emailError: true }), ...(smsError && { smsError: true }) });
@@ -936,6 +952,7 @@ export async function POST(request) {
   }
 
   await logAuditEvents(audit);
+  await alertFailedAudit(audit, { who: data.name || call.from_number });
 
   if (emailError && smsError) {
     return json(500, { error: 'Internal error' });

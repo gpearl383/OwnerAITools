@@ -17,6 +17,7 @@ import {
   setLeadStatus,
   logLeadAudit,
 } from './lib/leads.mjs';
+import { listIncidents } from './lib/notify.mjs';
 
 const SESSION_TTL_MS = 24 * 60 * 60 * 1000;
 const COOKIE_NAME = 'oat_dash';
@@ -206,12 +207,30 @@ export async function GET(request) {
   const includeDone = url.searchParams.get('queue') === 'all';
 
   try {
-    const [events, rawLeads] = await Promise.all([
+    const [events, rawLeads, incidents] = await Promise.all([
       fetchEvents(rangeDays),
       fetchLeads({ includeDone }),
+      listIncidents(),
     ]);
     const leads = rawLeads.map(enrichLeadForClient);
-    return json(200, { stats: computeStats(events, rangeDays), events, leads });
+    const health = {
+      checks: incidents.map((i) => ({
+        key: i.check_key,
+        status: i.status,
+        detail: i.detail,
+        consecutiveFailures: i.consecutive_failures,
+        lastCheckedAt: i.last_checked_at,
+        lastAlertedAt: i.last_alerted_at,
+        openedAt: i.opened_at,
+        recoveredAt: i.recovered_at,
+      })),
+      openCount: incidents.filter((i) => i.status === 'open').length,
+      lastCheckedAt: incidents.reduce((max, i) => {
+        const t = i.last_checked_at || '';
+        return t > max ? t : max;
+      }, ''),
+    };
+    return json(200, { stats: computeStats(events, rangeDays), events, leads, health });
   } catch (err) {
     console.error('dashboard fetch failed:', err.message);
     return json(500, { error: 'Failed to load data' });

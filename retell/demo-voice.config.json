@@ -12,17 +12,16 @@
       },
       {
         "method": "POST",
-        "execution_message_description": "Tell the caller you are sending the sample alert to their phone right now.",
+        "execution_message_description": "Tell the caller you are sending the samples right now.",
         "timeout_ms": 10000,
         "speak_after_execution": true,
         "name": "send_demo_alert",
-        "description": "Send the prospect the sample owner notifications from the role-play they just did: a [DEMO] lead-alert text, a [DEMO] appointment-booked text, and — if they gave an email — a real calendar invite for the pretend appointment plus a sample owner email. Only call after the caller explicitly agreed and confirmed their mobile number. Call at most once per call.",
+        "description": "Send the prospect sample owner notifications: a [DEMO] lead-alert text, a [DEMO] appointment-booked text (when a role-play booked one), and — if they gave an email — a calendar invite plus a sample owner email. Only call after the caller explicitly agreed. Each call has a budget of 2 sample texts and 2 sample emails; the tool result reports what was sent and what remains — relay that honestly. Texts automatically go to the number the caller is calling from unless prospect_mobile is provided. For an email-only send set send_text to false.",
         "type": "custom",
         "speak_during_execution": true,
         "parameters": {
           "type": "object",
           "required": [
-            "prospect_mobile",
             "business_name"
           ],
           "properties": {
@@ -40,7 +39,7 @@
             },
             "prospect_mobile": {
               "type": "string",
-              "description": "The prospect's mobile number to text, e.g. +15551234567 or 555-123-4567. Use the number they are calling from if they agreed to that."
+              "description": "Only include when the caller read out a specific mobile number. Omit to automatically text the number they are calling from (preferred)."
             },
             "issue": {
               "type": "string",
@@ -65,6 +64,10 @@
             "urgent": {
               "type": "boolean",
               "description": "True if the role-play call was an emergency or urgent"
+            },
+            "send_text": {
+              "type": "boolean",
+              "description": "Set to false for an email-only send (no sample texts). Defaults to true."
             }
           }
         },

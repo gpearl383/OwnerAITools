@@ -12,13 +12,13 @@
       },
       {
         "method": "POST",
-        "execution_message_description": "Tell the caller you are sending the samples right now.",
+        "execution_message_description": "Stay silent while the samples send; you will narrate the result after the tool returns.",
         "timeout_ms": 20000,
         "speak_after_execution": true,
         "name": "send_demo_alert",
-        "description": "Send the prospect sample owner notifications: a [DEMO] lead-alert text, a [DEMO] appointment-booked text (when a role-play booked one), and — if they gave an email — a calendar invite plus a sample owner email. Only call after the caller explicitly agreed. Each call has a budget of 2 sample texts and 2 sample emails; the tool result reports what was sent and what remains — relay that honestly. For security, demo sample texts ONLY go to the number the caller is calling from — always omit prospect_mobile (server uses caller ID). Never pass a different cell. For an email-only send set send_text to false.",
+        "description": "Send the prospect sample owner notifications: a [DEMO] lead-alert text, a [DEMO] appointment-booked text (when a role-play booked one), and — if they gave an email — a calendar invite plus a sample owner email. Only call after the caller explicitly agreed. Each call has a budget of 2 sample texts and 2 sample emails; the tool result reports what was sent and what remains — relay that in one short line only. For security, demo sample texts ONLY go to the number the caller is calling from — always omit prospect_mobile (server uses caller ID). Never pass a different cell. For an email-only send set send_text to false.",
         "type": "custom",
-        "speak_during_execution": true,
+        "speak_during_execution": false,
         "parameters": {
           "type": "object",
           "required": [

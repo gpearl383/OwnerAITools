@@ -38,6 +38,8 @@ const AGENT_KEYS = [
   'post_chat_analysis_data',
   'webhook_url',
   'webhook_events',
+  'voice_model',
+  'handbook_config',
 ];
 
 function fail(msg) {

@@ -132,6 +132,10 @@
     ]
   },
   "agent": {
+    "voice_model": "eleven_multilingual_v2",
+    "handbook_config": {
+      "speech_normalization": true
+    },
     "post_call_analysis_data": [
       {
         "name": "caller_name",

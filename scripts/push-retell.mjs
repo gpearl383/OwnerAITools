@@ -31,8 +31,14 @@ const LLM_KEYS = [
   'general_tools',
   'default_dynamic_variables',
 ];
-// Agent fields we manage.
-const AGENT_KEYS = ['post_call_analysis_data', 'webhook_url', 'webhook_events'];
+// Agent fields we manage (voice agents use post_call_analysis_data, chat
+// agents use post_chat_analysis_data).
+const AGENT_KEYS = [
+  'post_call_analysis_data',
+  'post_chat_analysis_data',
+  'webhook_url',
+  'webhook_events',
+];
 
 function fail(msg) {
   console.error(`error: ${msg}`);

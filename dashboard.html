@@ -132,6 +132,8 @@ tr.detail td{background:var(--mist);font-size:13px;color:var(--muted);white-spac
 .prio{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;border-radius:999px;padding:2px 8px;margin-left:6px;vertical-align:middle}
 .prio-hot{background:#fff0e6;color:var(--accent-600)}
 .prio-warm{background:var(--primary-50);color:var(--primary-600)}
+.prio-attn{background:#fdecea;color:var(--bad)}
+.status-flagged{color:var(--bad);font-weight:700}
 
 /* system health */
 .health-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-top:4px}
@@ -259,6 +261,14 @@ tr.detail td{background:var(--mist);font-size:13px;color:var(--muted);white-spac
       <div class="panel-head"><div><h2>Lead quality</h2><p class="panel-note">Lead assessment from the completed conversation.</p></div><span class="panel-kicker">Qualification</span></div>
       <div id="bd-quality"></div>
     </div>
+    <div class="panel">
+      <div class="panel-head"><div><h2>Plan interest</h2><p class="panel-note">Which pricing tier callers asked about.</p></div><span class="panel-kicker">Pricing</span></div>
+      <div id="bd-tier"></div>
+    </div>
+    <div class="panel">
+      <div class="panel-head"><div><h2>Setup funnel</h2><p class="panel-note">Conversations → setup requests → booked calls.</p></div><span class="panel-kicker">Conversion</span></div>
+      <div id="bd-funnel"></div>
+    </div>
   </div>
 
   <div class="panel">
@@ -361,7 +371,10 @@ tr.detail td{background:var(--mist);font-size:13px;color:var(--muted);white-spac
     var cards = [
       { n: st.totalCalls, l: 'Calls answered', i: '☎' },
       { n: st.totalChats || 0, l: 'Text conversations', i: '✆' },
-      { n: fmtDur(st.avgDurationSec), l: 'Avg call duration', i: '◷' },
+      { n: fmtDur(st.avgDurationSec), l: 'Avg call (excl. hangups)', i: '◷' },
+      { n: st.hangups || 0, l: 'Early hangups', i: '✂' },
+      { n: st.rolePlays || 0, l: 'Role-play demos', i: '▶' },
+      { n: st.rolePlayConversion != null ? st.rolePlayConversion + '%' : '—', l: 'Demo → booked', i: '%' },
       { n: st.wantsSetupCall, l: 'Setup-call requests', hot: true, i: '↗' },
       { n: st.setupCallsBooked, l: 'Setup calls booked', i: '✓' },
       { n: st.emailsSent, l: 'Email alerts', i: '✉' },
@@ -369,6 +382,7 @@ tr.detail td{background:var(--mist);font-size:13px;color:var(--muted);white-spac
       { n: st.demoAlerts, l: 'Demo alerts', i: '◈' },
       { n: st.chatLeads, l: 'Chat leads', i: '◌' },
     ];
+    if (st.flagged) cards.push({ n: st.flagged, l: 'Flagged conversations', hot: true, failure: true, i: '⚑' });
     if (st.failures) cards.push({ n: st.failures, l: 'Failures', hot: true, failure: true, i: '!' });
     $('stats').innerHTML = cards.map(function (c) {
       return '<div class="stat' + (c.hot ? ' hot' : '') + (c.failure ? ' failure' : '') + '"><div class="stat-top"><div class="ico">' + esc(c.i) + '</div></div><div class="num">' + esc(c.n) + '</div><div class="lbl">' + esc(c.l) + '</div></div>';
@@ -432,6 +446,10 @@ tr.detail td{background:var(--mist);font-size:13px;color:var(--muted);white-spac
     demo_alert_blocked: ['Demo blocked', 'b-skip'],
     customer_sms_skipped: ['Customer SMS skipped', 'b-skip'],
     webhook_duplicate_skipped: ['Duplicate webhook', 'b-skip'],
+    call_ended: ['Call ended', 'b-skip'],
+    security_probe_detected: ['Security probe', 'b-fail'],
+    abusive_conversation: ['Abusive', 'b-fail'],
+    unverified_info_flagged: ['Unverified info', 'b-fail'],
   };
 
   function matchesFilter(e) {
@@ -509,6 +527,8 @@ tr.detail td{background:var(--mist);font-size:13px;color:var(--muted);white-spac
       var prio = '';
       if (l.priority >= 3 || l.wants_setup_call) prio = '<span class="prio prio-hot">Hot</span>';
       else if (l.priority === 2) prio = '<span class="prio prio-warm">Warm</span>';
+      if (l.last_reason && l.last_reason.indexOf('NEEDS ATTENTION') === 0) prio += '<span class="prio prio-attn">Needs attention</span>';
+      if (l.flagged_count > 0) prio += '<span class="prio prio-attn">⚑ ' + l.flagged_count + ' flagged</span>';
       var channel = l.last_channel || '—';
       var meta = [channel, l.phone || l.email || '', relTime(l.last_event_at)].filter(Boolean).join(' · ');
       var summary = l.last_reason || l.last_summary || '';
@@ -571,6 +591,13 @@ tr.detail td{background:var(--mist);font-size:13px;color:var(--muted);white-spac
     renderChart(state.data.stats.series);
     renderBreakdown($('bd-sentiment'), state.data.stats.sentiment);
     renderBreakdown($('bd-quality'), state.data.stats.leadQuality);
+    renderBreakdown($('bd-tier'), state.data.stats.tierInterest || {});
+    var fn = state.data.stats.funnel || {};
+    renderBreakdown($('bd-funnel'), {
+      'conversations': fn.conversations || 0,
+      'want setup call': fn.wantsSetup || 0,
+      'booked': fn.booked || 0,
+    });
     renderEvents(state.data.events);
   }
 

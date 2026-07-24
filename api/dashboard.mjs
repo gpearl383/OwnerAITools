@@ -18,6 +18,7 @@ import {
   logLeadAudit,
 } from './lib/leads.mjs';
 import { listIncidents } from './lib/notify.mjs';
+import { isHungUpCall } from './lib/alerts.mjs';
 
 const SESSION_TTL_MS = 24 * 60 * 60 * 1000;
 const COOKIE_NAME = 'oat_dash';
@@ -116,7 +117,11 @@ function computeStats(events, rangeDays) {
   const calls = events.filter((e) => e.event_type === 'call_analyzed');
   const chats = events.filter((e) => e.event_type === 'sms_chat_analyzed');
   const conversations = [...calls, ...chats];
-  const durations = calls.map((c) => c.duration_sec || 0).filter((d) => d > 0);
+  // Early hangups excluded so 3-second pocket dials don't drag the average.
+  const realDurations = calls
+    .map((c) => c.duration_sec || 0)
+    .filter((d) => d > 0 && !isHungUpCall(d));
+  const hangups = calls.filter((c) => isHungUpCall(c.duration_sec || 0)).length;
   const count = (type) => events.filter((e) => e.event_type === type).length;
 
   // Sentiment/lead-quality buckets cover voice calls AND text conversations.
@@ -147,19 +152,41 @@ function computeStats(events, rangeDays) {
     series.push({ day, calls: byDay[day] || 0, chats: chatsByDay[day] || 0 });
   }
 
+  // Funnel + engagement stats from analysis payloads already being captured.
+  const rolePlays = calls.filter((c) => c.payload?.did_role_play === true).length;
+  const tierInterest = {};
+  for (const c of conversations) {
+    const t = (c.payload?.interested_tier || '').trim().toLowerCase();
+    if (t) tierInterest[t] = (tierInterest[t] || 0) + 1;
+  }
+  const booked = count('setup_call_booked');
+
   return {
     totalCalls: calls.length,
     totalChats: chats.length,
-    avgDurationSec: durations.length
-      ? Math.round(durations.reduce((a, b) => a + b, 0) / durations.length)
+    avgDurationSec: realDurations.length
+      ? Math.round(realDurations.reduce((a, b) => a + b, 0) / realDurations.length)
       : 0,
+    hangups,
     wantsSetupCall: conversations.filter((c) => c.wants_setup_call === true).length,
     emailsSent: count('email_sent'),
     smsSent: count('owner_sms_sent') + count('customer_sms_sent'),
     demoAlerts: count('demo_alert_sms_sent'),
-    setupCallsBooked: count('setup_call_booked'),
+    setupCallsBooked: booked,
     chatLeads: count('chat_lead'),
     failures: events.filter((e) => e.status === 'failed').length,
+    flagged:
+      count('security_probe_detected') +
+      count('abusive_conversation') +
+      count('unverified_info_flagged'),
+    rolePlays,
+    rolePlayConversion: rolePlays ? Math.round((booked / rolePlays) * 100) : null,
+    tierInterest,
+    funnel: {
+      conversations: conversations.length,
+      wantsSetup: conversations.filter((c) => c.wants_setup_call === true).length,
+      booked,
+    },
     sentiment: bucket('sentiment'),
     leadQuality: bucket('lead_quality'),
     series,

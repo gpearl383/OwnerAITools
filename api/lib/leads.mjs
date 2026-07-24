@@ -30,6 +30,13 @@ export function computePriority({ wantsSetup, leadQuality }) {
   return 1;
 }
 
+// An angry caller who actually engaged (not a 3-second hangup) should jump
+// to the top of the callback queue instead of blending into the ledger.
+export function needsAttention({ sentiment, durationSec = 0, prospectMessages = 0 }) {
+  if (String(sentiment || '').toLowerCase() !== 'negative') return false;
+  return durationSec >= 60 || prospectMessages >= 3;
+}
+
 function callLinkSecret() {
   if (process.env.CALL_LINK_SECRET) return process.env.CALL_LINK_SECRET;
   const srk = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -117,6 +124,8 @@ async function findLead({ phone, email }) {
  *   callId?, summary?, reason?, durationSec?,
  *   wantsSetup?, leadQuality?, sentiment?,
  *   bookedLabel?, bookedAt?, // ISO or null; bookedLabel alone implies booked
+ *   flagged?,          // security probe / abusive conversation
+ *   prospectMessages?, // chat engagement (for the attention rule)
  * }
  */
 export async function upsertLead(fields) {
@@ -130,10 +139,17 @@ export async function upsertLead(fields) {
     booked,
     channel: fields.channel,
   });
-  const priority = computePriority({
-    wantsSetup: !!fields.wantsSetup,
-    leadQuality: fields.leadQuality,
+  const attention = needsAttention({
+    sentiment: fields.sentiment,
+    durationSec: fields.durationSec || 0,
+    prospectMessages: fields.prospectMessages || 0,
   });
+  const priority = attention
+    ? 3
+    : computePriority({
+        wantsSetup: !!fields.wantsSetup,
+        leadQuality: fields.leadQuality,
+      });
   const now = new Date().toISOString();
 
   try {
@@ -158,6 +174,11 @@ export async function upsertLead(fields) {
     if (fields.callId) patch.last_call_id = String(fields.callId).slice(0, 120);
     if (fields.summary != null) patch.last_summary = String(fields.summary).slice(0, 4000);
     if (fields.reason != null) patch.last_reason = String(fields.reason).slice(0, 1000);
+    if (attention) {
+      const reason = (patch.last_reason ?? existing?.last_reason ?? '').replace(/^NEEDS ATTENTION — /, '');
+      patch.last_reason = `NEEDS ATTENTION — ${reason || 'caller ended the conversation unhappy'}`.slice(0, 1000);
+    }
+    if (fields.flagged) patch.flagged_count = (existing?.flagged_count || 0) + 1;
     if (fields.durationSec != null) patch.last_duration_sec = Number(fields.durationSec) || null;
     if (fields.bookedLabel) patch.setup_call_booked_label = String(fields.bookedLabel).slice(0, 300);
     if (fields.bookedAt) patch.setup_call_booked_at = fields.bookedAt;

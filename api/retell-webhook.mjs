@@ -169,7 +169,42 @@ function extractData(call) {
       (call?.call_analysis?.call_summary || '').trim() ||
       'No summary available — see transcript below.',
     sentiment: (call?.call_analysis?.user_sentiment || '').trim(),
+    security_probe: custom.security_probe === true || custom.security_probe === 'true',
+    abusive: custom.abusive === true || custom.abusive === 'true',
+    agent_stated_unlisted_fact:
+      custom.agent_stated_unlisted_fact === true || custom.agent_stated_unlisted_fact === 'true',
   };
+}
+
+// Watchdog rows for flagged conversations (security probes, abuse, and the
+// agent stating facts it shouldn't know). Shared by the call and chat paths.
+function flagAuditRows(base, data) {
+  const rows = [];
+  if (data.security_probe) {
+    rows.push({
+      ...base,
+      event_type: 'security_probe_detected',
+      status: 'flagged',
+      detail: 'caller attempted to extract prompt/config/other-caller data',
+    });
+  }
+  if (data.abusive) {
+    rows.push({
+      ...base,
+      event_type: 'abusive_conversation',
+      status: 'flagged',
+      detail: 'explicit/harassing content or joke identity',
+    });
+  }
+  if (data.agent_stated_unlisted_fact) {
+    rows.push({
+      ...base,
+      event_type: 'unverified_info_flagged',
+      status: 'flagged',
+      detail: 'agent may have stated facts outside its script — review transcript',
+    });
+  }
+  return rows;
 }
 
 /* ---------- call record persistence (durable transcript + recording) ---------- */
@@ -559,6 +594,8 @@ function extractChatData(chat) {
       'No summary available — see message log below.',
     sentiment: (chat?.chat_analysis?.user_sentiment || '').trim(),
     prospect_number: prospectNumber,
+    security_probe: custom.security_probe === true || custom.security_probe === 'true',
+    abusive: custom.abusive === true || custom.abusive === 'true',
   };
 }
 
@@ -696,7 +733,7 @@ async function handleChatAnalyzed(chat) {
       },
     },
   ]);
-  const audit = [];
+  const audit = flagAuditRows(base, data);
 
   // Persist the message log so the email can link to it instead of
   // embedding it. Best-effort; falls back to the legacy full email.
@@ -723,6 +760,8 @@ async function handleChatAnalyzed(chat) {
     leadQuality: data.lead_quality,
     sentiment: data.sentiment,
     bookedLabel: data.setup_call_booked_time || null,
+    flagged: data.security_probe || data.abusive,
+    prospectMessages,
   });
 
   let emailError = null;
@@ -793,6 +832,26 @@ export async function POST(request) {
     return handleChatAnalyzed(payload.chat || {});
   }
 
+  // Lightweight ledger row for every call ending: captures who hung up
+  // (disconnection_reason) and guarantees calls that never reach analysis
+  // (Retell analysis failures) still leave a trace. No email/SMS legs.
+  if (payload.event === 'call_ended') {
+    const call = payload.call || {};
+    if (!(await alreadyProcessed('call_ended', call.call_id))) {
+      await logAuditEvents([
+        {
+          call_id: call.call_id || null,
+          from_number: call.from_number || null,
+          duration_sec: callDurationSec(call) || null,
+          event_type: 'call_ended',
+          status: 'ok',
+          detail: call.disconnection_reason || 'unknown',
+        },
+      ]);
+    }
+    return json(200, { ok: true });
+  }
+
   if (payload.event !== 'call_analyzed') {
     return json(204, null);
   }
@@ -847,7 +906,7 @@ export async function POST(request) {
       },
     },
   ]);
-  const audit = [];
+  const audit = flagAuditRows(base, data);
 
   // Persist the full transcript + a durable copy of the recording so the
   // email can carry links instead of the raw content. Best-effort: on
@@ -876,6 +935,7 @@ export async function POST(request) {
     leadQuality: data.lead_quality,
     sentiment: data.sentiment,
     bookedLabel: data.setup_call_booked_time || null,
+    flagged: data.security_probe || data.abusive,
   });
 
   let emailError = null;

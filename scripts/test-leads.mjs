@@ -4,6 +4,7 @@ import {
   normalizeEmail,
   classifyStatus,
   computePriority,
+  needsAttention,
 } from '../api/lib/leads.mjs';
 
 function assert(cond, msg) {
@@ -25,5 +26,10 @@ assert(computePriority({ wantsSetup: true, leadQuality: 'cold' }) === 3, 'wants 
 assert(computePriority({ wantsSetup: false, leadQuality: 'hot' }) === 3, 'quality hot');
 assert(computePriority({ wantsSetup: false, leadQuality: 'warm' }) === 2, 'warm');
 assert(computePriority({ wantsSetup: false, leadQuality: 'cold' }) === 1, 'cold');
+
+assert(needsAttention({ sentiment: 'Negative', durationSec: 90 }) === true, 'negative long call');
+assert(needsAttention({ sentiment: 'negative', prospectMessages: 4 }) === true, 'negative engaged chat');
+assert(needsAttention({ sentiment: 'negative', durationSec: 20 }) === false, 'negative quick hangup');
+assert(needsAttention({ sentiment: 'positive', durationSec: 300 }) === false, 'positive ignored');
 
 console.log('leads unit checks passed');

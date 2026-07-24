@@ -53,6 +53,55 @@ async function alertFailedAudit(audit, context = {}) {
   }
 }
 
+/* ---------- webhook idempotency ---------- */
+// Retell retries webhooks that respond slowly; without a guard every retry
+// re-sends all owner alerts (one call produced 3 SMS + 3 emails on 7/23).
+// Two layers: a warm-instance set catches retries hitting the same instance
+// while the first run is still in flight, and a Supabase marker row —
+// inserted BEFORE the heavy legs — catches retries on cold/other instances.
+
+const processingCalls = new Map();
+function seenInMemory(callId) {
+  if (!callId) return false;
+  const at = processingCalls.get(callId);
+  return !!(at && Date.now() - at < 24 * 60 * 60 * 1000);
+}
+function markProcessing(callId) {
+  if (!callId) return;
+  processingCalls.set(callId, Date.now());
+  if (processingCalls.size > 5000) processingCalls.clear();
+}
+
+async function alreadyProcessed(eventType, callId) {
+  const url = process.env.SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key || !callId) return false;
+  try {
+    const res = await fetch(
+      `${url}/rest/v1/audit_events?select=id&event_type=eq.${eventType}&call_id=eq.${encodeURIComponent(callId)}&limit=1`,
+      { headers: { apikey: key, Authorization: `Bearer ${key}` } }
+    );
+    if (!res.ok) return false;
+    return ((await res.json()) || []).length > 0;
+  } catch {
+    return false;
+  }
+}
+
+// Returns a 200 (Retell must not retry again) after logging the duplicate.
+async function skipDuplicate(base, eventType) {
+  console.log(`retell-webhook: duplicate ${eventType} for ${base.call_id} — skipping`);
+  await logAuditEvents([
+    {
+      ...base,
+      event_type: 'webhook_duplicate_skipped',
+      status: 'skipped',
+      detail: `retry of already-processed ${eventType}`,
+    },
+  ]);
+  return json(200, { ok: true, duplicate: true });
+}
+
 // One hangup-nurture SMS per call_id (per warm instance).
 const nurtureSentForCall = new Map();
 function alreadyNurtured(callId) {
@@ -622,7 +671,13 @@ async function handleChatAnalyzed(chat) {
     lead_quality: data.lead_quality || null,
     sentiment: data.sentiment || null,
   };
-  const audit = [
+  if (seenInMemory(chat.chat_id) || (await alreadyProcessed('sms_chat_analyzed', chat.chat_id))) {
+    return skipDuplicate(base, 'sms_chat_analyzed');
+  }
+  markProcessing(chat.chat_id);
+  // Insert the marker row before the slow legs so a concurrent retry on
+  // another instance sees it and skips.
+  await logAuditEvents([
     {
       ...base,
       event_type: 'sms_chat_analyzed',
@@ -640,7 +695,8 @@ async function handleChatAnalyzed(chat) {
         to_number: lineNumber,
       },
     },
-  ];
+  ]);
+  const audit = [];
 
   // Persist the message log so the email can link to it instead of
   // embedding it. Best-effort; falls back to the legacy full email.
@@ -767,7 +823,13 @@ export async function POST(request) {
     lead_quality: data.lead_quality || null,
     sentiment: data.sentiment || null,
   };
-  const audit = [
+  if (seenInMemory(call.call_id) || (await alreadyProcessed('call_analyzed', call.call_id))) {
+    return skipDuplicate(base, 'call_analyzed');
+  }
+  markProcessing(call.call_id);
+  // Insert the marker row before the slow legs so a concurrent retry on
+  // another instance sees it and skips.
+  await logAuditEvents([
     {
       ...base,
       event_type: 'call_analyzed',
@@ -784,7 +846,8 @@ export async function POST(request) {
         recording_url: typeof call.recording_url === 'string' ? call.recording_url : null,
       },
     },
-  ];
+  ]);
+  const audit = [];
 
   // Persist the full transcript + a durable copy of the recording so the
   // email can carry links instead of the raw content. Best-effort: on
@@ -937,17 +1000,33 @@ export async function POST(request) {
   // Hangups never reach this path with a real booking confirmation in practice,
   // but we still gate so nurture and confirm never both fire on a hung-up call.
   if (!hungUp && data.wants_sms_confirmation && data.callback_phone) {
-    try {
-      const r = await sendRetellSms(data.callback_phone, {
-        agentId: process.env.RETELL_CONFIRM_AGENT_ID,
-        dynamicVariables: { confirm_body: buildConfirmSms(data) },
-        source: 'customer-booking-confirmation',
+    // The analysis sometimes extracts our own line as the callback number
+    // (e.g. the caller role-played "the number I'm calling from"); texting
+    // ourselves fails with "from and to cannot be the same".
+    const confirmTo = normalizePhone(data.callback_phone);
+    const ourNumbers = [process.env.RETELL_SMS_FROM, call.to_number]
+      .map(normalizePhone)
+      .filter(Boolean);
+    if (confirmTo && ourNumbers.includes(confirmTo)) {
+      audit.push({
+        ...base,
+        event_type: 'customer_sms_skipped',
+        status: 'skipped',
+        detail: `callback number ${confirmTo} is our own line — bad extraction`,
       });
-      if (!r.skipped) audit.push({ ...base, event_type: 'customer_sms_sent', status: 'ok', detail: null });
-    } catch (err) {
-      smsError = err.message;
-      console.error('retell-webhook customer SMS failed:', err.message);
-      audit.push({ ...base, event_type: 'sms_failed', status: 'failed', detail: `customer confirmation: ${err.message.slice(0, 400)}` });
+    } else {
+      try {
+        const r = await sendRetellSms(data.callback_phone, {
+          agentId: process.env.RETELL_CONFIRM_AGENT_ID,
+          dynamicVariables: { confirm_body: buildConfirmSms(data) },
+          source: 'customer-booking-confirmation',
+        });
+        if (!r.skipped) audit.push({ ...base, event_type: 'customer_sms_sent', status: 'ok', detail: null });
+      } catch (err) {
+        smsError = err.message;
+        console.error('retell-webhook customer SMS failed:', err.message);
+        audit.push({ ...base, event_type: 'sms_failed', status: 'failed', detail: `customer confirmation: ${err.message.slice(0, 400)}` });
+      }
     }
   }
 

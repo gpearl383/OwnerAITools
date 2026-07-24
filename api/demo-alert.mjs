@@ -21,6 +21,7 @@
 //   SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY — audit trail logging
 
 import crypto from 'node:crypto';
+import { createAllowanceTracker, remainingText, DEMO_LIMITS } from './lib/demo-limits.mjs';
 
 const TZ = 'America/New_York';
 
@@ -79,7 +80,6 @@ function speakableTime(iso) {
 /* ---------- rate limiting (per warm instance) ---------- */
 
 const perNumber = new Map();
-const perCall = new Map();
 const globalHits = { start: 0, count: 0 };
 
 function allowSend(number) {
@@ -99,18 +99,8 @@ function allowSend(number) {
   return true;
 }
 
-// One successful demo-alert per Retell call_id (prevents re-spam mid-call).
-function alreadySentForCall(callId) {
-  if (!callId) return false;
-  const prev = perCall.get(callId);
-  return !!(prev && Date.now() - prev < 24 * 60 * 60 * 1000);
-}
-
-function markSentForCall(callId) {
-  if (!callId) return;
-  perCall.set(callId, Date.now());
-  if (perCall.size > 5000) perCall.clear();
-}
+// Per-call budget: 2 sample texts + 2 sample emails, max 4 invocations.
+const allowance = createAllowanceTracker();
 
 /* ---------- message bodies ---------- */
 
@@ -368,34 +358,18 @@ export async function POST(request) {
   // Retell custom-function body: { name, call, args }. Tolerate args-only too.
   const args = payload.args || payload;
   const call = payload.call || {};
-  const to = normalizePhone(args.prospect_mobile);
+  const providedTo = normalizePhone(args.prospect_mobile);
   const from = normalizePhone(call.from_number);
+  // Fall back to the number on the call: the LLM has no access to caller ID,
+  // so "text the number I'm calling from" arrives with no usable
+  // prospect_mobile. The server knows the real number — use it.
+  const to = providedTo || from;
+  const wantsText = args.send_text !== false;
   const email = validEmail(args.prospect_email);
   const apptStart =
     args.appointment_start && !Number.isNaN(new Date(args.appointment_start).getTime())
       ? args.appointment_start
       : null;
-
-  if (!to) {
-    return toolResult('That mobile number did not look valid. Ask the caller to repeat it.');
-  }
-  // Only text the number currently on the call — blocks third-party SMS abuse
-  // if the model is steered to invent a different prospect_mobile.
-  if (!from || to !== from) {
-    return toolResult(
-      'The sample text can only be sent to the phone number this person is calling from. Ask them to confirm they want it on this phone, then retry with that number.'
-    );
-  }
-  if (!process.env.RETELL_SMS_FROM || !process.env.RETELL_DEMO_ALERT_AGENT_ID) {
-    console.error('demo-alert: SMS env vars missing');
-    return toolResult('The sample text is unavailable right now. Continue without it.');
-  }
-  if (alreadySentForCall(call.call_id)) {
-    return toolResult('A sample alert was already sent on this call. Continue without sending another.');
-  }
-  if (!allowSend(to)) {
-    return toolResult('A sample alert was already sent to that number recently. Continue without sending another.');
-  }
 
   const base = {
     call_id: call.call_id || null,
@@ -408,28 +382,87 @@ export async function POST(request) {
     appointment: args.appointment,
     urgent: args.urgent === true,
   };
+
+  // Guard rejections get an audit row so failed attempts show on the
+  // dashboard instead of vanishing (last night's failures were invisible).
+  async function blocked(reason, speakable) {
+    await logAuditBatch([
+      { ...base, event_type: 'demo_alert_blocked', status: 'skipped', detail: reason, payload: rolePlay },
+    ]);
+    return toolResult(speakable);
+  }
+
+  // Anti-abuse: an explicitly provided number must match the caller's number.
+  if (providedTo && from && providedTo !== from) {
+    return blocked(
+      `provided number ${providedTo} does not match caller ${from}`,
+      'The sample text can only go to the phone number this person is calling from. Retry without a phone number to use the calling number automatically.'
+    );
+  }
+  if (!allowance.allowInvocation(call.call_id)) {
+    return blocked(
+      'invocation limit reached',
+      `The demo send limit for this call has been reached (${DEMO_LIMITS.smsPerCall} sample texts and ${DEMO_LIMITS.emailPerCall} sample emails). Tell the caller plainly that is the cap for one demo call and continue toward booking the setup call.`
+    );
+  }
+
+  // Decide which channels this invocation can use.
+  const skips = [];
+  let doSms = wantsText;
+  if (doSms && !to) {
+    doSms = false;
+    skips.push('no valid mobile number for this call');
+  }
+  if (doSms && (!process.env.RETELL_SMS_FROM || !process.env.RETELL_DEMO_ALERT_AGENT_ID)) {
+    console.error('demo-alert: SMS env vars missing');
+    doSms = false;
+    skips.push('texting is unavailable right now');
+  }
+  if (doSms && !allowance.canSms(call.call_id)) {
+    doSms = false;
+    skips.push(`the ${DEMO_LIMITS.smsPerCall}-text limit for this call was reached`);
+  }
+  if (doSms && !allowSend(to)) {
+    doSms = false;
+    skips.push('that number already received the maximum sample texts this hour');
+  }
+  let doEmail = !!(email && process.env.RESEND_API_KEY);
+  if (email && doEmail && !allowance.canEmail(call.call_id)) {
+    doEmail = false;
+    skips.push(`the ${DEMO_LIMITS.emailPerCall}-email limit for this call was reached`);
+  }
+
+  if (!doSms && !doEmail) {
+    return blocked(
+      `nothing sendable: ${skips.join('; ') || 'no valid channel'}`,
+      `Nothing could be sent: ${skips.join('; ') || 'no valid text number or email was available'}. Tell the caller honestly and continue the conversation.`
+    );
+  }
+
   const audit = [];
   const sent = [];
 
   // Leg 1 — [DEMO] lead-alert SMS
-  try {
-    await sendDemoSms(to, buildDemoAlertBody(args), 'demo-lead-alert');
-    markSentForCall(call.call_id);
-    audit.push({
-      ...base,
-      event_type: 'demo_alert_sms_sent',
-      status: 'ok',
-      detail: `sample alert for ${args.business_name || 'unknown business'}`,
-      payload: rolePlay,
-    });
-    sent.push('the lead alert text');
-  } catch (err) {
-    console.error('demo-alert lead SMS failed:', err.message);
-    audit.push({ ...base, event_type: 'sms_failed', status: 'failed', detail: `demo alert: ${err.message.slice(0, 400)}` });
+  if (doSms) {
+    try {
+      await sendDemoSms(to, buildDemoAlertBody(args), 'demo-lead-alert');
+      allowance.recordSms(call.call_id);
+      audit.push({
+        ...base,
+        event_type: 'demo_alert_sms_sent',
+        status: 'ok',
+        detail: `sample alert for ${args.business_name || 'unknown business'}`,
+        payload: rolePlay,
+      });
+      sent.push('the lead alert text');
+    } catch (err) {
+      console.error('demo-alert lead SMS failed:', err.message);
+      audit.push({ ...base, event_type: 'sms_failed', status: 'failed', detail: `demo alert: ${err.message.slice(0, 400)}` });
+    }
   }
 
   // Leg 2 — [DEMO] appointment-booked SMS (only when the role-play booked something)
-  if (args.appointment) {
+  if (doSms && args.appointment) {
     try {
       await sendDemoSms(to, buildDemoApptBody(args), 'demo-appt-booked');
       audit.push({
@@ -447,7 +480,7 @@ export async function POST(request) {
   }
 
   // Leg 3 — real calendar invite (ICS) for the pretend customer's appointment
-  if (email && apptStart && process.env.RESEND_API_KEY) {
+  if (doEmail && apptStart) {
     try {
       await sendDemoInvite(email, args, apptStart);
       audit.push({
@@ -465,9 +498,10 @@ export async function POST(request) {
   }
 
   // Leg 4 — [DEMO] sample owner lead email
-  if (email && process.env.RESEND_API_KEY) {
+  if (doEmail) {
     try {
       await sendDemoEmail(email, args);
+      allowance.recordEmail(call.call_id);
       audit.push({
         ...base,
         event_type: 'demo_email_sent',
@@ -484,10 +518,14 @@ export async function POST(request) {
 
   await logAuditBatch(audit);
 
+  const left = remainingText(allowance.remaining(call.call_id));
   if (!sent.length) {
-    return toolResult('Nothing could be sent. Apologize briefly and continue the conversation.');
+    return toolResult(
+      `Nothing could be sent — the sends failed. Apologize briefly, tell the caller you can retry, and continue. ${left}`
+    );
   }
+  const skipped = skips.length ? ` Not sent: ${skips.join('; ')}.` : '';
   return toolResult(
-    `Sent: ${sent.join(', ')}. Tell the caller to check their phone${email ? ' and their email inbox' : ''} — that is everything they would have received as the owner from that one call.`,
+    `Sent: ${sent.join(', ')}. Tell the caller to check their phone${doEmail ? ' and their email inbox' : ''} — that is everything they would have received as the owner from that one call.${skipped} ${left}`
   );
 }

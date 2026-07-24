@@ -93,6 +93,15 @@ function writeRepo(a, live) {
   fs.writeFileSync(f.config, JSON.stringify(live.config, null, 2) + '\n');
 }
 
+// Key-order-insensitive stringify: Retell reorders object keys on save.
+function canonical(v) {
+  if (Array.isArray(v)) return `[${v.map(canonical).join(',')}]`;
+  if (v && typeof v === 'object') {
+    return `{${Object.keys(v).sort().map((k) => `${JSON.stringify(k)}:${canonical(v[k])}`).join(',')}}`;
+  }
+  return JSON.stringify(v);
+}
+
 function summarizeDiff(name, live, repo) {
   const changes = [];
   if (live.prompt !== repo.prompt) {
@@ -102,7 +111,7 @@ function summarizeDiff(name, live, repo) {
     const a = live.config[scope] || {};
     const b = repo.config[scope] || {};
     for (const k of new Set([...Object.keys(a), ...Object.keys(b)])) {
-      if (JSON.stringify(a[k]) !== JSON.stringify(b[k])) changes.push(`${scope}.${k}`);
+      if (canonical(a[k]) !== canonical(b[k])) changes.push(`${scope}.${k}`);
     }
   }
   console.log(changes.length ? `${name}: differs — ${changes.join(', ')}` : `${name}: in sync`);

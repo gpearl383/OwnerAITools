@@ -1,0 +1,222 @@
+{
+  "llm": {
+    "model": "gpt-4.1",
+    "begin_message": "Thanks for calling OwnerAI Tools! Quick heads up — you're talking to the AI receptionist right now. I can answer questions, or if you tell me what kind of business you run, I'll show you exactly how I'd handle your customers' calls. What can I do for you?",
+    "start_speaker": "agent",
+    "general_tools": [
+      {
+        "name": "end_call",
+        "description": "End the call politely when the conversation is finished.",
+        "type": "end_call",
+        "speak_after_execution": true
+      },
+      {
+        "method": "POST",
+        "execution_message_description": "Tell the caller you are sending the sample alert to their phone right now.",
+        "timeout_ms": 10000,
+        "speak_after_execution": true,
+        "name": "send_demo_alert",
+        "description": "Send the prospect the sample owner notifications from the role-play they just did: a [DEMO] lead-alert text, a [DEMO] appointment-booked text, and — if they gave an email — a real calendar invite for the pretend appointment plus a sample owner email. Only call after the caller explicitly agreed and confirmed their mobile number. Call at most once per call.",
+        "type": "custom",
+        "speak_during_execution": true,
+        "parameters": {
+          "type": "object",
+          "required": [
+            "prospect_mobile",
+            "business_name"
+          ],
+          "properties": {
+            "business_name": {
+              "type": "string",
+              "description": "The prospect's business name used in the role-play, e.g. Comfort Air HVAC"
+            },
+            "prospect_email": {
+              "type": "string",
+              "description": "The prospect's email address, only if they volunteered it for the full owner experience (calendar invite + sample email). Omit otherwise."
+            },
+            "address": {
+              "type": "string",
+              "description": "Address the pretend customer gave, if any"
+            },
+            "prospect_mobile": {
+              "type": "string",
+              "description": "The prospect's mobile number to text, e.g. +15551234567 or 555-123-4567. Use the number they are calling from if they agreed to that."
+            },
+            "issue": {
+              "type": "string",
+              "description": "Short description of the pretend customer's problem or reason for calling"
+            },
+            "customer_phone": {
+              "type": "string",
+              "description": "Callback number the pretend customer left"
+            },
+            "appointment_start": {
+              "type": "string",
+              "description": "The role-play appointment start as ISO 8601 with Eastern timezone offset, e.g. 2026-07-22T09:00:00-04:00. Convert from the spoken appointment (e.g. 'tomorrow 9 AM') using the current time. Omit if no appointment was booked in the role-play."
+            },
+            "appointment": {
+              "type": "string",
+              "description": "Appointment slot offered or booked in the role-play, if any"
+            },
+            "customer_name": {
+              "type": "string",
+              "description": "Name of the pretend customer from the role-play"
+            },
+            "urgent": {
+              "type": "boolean",
+              "description": "True if the role-play call was an emergency or urgent"
+            }
+          }
+        },
+        "url": "https://owneraitools.com/api/demo-alert"
+      },
+      {
+        "method": "POST",
+        "execution_message_description": "Tell the caller you are checking the calendar right now.",
+        "timeout_ms": 15000,
+        "speak_after_execution": true,
+        "name": "check_availability",
+        "description": "Get real open time slots for the 15-minute setup call from the live calendar. Call this before offering any times.",
+        "type": "custom",
+        "speak_during_execution": true,
+        "parameters": {
+          "type": "object",
+          "properties": {}
+        },
+        "url": "https://owneraitools.com/api/book-setup-call"
+      },
+      {
+        "method": "POST",
+        "execution_message_description": "Tell the caller you are booking it now.",
+        "timeout_ms": 15000,
+        "speak_after_execution": true,
+        "name": "book_setup_call",
+        "description": "Book the 15-minute setup call on the live calendar. Only call after the caller picked a specific slot from check_availability and gave their name and email.",
+        "type": "custom",
+        "speak_during_execution": true,
+        "parameters": {
+          "type": "object",
+          "required": [
+            "slot_start",
+            "name",
+            "email"
+          ],
+          "properties": {
+            "slot_start": {
+              "type": "string",
+              "description": "The exact slot_start ISO timestamp of the slot the caller picked, copied verbatim from the check_availability result."
+            },
+            "name": {
+              "type": "string",
+              "description": "Caller's full name"
+            },
+            "business_name": {
+              "type": "string",
+              "description": "Caller's business name"
+            },
+            "phone": {
+              "type": "string",
+              "description": "Caller's mobile number; use the number they are calling from if not stated"
+            },
+            "email": {
+              "type": "string",
+              "description": "Caller's email address for the calendar invite"
+            }
+          }
+        },
+        "url": "https://owneraitools.com/api/book-setup-call"
+      }
+    ]
+  },
+  "agent": {
+    "post_call_analysis_data": [
+      {
+        "name": "caller_name",
+        "description": "The caller's full name, if they gave one.",
+        "type": "string",
+        "examples": [
+          "Mike Torres"
+        ]
+      },
+      {
+        "name": "business_name",
+        "description": "The name of the caller's business, if mentioned.",
+        "type": "string",
+        "examples": [
+          "Torres Plumbing"
+        ]
+      },
+      {
+        "name": "business_type",
+        "description": "The type/industry of the caller's business.",
+        "type": "string",
+        "examples": [
+          "plumbing",
+          "dental office",
+          "HVAC"
+        ]
+      },
+      {
+        "type": "string",
+        "name": "callback_phone",
+        "description": "The callback phone number the caller provided, if any."
+      },
+      {
+        "type": "string",
+        "name": "call_reason",
+        "description": "Why they called, in one short sentence."
+      },
+      {
+        "name": "interested_tier",
+        "description": "Which pricing tier the caller asked about or seemed interested in, if any.",
+        "type": "string",
+        "examples": [
+          "Basic",
+          "Advanced",
+          "Expert"
+        ]
+      },
+      {
+        "type": "boolean",
+        "name": "did_role_play",
+        "description": "True if the caller did the role-play demo where the agent acted as their receptionist."
+      },
+      {
+        "type": "boolean",
+        "name": "wants_setup_call",
+        "description": "True if the caller asked to book a setup call or gave their info for a callback."
+      },
+      {
+        "name": "lead_quality",
+        "description": "How promising this caller is as a sales lead.",
+        "type": "enum",
+        "choices": [
+          "hot",
+          "warm",
+          "curious",
+          "not_a_lead",
+          "spam"
+        ]
+      },
+      {
+        "type": "boolean",
+        "name": "wants_sms_confirmation",
+        "description": "True only if the caller explicitly agreed to receive a text confirmation with the booking link."
+      },
+      {
+        "type": "boolean",
+        "name": "demo_alert_sent",
+        "description": "True only if the sample owner lead-alert text was sent to the prospect during this call (send_demo_alert tool succeeded)."
+      },
+      {
+        "name": "setup_call_booked_time",
+        "description": "If a setup call was successfully booked on the calendar during this call (book_setup_call tool succeeded), the confirmed day and time exactly as spoken, e.g. 'Wednesday, July 22 at 10:00 AM Eastern'. Empty if nothing was booked.",
+        "type": "string",
+        "examples": [
+          "Wednesday, July 22 at 10:00 AM Eastern"
+        ]
+      }
+    ],
+    "webhook_url": "https://owneraitools.com/api/retell-webhook"
+  }
+}

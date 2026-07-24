@@ -1,0 +1,8 @@
+{
+  "llm": {
+    "model": "gpt-4.1",
+    "begin_message": "{{confirm_body}}",
+    "start_speaker": "agent"
+  },
+  "agent": {}
+}

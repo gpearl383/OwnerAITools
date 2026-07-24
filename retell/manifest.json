@@ -1,0 +1,39 @@
+{
+  "agents": [
+    {
+      "name": "demo-voice",
+      "description": "OwnerAI Tools — Website Demo Line (voice)",
+      "kind": "voice",
+      "agent_id": "agent_fcec78e0c72574d61945abdbf3",
+      "llm_id": "llm_6d96c220b0b8da0889b76e16e5c5"
+    },
+    {
+      "name": "sms-receptionist",
+      "description": "OwnerAI Tools — SMS Receptionist (chat)",
+      "kind": "chat",
+      "agent_id": "agent_464d6d1636bdf8b135f04f2990",
+      "llm_id": "llm_ef8d3d7395a5e2a9efecfe20760f"
+    },
+    {
+      "name": "demo-lead-alert",
+      "description": "OwnerAI Demo Lead Alert — one-shot template bot for sample owner alerts",
+      "kind": "chat",
+      "agent_id": "agent_06cdcaf880ee23888008885a5c",
+      "llm_id": "llm_ae15ad5182635e4b8fd8d315c453"
+    },
+    {
+      "name": "customer-confirmation",
+      "description": "OwnerAI Customer Confirmation — one-shot template bot for booking texts",
+      "kind": "chat",
+      "agent_id": "agent_7d2a2662fd90b34666ca68eae3",
+      "llm_id": "llm_77a239390d2b64deb6c1e1a9dc17"
+    },
+    {
+      "name": "owner-alert",
+      "description": "OwnerAI Owner Alert — one-shot template bot for call notifications",
+      "kind": "chat",
+      "agent_id": "agent_a3aff59a2b7b0bbf4171da5234",
+      "llm_id": "llm_1c52a3e1df38969f6d9c42b8540d"
+    }
+  ]
+}

@@ -1,0 +1,73 @@
+{
+  "llm": {
+    "model": "gpt-4.1",
+    "begin_message": "",
+    "start_speaker": "user",
+    "general_tools": [
+      {
+        "method": "POST",
+        "timeout_ms": 15000,
+        "speak_after_execution": true,
+        "name": "check_availability",
+        "description": "Get real open time slots for the 15-minute setup call from the live calendar. Call this before offering any times.",
+        "type": "custom",
+        "parameters": {
+          "type": "object",
+          "properties": {}
+        },
+        "url": "https://owneraitools.com/api/book-setup-call"
+      },
+      {
+        "method": "POST",
+        "timeout_ms": 15000,
+        "speak_after_execution": true,
+        "name": "book_setup_call",
+        "description": "Book the 15-minute setup call on the live calendar. Only call after the caller picked a specific slot from check_availability and gave their name and email.",
+        "type": "custom",
+        "parameters": {
+          "type": "object",
+          "required": [
+            "slot_start",
+            "name",
+            "email"
+          ],
+          "properties": {
+            "slot_start": {
+              "type": "string",
+              "description": "The exact slot_start ISO timestamp of the slot the caller picked, copied verbatim from the check_availability result."
+            },
+            "name": {
+              "type": "string",
+              "description": "Caller's full name"
+            },
+            "business_name": {
+              "type": "string",
+              "description": "Caller's business name"
+            },
+            "phone": {
+              "type": "string",
+              "description": "Caller's mobile number; use the number they are calling from if not stated"
+            },
+            "email": {
+              "type": "string",
+              "description": "Caller's email address for the calendar invite"
+            }
+          }
+        },
+        "url": "https://owneraitools.com/api/book-setup-call"
+      },
+      {
+        "name": "end_call",
+        "description": "End the SMS conversation after a final wrap-up message.",
+        "type": "end_call",
+        "speak_after_execution": true
+      }
+    ]
+  },
+  "agent": {
+    "webhook_url": "https://owneraitools.com/api/retell-webhook",
+    "webhook_events": [
+      "chat_analyzed"
+    ]
+  }
+}

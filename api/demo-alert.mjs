@@ -21,7 +21,12 @@
 //   SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY — audit trail logging
 
 import crypto from 'node:crypto';
-import { createAllowanceTracker, remainingText, DEMO_LIMITS } from './lib/demo-limits.mjs';
+import {
+  createAllowanceTracker,
+  remainingText,
+  DEMO_LIMITS,
+  SAMPLE_BUDGET_BOOKING_NOTE,
+} from './lib/demo-limits.mjs';
 import { resolveEmail } from './lib/spoken-email.mjs';
 
 const TZ = 'America/New_York';
@@ -416,7 +421,7 @@ export async function POST(request) {
   if (!allowance.allowInvocation(call.call_id)) {
     return blocked(
       'invocation limit reached',
-      `The demo send limit for this call has been reached (${DEMO_LIMITS.smsPerCall} sample texts and ${DEMO_LIMITS.emailPerCall} sample emails). Tell the caller plainly that is the cap for one demo call and continue toward booking the setup call.`
+      `The sample send budget for this call is used up (${DEMO_LIMITS.smsPerCall} sample texts and ${DEMO_LIMITS.emailPerCall} sample emails via send_demo_alert only). ${SAMPLE_BUDGET_BOOKING_NOTE} Continue toward booking the setup call with book_setup_call.`
     );
   }
 
@@ -434,7 +439,9 @@ export async function POST(request) {
   }
   if (doSms && !allowance.canSms(call.call_id)) {
     doSms = false;
-    skips.push(`the ${DEMO_LIMITS.smsPerCall}-text limit for this call was reached`);
+    skips.push(
+      `the sample ${DEMO_LIMITS.smsPerCall}-text budget for send_demo_alert was reached (does not block booking or confirmation texts)`
+    );
   }
   if (doSms && !allowSend(to)) {
     doSms = false;
@@ -451,14 +458,19 @@ export async function POST(request) {
   }
   if (email && doEmail && !allowance.canEmail(call.call_id)) {
     doEmail = false;
-    skips.push(`the ${DEMO_LIMITS.emailPerCall}-email limit for this call was reached`);
+    skips.push(
+      `the sample ${DEMO_LIMITS.emailPerCall}-email budget for send_demo_alert was reached (does not block the real setup-call calendar invite)`
+    );
   }
 
   if (!doSms && !doEmail) {
     const emailParseFail = emailAttempted && !email;
+    const sampleBudgetOnly = skips.some((s) => s.includes('sample') && s.includes('budget'));
     const speakable = emailParseFail
       ? 'Nothing could be sent: that email still was not valid after parsing. Ask them to re-spell it once, then retry with a compact address like name@domain.com. Do not invent spam-filter or security excuses.'
-      : `Nothing could be sent: ${skips.join('; ') || 'no valid text number or email was available'}. Tell the caller honestly and continue the conversation. Do not invent spam-filter or security excuses.`;
+      : sampleBudgetOnly
+        ? `No more sample sends available: ${skips.join('; ')}. ${SAMPLE_BUDGET_BOOKING_NOTE} If they already got samples and still do not see them, they may check Junk or Spam — only say that when a prior tool result said Sent. Continue to book the setup call.`
+        : `Nothing could be sent: ${skips.join('; ') || 'no valid text number or email was available'}. Tell the caller honestly and continue the conversation. Do not invent spam-filter or security excuses.`;
     return blocked(
       `nothing sendable: ${skips.join('; ') || 'no valid channel'}; raw=${emailRaw || ''}; normalized=${emailNormalized || ''}`,
       speakable,
@@ -551,7 +563,10 @@ export async function POST(request) {
     );
   }
   const skipped = skips.length ? ` Not sent: ${skips.join('; ')}.` : '';
+  const inboxHint = doEmail
+    ? ' and their email inbox (if they do not see it, they can check Junk or Spam — only mention that after a successful send)'
+    : '';
   return toolResult(
-    `Sent: ${sent.join(', ')}. Tell the caller to check their phone${doEmail ? ' and their email inbox' : ''} — that is everything they would have received as the owner from that one call.${skipped} ${left}`
+    `Sent: ${sent.join(', ')}. Tell the caller to check their phone${inboxHint} — that is everything they would have received as the owner from that one call.${skipped} ${left}`
   );
 }

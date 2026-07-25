@@ -150,27 +150,41 @@ async function isSlotStillOpen(slotStart) {
   });
 }
 
-async function alreadyBookedForCall(callId) {
-  if (!callId) return false;
+// Returns { when, email } from the prior setup_call_booked audit row, or null.
+async function getExistingBookingForCall(callId) {
+  if (!callId) return null;
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) return false;
+  if (!url || !key) return null;
   try {
     const qs = new URLSearchParams({
-      select: 'id',
+      select: 'detail,payload',
       event_type: 'eq.setup_call_booked',
       call_id: `eq.${callId}`,
+      order: 'created_at.desc',
       limit: '1',
     });
     const res = await fetch(`${url}/rest/v1/audit_events?${qs}`, {
       headers: { apikey: key, Authorization: `Bearer ${key}` },
     });
-    if (!res.ok) return false;
+    if (!res.ok) return null;
     const rows = await res.json();
-    return rows.length > 0;
+    if (!rows.length) return null;
+    const detail = String(rows[0].detail || '');
+    // detail format: `${when} — ${email}`
+    const sep = detail.lastIndexOf(' — ');
+    if (sep === -1) return { when: detail || null, email: null };
+    return {
+      when: detail.slice(0, sep).trim() || null,
+      email: detail.slice(sep + 3).trim() || null,
+    };
   } catch {
-    return false;
+    return null;
   }
+}
+
+async function alreadyBookedForCall(callId) {
+  return !!(await getExistingBookingForCall(callId));
 }
 
 /* ---------- rate limiting (per warm instance) ---------- */
@@ -250,9 +264,14 @@ async function handleBook(args, call) {
       'Missing or invalid details. Confirm the caller\'s full name, a valid email address for the calendar invite, and which time slot they picked, then try again.',
     );
   }
-  if (await alreadyBookedForCall(call.call_id)) {
+  const existing = await getExistingBookingForCall(call.call_id);
+  if (existing) {
+    const whenBit = existing.when ? ` for ${existing.when}` : '';
+    const emailBit = existing.email
+      ? ` The calendar invite was sent to ${existing.email}.`
+      : '';
     return toolResult(
-      'A setup call was already booked on this phone call. Confirm the existing time with the caller instead of booking again.',
+      `A setup call was already booked on this phone call${whenBit}.${emailBit} Confirm that time and email with the caller. Do not book again. Do not claim a different address was used — if they need a different email, say the team can update it.`
     );
   }
   if (!(await isSlotStillOpen(slotStart))) {

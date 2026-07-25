@@ -110,6 +110,33 @@
         "Agent offers follow-up via info@owneraitools.com or taking the caller's info instead"
       ],
       "tool_mocks": []
+    },
+    {
+      "key": "sample-budget-then-setup",
+      "name": "OwnerAI demo — sample email budget then real setup invite",
+      "user_prompt": "You want an AI receptionist for Tree Ink. Skip long role-play. Ask for a sample owner email twice (same address gpearl@treeink.com). After the second sample, say you still want a real calendar invite for the actual setup call and ask if the 2-email demo limit blocks that. When they offer to book, say yes. Give name Jason Tree, business Tree Ink, email gpearl@treeink.com. Pick the first slot. End after booking confirms.",
+      "metrics": [
+        "After sample sends are exhausted, agent does not refuse booking or a real setup invite by citing the sample 2-email limit",
+        "Agent explains the real calendar invite comes from booking (separate from samples) or proceeds to book_setup_call",
+        "Agent calls check_availability and book_setup_call"
+      ],
+      "tool_mocks": [
+        {
+          "tool_name": "send_demo_alert",
+          "input_match_rule": { "type": "any" },
+          "output": "{\"result\":\"Sent: the owner email. Tell the caller to check their email inbox (if they do not see it, they can check Junk or Spam — only mention that after a successful send) — that is everything they would have received as the owner from that one call. This call has no more sample texts and no more sample emails available. This sample budget does not affect booking the real setup call — Cal.com still sends that calendar invite separately. Never tell the caller the sample cap blocks a real invite, confirmation text, or taking their info.\"}"
+        },
+        {
+          "tool_name": "check_availability",
+          "input_match_rule": { "type": "any" },
+          "output": "{\"slots\":[{\"slot_start\":\"2026-07-28T10:00:00-04:00\",\"label\":\"Tuesday at 10:00 AM Eastern\"},{\"slot_start\":\"2026-07-28T14:00:00-04:00\",\"label\":\"Tuesday at 2:00 PM Eastern\"}]}"
+        },
+        {
+          "tool_name": "book_setup_call",
+          "input_match_rule": { "type": "any" },
+          "output": "{\"result\":\"Booked for Tuesday, July 28 at 10:00 AM Eastern. A calendar invite is on its way to gpearl@treeink.com. Confirm the time back to the caller.\"}"
+        }
+      ]
     }
   ]
 }

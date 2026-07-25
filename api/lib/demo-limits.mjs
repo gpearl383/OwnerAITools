@@ -64,6 +64,10 @@ export function createAllowanceTracker(limits = DEMO_LIMITS) {
 
 // Speakable summary of what's left, appended to tool results so the agent
 // can state real limits instead of inventing policy.
+// Cap applies ONLY to send_demo_alert samples — never to setup booking / Cal.com invites.
+export const SAMPLE_BUDGET_BOOKING_NOTE =
+  'This sample budget does not affect booking the real setup call — Cal.com still sends that calendar invite separately. Never tell the caller the sample cap blocks a real invite, confirmation text, or taking their info.';
+
 export function remainingText(remaining) {
   const parts = [];
   parts.push(
@@ -76,5 +80,9 @@ export function remainingText(remaining) {
       ? `${remaining.email} more sample email${remaining.email === 1 ? '' : 's'}`
       : 'no more sample emails'
   );
-  return `This call has ${parts.join(' and ')} available.`;
+  const base = `This call has ${parts.join(' and ')} available.`;
+  if (remaining.sms === 0 && remaining.email === 0) {
+    return `${base} ${SAMPLE_BUDGET_BOOKING_NOTE}`;
+  }
+  return base;
 }

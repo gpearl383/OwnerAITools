@@ -3,6 +3,7 @@ import {
   createAllowanceTracker,
   remainingText,
   DEMO_LIMITS,
+  SAMPLE_BUDGET_BOOKING_NOTE,
 } from '../api/lib/demo-limits.mjs';
 
 function assert(cond, msg) {
@@ -55,8 +56,16 @@ assert(
 );
 assert(
   remainingText({ sms: 0, email: 0 }) ===
-    'This call has no more sample texts and no more sample emails available.',
-  'remaining text exhausted'
+    `This call has no more sample texts and no more sample emails available. ${SAMPLE_BUDGET_BOOKING_NOTE}`,
+  'remaining text exhausted includes booking-still-allowed note'
+);
+assert(
+  SAMPLE_BUDGET_BOOKING_NOTE.includes('does not affect booking'),
+  'booking note says sample budget does not affect booking'
+);
+assert(
+  SAMPLE_BUDGET_BOOKING_NOTE.includes('Never tell the caller the sample cap blocks'),
+  'booking note forbids citing sample cap against real invites'
 );
 
 console.log('demo-limits tests passed');

@@ -11,6 +11,8 @@
 //   SUPABASE_URL
 //   SUPABASE_SERVICE_ROLE_KEY
 
+import { cronAuthorized } from './lib/cron-auth.mjs';
+
 const RETENTION_DAYS = 120;
 const BATCH = 50;
 
@@ -22,10 +24,7 @@ function unauthorized() {
 }
 
 function authorized(request) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return false;
-  const header = request.headers.get('authorization') || '';
-  return header === `Bearer ${secret}`;
+  return cronAuthorized(request);
 }
 
 async function purgeOnce() {

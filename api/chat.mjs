@@ -1,5 +1,6 @@
 import { upsertLead, leadActionUrl, normalizePhone } from './lib/leads.mjs';
 import { notifyOwner } from './lib/notify.mjs';
+import { allowRate, hashIp } from './lib/rate-limit.mjs';
 
 // OwnerAI Assistant — Vercel serverless proxy for Anthropic, plus chat lead
 // capture emailed via Resend.
@@ -55,32 +56,12 @@ BEHAVIOR:
 - Only discuss OwnerAI Tools and its services; politely decline unrelated requests.
 - Current year: 2026.`;
 
-/* ---------- rate limiting (in-memory, per warm instance) ---------- */
+/* ---------- rate limiting (Supabase-backed + memory fallback) ---------- */
 
-function createLimiter({ windowMs, max, maxEntries = 5000 }) {
-  const hits = new Map();
-  return function allow(key) {
-    const now = Date.now();
-    const rec = hits.get(key);
-    if (!rec || now - rec.start >= windowMs) {
-      if (hits.size >= maxEntries) {
-        for (const [k, v] of hits) {
-          if (now - v.start >= windowMs) hits.delete(k);
-        }
-        if (hits.size >= maxEntries) hits.clear();
-      }
-      hits.set(key, { start: now, count: 1 });
-      return true;
-    }
-    rec.count += 1;
-    return rec.count <= max;
-  };
-}
-
-// 20 messages / 10 min per IP is a long human conversation; the global cap
-// bounds Anthropic spend even across many IPs.
-const allowIp = createLimiter({ windowMs: 10 * 60 * 1000, max: 20 });
-const allowGlobal = createLimiter({ windowMs: 60 * 60 * 1000, max: 300 });
+const IP_WINDOW_MS = 10 * 60 * 1000;
+const IP_MAX = 20;
+const GLOBAL_WINDOW_MS = 60 * 60 * 1000;
+const GLOBAL_MAX = 300;
 
 /* ---------- origin lock ---------- */
 
@@ -211,7 +192,10 @@ export async function POST(request) {
     return json(403, { error: 'Forbidden' });
   }
 
-  if (!allowIp(clientIp(request)) || !allowGlobal('all')) {
+  const ipKey = hashIp(clientIp(request));
+  const ipOk = await allowRate(`chat:ip:${ipKey}`, { windowMs: IP_WINDOW_MS, max: IP_MAX });
+  const globalOk = await allowRate('chat:global', { windowMs: GLOBAL_WINDOW_MS, max: GLOBAL_MAX });
+  if (!ipOk || !globalOk) {
     return json(429, { error: 'Too many requests — please try again shortly.' }, origin);
   }
 

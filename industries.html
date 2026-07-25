@@ -211,9 +211,27 @@ footer{background:#0f2745;color:#9aadc4;padding:42px 0 28px;font-size:.9rem}
   .page-hero{padding:150px 0 56px}
   .industry-group{padding:56px 0}
 }
+@media (max-width:720px){
+  .announce-tag{display:none}
+  .announce-inner{justify-content:center}
+  .announce-contact{display:flex;flex-wrap:wrap;justify-content:center;gap:4px 8px;text-align:center}
+  .announce-contact a[href^="mailto"],
+  .announce-sep{display:none}
+}
+@media (max-width:640px){
+  .container{padding:0 18px}
+  .page-hero{padding:140px 0 48px}
+  .page-hero h1{font-size:clamp(1.85rem,7.5vw,2.4rem)}
+  .page-hero p{font-size:1.02rem}
+  .hero-pills{gap:8px;margin-top:22px}
+  .hero-pill{font-size:.85rem;padding:8px 14px}
+  .final-cta .btn{width:100%}
+}
 @media (max-width:480px){
   .hide-sm{display:none}
   .cta-row .btn{width:100%}
+  .nav .btn-sm{padding:9px 16px;font-size:.85rem}
+  .logo{font-size:1.05rem}
 }
 @media (prefers-reduced-motion:reduce){
   .reveal{opacity:1;transform:none;transition:none}

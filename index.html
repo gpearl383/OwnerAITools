@@ -3,21 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>OwnerAI Tools — Every Call Answered. 24/7/365.</title>
-<meta name="description" content="A done-for-you receptionist service for small businesses. Every call answered in under 2 seconds, every lead captured, appointments booked — nights, weekends, holidays.">
+<title>OwnerAI Tools — AI Receptionist for Home Service Businesses</title>
+<meta name="description" content="Done-for-you AI receptionist for plumbers, HVAC, and electrical. Answers, qualifies, and books jobs 24/7 — under 2 seconds. Call the live demo: (516) 973-1973.">
 <link rel="canonical" href="https://owneraitools.com/">
 
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://owneraitools.com/">
 <meta property="og:site_name" content="OwnerAI Tools">
-<meta property="og:title" content="OwnerAI Tools — Every Call Answered. 24/7/365.">
-<meta property="og:description" content="A done-for-you AI receptionist for small businesses. Every call answered in under 2 seconds, every lead captured, appointments booked — nights, weekends, holidays.">
+<meta property="og:title" content="OwnerAI Tools — AI Receptionist for Home Service Businesses">
+<meta property="og:description" content="Done-for-you AI receptionist for plumbers, HVAC, and electrical. Answers, qualifies, and books jobs 24/7. Call the live demo: (516) 973-1973.">
 <meta property="og:image" content="https://owneraitools.com/og-image.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="OwnerAI Tools — Every Call Answered. 24/7/365.">
-<meta name="twitter:description" content="A done-for-you AI receptionist for small businesses. Call the live demo: (516) 973-1973.">
+<meta name="twitter:title" content="OwnerAI Tools — AI Receptionist for Home Service Businesses">
+<meta name="twitter:description" content="Done-for-you AI receptionist for home service businesses. Call the live demo: (516) 973-1973.">
 <meta name="twitter:image" content="https://owneraitools.com/og-image.png">
 
 <!--
@@ -43,7 +43,7 @@
   "name": "OwnerAI Tools",
   "url": "https://owneraitools.com/",
   "image": "https://owneraitools.com/og-image.png",
-  "description": "A done-for-you AI receptionist service for small businesses. Every call answered 24/7/365, every lead captured, appointments booked, summaries emailed to the owner.",
+  "description": "A done-for-you AI receptionist for home service businesses. Answers, qualifies, and books jobs 24/7/365 — every lead captured and summarized to the owner.",
   "telephone": "+15169731973",
   "email": "info@owneraitools.com",
   "parentOrganization": {
@@ -190,13 +190,13 @@ section{padding:96px 0;position:relative}
   display:inline-flex;align-items:center;gap:8px;
   font-size:.76rem;letter-spacing:.13em;
   padding:8px 16px;border-radius:999px;
-  border:1px solid var(--primary-200);background:#fff;
-  box-shadow:var(--shadow-card);
-  margin-bottom:26px;color:var(--primary-700);
+  border:1px solid rgba(255,255,255,.28);background:rgba(255,255,255,.12);
+  box-shadow:none;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  margin-bottom:26px;color:#fff;
 }
 .hero .eyebrow::before{display:none}
 .hero .eyebrow svg{width:13px;height:13px;flex-shrink:0}
-.hero h1{font-size:clamp(2.35rem,5.6vw,4.15rem);line-height:1.06;letter-spacing:-.02em}
+.hero h1{font-size:clamp(2.35rem,5.6vw,4.15rem);line-height:1.06;letter-spacing:-.02em;color:#fff}
 .section-head{max-width:640px;margin-bottom:56px}
 .section-head p{color:var(--muted);margin-top:16px;font-size:1.05rem}
 
@@ -278,13 +278,40 @@ section:has(> .halo){overflow:hidden}
 .nav-links a{transition:color .18s ease}
 
 /* ============ HERO ============ */
-.hero{padding:200px 0 110px;overflow:hidden;background:linear-gradient(180deg,var(--mist),var(--primary-50) 55%,#fff)}
-.hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:64px;align-items:center}
-.hero h1 .accent{color:var(--primary-600)}
-.hero-sub{color:var(--muted);font-size:1.15rem;margin:24px 0 36px;max-width:520px}
-.hero-ctas{display:flex;gap:14px;flex-wrap:wrap}
-.proof-line{display:flex;align-items:center;gap:10px;margin-top:28px;font-size:.94rem;font-weight:600;color:var(--muted)}
-
+.hero{
+  position:relative;overflow:hidden;
+  min-height:min(90vh,920px);
+  display:flex;align-items:center;
+  padding:200px 0 110px;
+  background:var(--navy);
+  text-align:center;
+}
+.hero-bg{
+  position:absolute;inset:0;
+  background:url('/assets/img/homepage-hero.jpg') center/cover no-repeat;
+  transform:scale(1.05);
+}
+.hero-wash{
+  position:absolute;inset:0;
+  background:linear-gradient(
+    to right,
+    rgba(20,53,94,.94),
+    rgba(20,53,94,.82),
+    rgba(20,53,94,.58)
+  );
+}
+.hero-content{position:relative;z-index:1;max-width:780px;margin:0 auto}
+.hero h1 .accent{color:#ff9046}
+.hero-sub{color:#dbe4f2;font-size:1.15rem;margin:24px auto 28px;max-width:620px}
+.hero-ctas{display:flex;gap:14px;flex-wrap:wrap;justify-content:center}
+.hero .btn-ghost{
+  background:transparent;border-color:rgba(255,255,255,.55);color:#fff;
+}
+.hero .btn-ghost:hover{background:rgba(255,255,255,.1);border-color:#fff}
+.proof-line{
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  margin-top:28px;font-size:.94rem;font-weight:600;color:#dbe4f2;
+}
 .pulse-dot{position:relative;width:9px;height:9px;border-radius:50%;background:#22a06b;flex-shrink:0}
 .pulse-dot::after{
   content:"";position:absolute;inset:-5px;border-radius:50%;
@@ -299,56 +326,7 @@ section:has(> .halo){overflow:hidden}
 .hero-anim.d2{animation-delay:.22s}
 .hero-anim.d3{animation-delay:.4s}
 .hero-anim.d4{animation-delay:.58s}
-.hero-anim.d5{animation-delay:.5s}
 @keyframes hero-in{to{opacity:1;transform:none}}
-
-/* ---- live call card ---- */
-.call-card{
-  background:#fff;
-  border:1px solid var(--border);border-radius:22px;
-  padding:26px;position:relative;
-  box-shadow:var(--shadow-lift);
-}
-.call-card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
-.call-status{display:flex;align-items:center;gap:9px;font-size:.8rem;font-weight:800;letter-spacing:.1em;color:#16814f}
-.call-time{font-size:.82rem;color:var(--muted);font-weight:600}
-
-.waveform{display:flex;align-items:center;gap:4px;height:38px;margin-bottom:22px}
-.waveform span{
-  flex:1;min-width:2.5px;max-width:5px;border-radius:99px;background:var(--primary);
-  animation:wave 1.1s ease-in-out infinite;
-  transform-origin:center;
-}
-@keyframes wave{0%,100%{transform:scaleY(.25);opacity:.45}50%{transform:scaleY(1);opacity:1}}
-
-.msgs{display:flex;flex-direction:column;gap:11px;margin-bottom:22px}
-.msg{position:relative;max-width:88%;padding:11px 58px 11px 15px;border-radius:13px;font-size:.9rem;line-height:1.45}
-.msg .who{display:block;font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px;opacity:.75}
-.msg .t{position:absolute;right:12px;bottom:10px;font-size:.62rem;color:var(--muted);font-weight:600}
-.msg.caller{align-self:flex-start;background:var(--mist);border:1px solid var(--border);border-bottom-left-radius:4px;color:var(--text)}
-.msg.agent{align-self:flex-end;background:var(--primary-50);border:1px solid var(--primary-200);border-bottom-right-radius:4px;color:var(--primary-700)}
-.msg.agent .who{color:var(--primary-600)}
-.msg.agent .t{color:rgba(23,82,142,.55)}
-
-.captured{
-  border-top:1px dashed var(--border-strong);padding-top:18px;
-}
-.captured-title{display:flex;align-items:center;gap:8px;font-size:.85rem;font-weight:700;color:#16814f;margin-bottom:14px}
-.captured-title svg{width:15px;height:15px;flex-shrink:0}
-.captured-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.cap-item{
-  display:flex;gap:8px;align-items:flex-start;min-width:0;
-  padding:9px 10px;border-radius:11px;
-  background:var(--mist);border:1px solid var(--border);
-}
-.cap-item svg{width:12px;height:12px;color:var(--primary-600);margin-top:2px;flex-shrink:0}
-.cap-item > div{min-width:0}
-.cap-label{display:block;font-size:.56rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:2px}
-.cap-value{display:block;font-size:.75rem;font-weight:600;color:var(--navy);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.cap-item.urgent{background:#fef1e7;border-color:rgba(226,90,18,.3)}
-.cap-item.urgent svg{color:var(--accent-600)}
-.cap-item.urgent .cap-value{color:var(--accent-600)}
-.chip.urgent{background:#fef1e7;border-color:rgba(226,90,18,.3);color:var(--accent-600)}
 
 /* ============ STAT BAND ============ */
 .stats{padding:0;margin-top:-46px;position:relative;z-index:5}
@@ -373,6 +351,7 @@ section:has(> .halo){overflow:hidden}
 
 /* ============ PAIN ============ */
 .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.pain-card .card-img::after{background:linear-gradient(180deg,transparent 75%,rgba(20,53,94,.06))}
 .pain-card .pain-icon{
   width:46px;height:46px;border-radius:50%;background:var(--primary-50);
   display:flex;align-items:center;justify-content:center;margin-bottom:20px;
@@ -445,9 +424,44 @@ section:has(> .halo){overflow:hidden}
 }
 .addon:hover{border-color:var(--primary-200);transform:translateY(-2px)}
 .addon-name{font-size:.94rem;font-weight:600;color:var(--navy)}
+.ai-search-note{
+  margin:28px 0 0;padding:14px 18px;border-radius:12px;
+  background:var(--primary-50);border:1px solid var(--primary-200);
+  font-size:.92rem;color:var(--text);line-height:1.55;
+}
+.ai-search-note strong{color:var(--navy)}
+.ai-search-note a{color:var(--primary-600);font-weight:700;text-decoration:underline;text-underline-offset:2px}
+.website-build{
+  margin-top:16px;padding:28px 32px;border-radius:var(--radius);
+  background:#fff;border:1px solid var(--border);box-shadow:var(--shadow-card);
+  display:grid;grid-template-columns:1.4fr auto;gap:24px 32px;align-items:center;
+}
+.website-build-kicker{
+  display:inline-flex;align-items:center;gap:8px;font-size:.72rem;font-weight:800;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--primary-600);margin-bottom:10px;
+}
+.website-build h3{font-size:1.2rem;margin-bottom:8px}
+.website-build > p{color:var(--muted);font-size:.94rem;max-width:520px}
+.website-build-list{
+  display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:16px;
+  font-size:.88rem;color:var(--text);
+}
+.website-build-list li{
+  display:flex;align-items:center;gap:8px;
+}
+.website-build-list li::before{
+  content:"";width:7px;height:7px;border-radius:50%;background:var(--primary);flex-shrink:0;
+}
+.website-build-cta{text-align:right;justify-self:end}
+.website-build-cta .btn{white-space:nowrap}
+.website-build-cta .ask{display:block;margin-top:8px;font-size:.82rem;color:var(--muted)}
+@media (max-width:720px){
+  .website-build{grid-template-columns:1fr;padding:24px}
+  .website-build-cta{text-align:left;justify-self:start}
+}
 
 /* ============ COMPARISON ============ */
-#compare{background:var(--cream);padding-top:0}
+#compare{background:var(--cream)}
 .compare-wrap{border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;background:#fff;box-shadow:var(--shadow-card)}
 table.compare{width:100%;border-collapse:collapse;font-size:.95rem}
 .compare th,.compare td{padding:22px 26px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
@@ -480,6 +494,91 @@ table.compare{width:100%;border-collapse:collapse;font-size:.95rem}
   background:var(--mist);border:1px solid var(--border);color:var(--text);line-height:1.5;
 }
 .vertical-card .v-example strong{color:var(--primary-600)}
+
+/* ============ HERO OUTCOMES + TRUST + FEATURES + FIT ============ */
+.hero-outcomes{
+  display:flex;flex-direction:column;gap:8px;
+  margin:0 auto 28px;max-width:520px;text-align:left;
+}
+.hero-outcomes li{
+  display:flex;align-items:flex-start;gap:10px;
+  font-size:.95rem;color:#dbe4f2;line-height:1.45;
+}
+.hero-outcomes li::before{
+  content:"";flex-shrink:0;width:16px;height:16px;margin-top:3px;
+  background:var(--accent);
+  -webkit-mask:url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>') center/contain no-repeat;
+  mask:url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>') center/contain no-repeat;
+}
+.hero-tertiary{
+  display:inline-block;margin-top:14px;font-size:.92rem;font-weight:600;
+  color:#85bdec;border-bottom:1px solid transparent;
+  transition:border-color .2s ease, color .2s ease;
+}
+.hero-tertiary:hover{border-color:#fff;color:#fff}
+.trust-strip-band{
+  padding:36px 0;border-bottom:1px solid var(--border);background:var(--mist);
+}
+.trust-strip-band .trust-strip-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:18px;
+}
+.trust-strip-item{
+  text-align:center;padding:8px 16px;
+  font-family:var(--display);font-weight:700;font-size:1.02rem;color:var(--navy);line-height:1.35;
+}
+.trust-strip-item span{display:block;margin-top:6px;font-family:var(--body);font-weight:400;font-size:.88rem;color:var(--muted)}
+#features{background:var(--cream)}
+.feature-pillars{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+.feature-pillar{padding:28px 24px}
+.feature-pillar .fp-icon{
+  width:44px;height:44px;border-radius:12px;margin-bottom:18px;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--primary-50);border:1px solid var(--primary-200);color:var(--primary-600);
+}
+.feature-pillar .fp-icon svg{width:22px;height:22px}
+.feature-pillar h3{margin-bottom:10px}
+.feature-pillar p{color:var(--muted);font-size:.94rem}
+#fit{background:#fff}
+.fit-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:40px;align-items:center}
+.fit-list{display:flex;flex-direction:column;gap:12px}
+.fit-item{
+  display:flex;align-items:flex-start;gap:12px;
+  padding:16px 18px;border-radius:14px;
+  background:var(--mist);border:1px solid var(--border);
+  font-size:.98rem;font-weight:600;color:var(--navy);line-height:1.4;
+}
+.fit-item::before{
+  content:"";flex-shrink:0;width:18px;height:18px;margin-top:2px;
+  background:var(--accent);
+  -webkit-mask:url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>') center/contain no-repeat;
+  mask:url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>') center/contain no-repeat;
+}
+.fit-aside{
+  padding:32px 28px;border-radius:var(--radius);
+  background:var(--navy);color:#dbe4f2;box-shadow:var(--shadow-lift);
+}
+.fit-aside h3{color:#fff;margin-bottom:12px;font-size:1.35rem}
+.fit-aside p{margin-bottom:22px;font-size:.96rem;line-height:1.55;color:#b9c6dd}
+.fit-aside .btn{width:100%;margin-bottom:10px}
+.proof-band{
+  background:var(--mist);border-top:1px solid var(--border);border-bottom:1px solid var(--border);
+  padding:56px 0;
+}
+.proof-challenges{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:28px;
+}
+.proof-challenge{
+  padding:22px 20px;border-radius:14px;background:#fff;border:1px solid var(--border);
+  box-shadow:var(--shadow-card);font-size:.94rem;color:var(--text);line-height:1.45;
+}
+.proof-challenge strong{display:block;font-family:var(--display);color:var(--navy);margin-bottom:6px;font-size:1.02rem}
+.cap-compare{margin-top:40px}
+.cap-compare .section-subhead{
+  font-family:var(--display);font-weight:800;font-size:1.25rem;color:var(--navy);
+  margin-bottom:16px;text-align:center;
+}
+.footer-tagline{color:var(--muted);font-size:.9rem;max-width:280px;line-height:1.45}
+.footer-links{display:flex;flex-wrap:wrap;gap:14px 22px;align-items:center}
 
 /* ============ FAQ ============ */
 .faq-list{max-width:760px;margin:0 auto}
@@ -588,8 +687,9 @@ footer .logo-mark{background:var(--primary)}
 .card:hover .card-img img{transform:scale(1.045)}
 .card-img::after{
   content:"";position:absolute;inset:0;pointer-events:none;
-  background:linear-gradient(180deg,transparent 60%,rgba(20,53,94,.18));
+  background:linear-gradient(180deg,transparent 70%,rgba(20,53,94,.10));
 }
+.vertical-card .card-img::after{background:linear-gradient(180deg,transparent 75%,rgba(20,53,94,.06))}
 
 /* ============ MARQUEE ============ */
 .marquee{overflow:hidden;padding:26px 0;border-bottom:1px solid var(--border);background:#fff;-webkit-mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent);mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent)}
@@ -601,18 +701,6 @@ footer .logo-mark{background:var(--primary)}
 }
 .marquee-track span::after{content:"·";color:var(--accent);opacity:.9}
 @keyframes marquee{to{transform:translateX(-50%)}}
-
-/* ============ SAMPLE CALL PLAYER ============ */
-.play-sample{
-  display:inline-flex;align-items:center;gap:8px;cursor:pointer;
-  font:inherit;font-size:.8rem;font-weight:700;color:var(--primary-700);
-  background:var(--primary-50);border:1px solid var(--primary-200);
-  padding:7px 13px;border-radius:999px;transition:background .2s ease,transform .2s ease;
-}
-.play-sample:hover{background:var(--primary-100);transform:scale(1.03)}
-.play-sample[hidden]{display:none}
-.play-sample svg{width:11px;height:11px;flex-shrink:0}
-.waveform.paused span{animation-play-state:paused}
 
 /* ============ ROI CALCULATOR ============ */
 #roi{background:var(--mist)}
@@ -659,14 +747,25 @@ footer .logo-mark{background:var(--primary)}
 
 /* ============ RESPONSIVE ============ */
 @media (max-width:960px){
-  .hero-grid{grid-template-columns:1fr;gap:52px}
-  .hero{padding:170px 0 90px}
+  .hero{padding:170px 0 90px;min-height:auto}
+  .hero-wash{
+    background:linear-gradient(
+      to bottom,
+      rgba(20,53,94,.95),
+      rgba(20,53,94,.84),
+      rgba(20,53,94,.90)
+    );
+  }
   .stat-band{grid-template-columns:repeat(2,1fr);gap:16px}
-  .grid-3,.steps,.pricing-grid{grid-template-columns:1fr;max-width:520px;margin-left:auto;margin-right:auto}
+  .grid-3,.steps,.pricing-grid,.feature-pillars,.proof-challenges{grid-template-columns:1fr;max-width:520px;margin-left:auto;margin-right:auto}
+  .trust-strip-band .trust-strip-grid,.fit-grid{grid-template-columns:1fr}
   .addons-grid{grid-template-columns:repeat(2,1fr)}
   .steps{gap:44px}
   .nav-links .nav-anchor{display:none}
   section{padding:76px 0}
+}
+@media (max-width:1100px) and (min-width:961px){
+  .feature-pillars{grid-template-columns:repeat(2,1fr)}
 }
 @media (max-width:640px){
   /* 16px+ prevents iOS Safari from zooming the page when an input is focused */
@@ -681,12 +780,8 @@ footer .logo-mark{background:var(--primary)}
   body{font-size:16px}
   .h1-br{display:none}
   .hero .eyebrow{letter-spacing:.09em;padding:7px 13px}
-  .waveform{gap:2px}
-  .waveform span{min-width:1px}
-  .cap-value{white-space:normal}
   .stat-band{grid-template-columns:1fr;gap:14px}
   .stats{margin-top:0;padding-top:56px}
-  .captured-grid{grid-template-columns:repeat(2,1fr)}
   .addons-grid{grid-template-columns:1fr}
   .btn{white-space:normal}
   .hero-ctas .btn{width:100%;text-align:center}
@@ -706,7 +801,6 @@ footer .logo-mark{background:var(--primary)}
   html{scroll-behavior:auto}
   .hero-anim{animation:none;opacity:1;transform:none}
   .reveal{opacity:1;transform:none;transition:none}
-  .waveform span{animation:none;transform:scaleY(.6)}
   .pulse-dot::after{animation:none}
   *{transition-duration:.01ms !important}
 }
@@ -718,7 +812,7 @@ footer .logo-mark{background:var(--primary)}
 <header class="nav" id="nav">
   <div class="announce">
     <div class="container announce-inner">
-      <span class="announce-tag">Done-for-you AI phone answering for small business</span>
+      <span class="announce-tag">Done-for-you AI receptionist for home service businesses</span>
       <span class="announce-contact">
         <a href="mailto:info@owneraitools.com">info@owneraitools.com</a>
         <span class="announce-sep" aria-hidden="true">·</span>
@@ -734,9 +828,9 @@ footer .logo-mark{background:var(--primary)}
       OwnerAI Tools
     </a>
     <nav class="nav-links">
-      <a href="#how" class="nav-anchor">How it works</a>
+      <a href="#features" class="nav-anchor">Features</a>
+      <a href="/industries" class="nav-anchor">Industries</a>
       <a href="#pricing" class="nav-anchor">Offering</a>
-      <a href="#compare" class="nav-anchor">Compare</a>
       <a href="#faq" class="nav-anchor">FAQ</a>
       <a href="tel:+15169731973" class="btn btn-primary btn-sm"><span>Call <span class="hide-sm">the live </span>demo</span></a>
     </nav>
@@ -744,82 +838,32 @@ footer .logo-mark{background:var(--primary)}
 </header>
 
 <!-- ══════════ HERO ══════════ -->
-<section class="hero dotgrid">
-  <div class="halo" style="width:640px;height:640px;top:-220px;right:-160px;background:radial-gradient(circle, rgba(38,128,207,.18), transparent 70%)"></div>
-  <div class="halo" style="width:480px;height:480px;bottom:-200px;left:-180px;background:radial-gradient(circle, rgba(255,144,70,.12), transparent 70%)"></div>
-  <div class="container hero-grid">
-    <div>
-      <span class="eyebrow hero-anim d1">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-        Done-for-you phone answering for small business
-      </span>
-      <h1 class="hero-anim d1">Every call answered.<br class="h1-br"> <span class="accent">24/7/365.</span><br class="h1-br"> No sick days.<br class="h1-br"> No missed jobs.</h1>
-      <p class="hero-sub hero-anim d2">Your phone gets answered in under 2 seconds — nights, weekends, holidays. Every caller's name, number, and problem lands in your inbox before they hang up. Appointments booked. CRM updated. You just show up and do the work.</p>
-      <div class="hero-ctas hero-anim d3">
-        <a href="tel:+15169731973" class="btn btn-primary">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-          Call or text the live demo — (516) 973-1973
-        </a>
-        <a href="https://cal.com/owneraitools/30min" target="_blank" rel="noopener" class="btn btn-ghost">Book a free setup call</a>
-      </div>
-      <div class="proof-line hero-anim d4">
-        <span class="pulse-dot"></span>
-        It's live right now. Call it, describe a fake emergency, try to stump it.
-      </div>
+<section class="hero">
+  <div class="hero-bg" aria-hidden="true"></div>
+  <div class="hero-wash" aria-hidden="true"></div>
+  <div class="container hero-content">
+    <span class="eyebrow hero-anim d1">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      AI receptionist for home service businesses
+    </span>
+    <h1 class="hero-anim d1">AI that answers, qualifies,<br class="h1-br"> and <span class="accent">books your jobs.</span></h1>
+    <p class="hero-sub hero-anim d2">Every call answered in under 2 seconds — nights, weekends, holidays. Name, number, and problem in your inbox before they hang up. Appointments booked. You stay on the tools.</p>
+    <ul class="hero-outcomes hero-anim d2">
+      <li>Never miss after-hours or on-the-job leads</li>
+      <li>Book appointments on your calendar automatically</li>
+      <li>SMS confirmations and follow-up so jobs don't go cold</li>
+    </ul>
+    <div class="hero-ctas hero-anim d3">
+      <a href="tel:+15169731973" class="btn btn-primary">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+        Call or text the live demo — (516) 973-1973
+      </a>
+      <a href="https://cal.com/owneraitools/30min" target="_blank" rel="noopener" class="btn btn-ghost">Book a free setup call</a>
     </div>
-
-    <!-- Live call card -->
-    <div class="hero-anim d5">
-      <div class="call-card">
-        <div class="call-card-head">
-          <span class="call-status"><span class="pulse-dot"></span> LIVE CALL</span>
-          <button type="button" class="play-sample" id="playSample" hidden>
-            <svg viewBox="0 0 24 24" fill="currentColor" id="playIcon"><polygon points="6 3 20 12 6 21"/></svg>
-            <span id="playLabel">Hear a real call</span>
-          </button>
-          <span class="call-time">Saturday · 9:47 PM</span>
-        </div>
-        <div class="waveform" aria-hidden="true">
-          <span style="animation-delay:0s;height:68%"></span><span style="animation-delay:.13s;height:45%"></span><span style="animation-delay:.26s;height:75%"></span><span style="animation-delay:.39s;height:100%"></span><span style="animation-delay:.52s;height:30%"></span><span style="animation-delay:.65s;height:38%"></span><span style="animation-delay:.78s;height:90%"></span><span style="animation-delay:.91s;height:38%"></span><span style="animation-delay:1.04s;height:68%"></span><span style="animation-delay:.12s;height:96%"></span><span style="animation-delay:.25s;height:30%"></span><span style="animation-delay:.38s;height:90%"></span><span style="animation-delay:.51s;height:52%"></span><span style="animation-delay:.64s;height:30%"></span><span style="animation-delay:.77s;height:38%"></span><span style="animation-delay:.9s;height:75%"></span><span style="animation-delay:1.03s;height:75%"></span><span style="animation-delay:.11s;height:38%"></span><span style="animation-delay:.24s;height:52%"></span><span style="animation-delay:.37s;height:38%"></span><span style="animation-delay:.5s;height:90%"></span><span style="animation-delay:.63s;height:75%"></span><span style="animation-delay:.76s;height:30%"></span><span style="animation-delay:.89s;height:96%"></span><span style="animation-delay:1.02s;height:38%"></span><span style="animation-delay:.1s;height:52%"></span><span style="animation-delay:.23s;height:100%"></span><span style="animation-delay:.36s;height:100%"></span><span style="animation-delay:.49s;height:96%"></span><span style="animation-delay:.62s;height:30%"></span><span style="animation-delay:.75s;height:96%"></span><span style="animation-delay:.88s;height:96%"></span><span style="animation-delay:1.01s;height:75%"></span><span style="animation-delay:.09s;height:30%"></span><span style="animation-delay:.22s;height:52%"></span><span style="animation-delay:.35s;height:30%"></span><span style="animation-delay:.48s;height:90%"></span><span style="animation-delay:.61s;height:45%"></span><span style="animation-delay:.74s;height:60%"></span><span style="animation-delay:.87s;height:75%"></span><span style="animation-delay:1s;height:45%"></span><span style="animation-delay:.08s;height:90%"></span><span style="animation-delay:.21s;height:38%"></span><span style="animation-delay:.34s;height:96%"></span><span style="animation-delay:.47s;height:60%"></span><span style="animation-delay:.6s;height:90%"></span><span style="animation-delay:.73s;height:100%"></span><span style="animation-delay:.86s;height:45%"></span><span style="animation-delay:.99s;height:38%"></span><span style="animation-delay:.07s;height:96%"></span><span style="animation-delay:.2s;height:96%"></span><span style="animation-delay:.33s;height:100%"></span><span style="animation-delay:.46s;height:52%"></span><span style="animation-delay:.59s;height:68%"></span><span style="animation-delay:.72s;height:38%"></span><span style="animation-delay:.85s;height:90%"></span>
-        </div>
-        <div class="msgs">
-          <div class="msg caller"><span class="who">Caller</span>My water heater's leaking all over the garage — do you guys handle emergencies?<span class="t">9:47 PM</span></div>
-          <div class="msg agent"><span class="who">Receptionist</span>We do. I can get a technician out first thing tomorrow morning. Can I grab your name and the address?<span class="t">9:47 PM</span></div>
-          <div class="msg caller"><span class="who">Caller</span>Mike Torres — 412 Cedar Lane.<span class="t">9:47 PM</span></div>
-        </div>
-        <div class="captured">
-          <div class="captured-title">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="16 9 10.5 14.5 8 12"/></svg>
-            Captured &amp; emailed to you in 8 seconds
-          </div>
-          <div class="captured-grid">
-            <div class="cap-item">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-              <div><span class="cap-label">Name</span><span class="cap-value">Mike Torres</span></div>
-            </div>
-            <div class="cap-item">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-              <div><span class="cap-label">Phone</span><span class="cap-value">(555) 284-9917</span></div>
-            </div>
-            <div class="cap-item">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-              <div><span class="cap-label">Address</span><span class="cap-value">412 Cedar Lane</span></div>
-            </div>
-            <div class="cap-item">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-              <div><span class="cap-label">Topic</span><span class="cap-value">Water heater leak</span></div>
-            </div>
-            <div class="cap-item">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-              <div><span class="cap-label">Booked</span><span class="cap-value">Sun 8:00 AM</span></div>
-            </div>
-            <div class="cap-item urgent">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-              <div><span class="cap-label">Priority</span><span class="cap-value">Urgent</span></div>
-            </div>
-          </div>
-        </div>
-      </div>
+    <a href="#roi" class="hero-tertiary hero-anim d3">See what missed calls cost you →</a>
+    <div class="proof-line hero-anim d4">
+      <span class="pulse-dot"></span>
+      It's live right now. Call it, describe a fake emergency, try to stump it.
     </div>
   </div>
 </section>
@@ -833,7 +877,7 @@ footer .logo-mark{background:var(--primary)}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
         </div>
         <div class="stat-num"><span class="cnt" data-count="62" data-suffix="%">62%</span></div>
-        <div class="stat-label">of calls to small businesses go unanswered or to voicemail</div>
+        <div class="stat-label">of calls to home service businesses go unanswered or to voicemail</div>
       </div>
       <div class="stat">
         <div class="stat-icon">
@@ -860,11 +904,20 @@ footer .logo-mark{background:var(--primary)}
   </div>
 </section>
 
+<!-- ══════════ TRUST STRIP ══════════ -->
+<div class="trust-strip-band">
+  <div class="container trust-strip-grid">
+    <div class="trust-strip-item reveal">Built for plumbing, HVAC &amp; electrical<span>Home service trades that live on the phone</span></div>
+    <div class="trust-strip-item reveal">Calls, texts &amp; website chat<span>One system for every inbound lead</span></div>
+    <div class="trust-strip-item reveal">Done-for-you setup<span>You never babysit a dashboard</span></div>
+  </div>
+</div>
+
 <!-- ══════════ INDUSTRY MARQUEE ══════════ -->
 <div class="marquee" aria-hidden="true">
   <div class="marquee-track">
-    <span>Plumbing</span><span>HVAC</span><span>Electrical</span><span>Dental</span><span>Med Spa</span><span>Law Offices</span><span>Salons</span><span>Auto Shops</span><span>Property Management</span><span>Restaurants</span><span>Contractors</span><span>Chiropractic</span>
-    <span>Plumbing</span><span>HVAC</span><span>Electrical</span><span>Dental</span><span>Med Spa</span><span>Law Offices</span><span>Salons</span><span>Auto Shops</span><span>Property Management</span><span>Restaurants</span><span>Contractors</span><span>Chiropractic</span>
+    <span>Plumbing</span><span>HVAC</span><span>Electrical</span><span>Roofing</span><span>Restoration</span><span>Contractors</span><span>Dental</span><span>Med Spa</span><span>Property Management</span><span>Auto Shops</span>
+    <span>Plumbing</span><span>HVAC</span><span>Electrical</span><span>Roofing</span><span>Restoration</span><span>Contractors</span><span>Dental</span><span>Med Spa</span><span>Property Management</span><span>Auto Shops</span>
   </div>
 </div>
 
@@ -873,33 +926,74 @@ footer .logo-mark{background:var(--primary)}
   <div class="container">
     <div class="section-head reveal">
       <span class="eyebrow">The problem</span>
-      <h2>Your phone is your best salesperson. Right now, it's ignoring customers.</h2>
-      <p>Every missed call is a customer who already decided to hire someone. The only question is whether it's you.</p>
+      <h2>Most jobs are lost in the first 5 minutes.</h2>
+      <p>When you don't answer, the next company on Google does. Speed-to-lead is the whole game — and after-hours is where the best jobs hide.</p>
     </div>
     <div class="grid-3">
       <div class="card pain-card reveal">
-        <div class="card-img"><img src="/assets/img/pain-on-the-job.jpg" alt="Plumber working under a sink while his phone rings unanswered on the floor" loading="lazy" width="1200" height="900"></div>
+        <div class="card-img"><img src="/assets/img/pain-on-the-job.jpg?v=painter2" alt="Painter rolling a wall on a bright job site" loading="lazy" width="1400" height="933"></div>
         <div class="pain-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
         </div>
-        <h3>You're on a job</h3>
-        <p>Hands in a water heater, a patient in the chair, a crew to run. The phone rings, you can't grab it, and that $4,000 job calls the next name on Google. It happens every week — you just never see the invoice you lost.</p>
+        <h3>Missed calls while you're on a job</h3>
+        <p>Hands in a water heater, under a roof, running a crew. The phone rings, you can't grab it, and that $4,000 emergency calls the next name on Google. It happens every week — you just never see the invoice you lost.</p>
       </div>
       <div class="card pain-card reveal" data-delay="1">
-        <div class="card-img"><img src="/assets/img/pain-answering-service.jpg" alt="Rows of call center agents reading from scripts under fluorescent lights" loading="lazy" width="1200" height="900"></div>
+        <div class="card-img"><img src="/assets/img/pain-answering-service.jpg?v=crisp1" alt="Office worker on a desk phone following up with a caller" loading="lazy" width="1400" height="933"></div>
         <div class="pain-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
         </div>
-        <h3>Answering services bill you by the minute</h3>
-        <p>$2–$5 a minute, and yes — they bill you for the spam calls too. The person answering is reading a script, knows nothing about your business, and takes a message you have to chase down anyway.</p>
+        <h3>Slow or inconsistent follow-up</h3>
+        <p>Voicemail sits for hours. Answering services take a message you chase down later. By the time you call back, the homeowner already booked someone else — often in the first five minutes.</p>
       </div>
       <div class="card pain-card reveal" data-delay="2">
-        <div class="card-img"><img src="/assets/img/pain-after-hours.jpg" alt="Empty reception desk at night with a phone ringing and nobody to answer" loading="lazy" width="1200" height="900"></div>
+        <div class="card-img"><img src="/assets/img/pain-after-hours.jpg?v=crisp1" alt="Bright empty office lounge with nobody available to answer" loading="lazy" width="1400" height="933"></div>
         <div class="pain-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
         </div>
-        <h3>A receptionist covers 40 of 168 hours</h3>
-        <p>Even a great one goes home at 5, takes lunch, gets sick, and takes vacations. The week has 168 hours, and emergencies love the other 128. Nobody's hiring a night shift for the front desk.</p>
+        <h3>No reliable booking after hours</h3>
+        <p>A receptionist covers 40 of 168 hours. Emergencies love the other 128. Without a way to answer, qualify, and book overnight, those jobs walk — every single night.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ FEATURES ══════════ -->
+<section id="features">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="eyebrow">What you get</span>
+      <h2>OwnerAI handles the moments that cost you jobs.</h2>
+      <p>Answer. Capture. Book. Follow up. Built for how home service actually works — managed by us, not another app for you to babysit.</p>
+    </div>
+    <div class="feature-pillars">
+      <div class="card feature-pillar reveal">
+        <div class="fp-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+        </div>
+        <h3>Answer every call</h3>
+        <p>24/7/365 in under 2 seconds. English and Spanish auto-detect. Unlimited simultaneous calls — no busy signal, no voicemail.</p>
+      </div>
+      <div class="card feature-pillar reveal" data-delay="1">
+        <div class="fp-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        </div>
+        <h3>Capture the lead</h3>
+        <p>Name, number, address, and problem — plus transcript and recording — emailed to you before they hang up. Nothing gets dropped.</p>
+      </div>
+      <div class="card feature-pillar reveal" data-delay="2">
+        <div class="fp-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        </div>
+        <h3>Book the job</h3>
+        <p>Live calendar booking with real availability. Reschedules and cancellations handled. You show up knowing who's on the board.</p>
+      </div>
+      <div class="card feature-pillar reveal" data-delay="3">
+        <div class="fp-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        </div>
+        <h3>Follow up fast</h3>
+        <p>SMS confirmations and reminders. Warm transfer for real emergencies. Outbound follow-ups and review requests on higher tiers so leads don't go cold.</p>
       </div>
     </div>
   </div>
@@ -912,23 +1006,23 @@ footer .logo-mark{background:var(--primary)}
     <div class="section-head reveal">
       <span class="eyebrow">How it works</span>
       <h2>We build it. You forward your phone. That's it.</h2>
-      <p>This is a done-for-you service, not software you have to learn. You never touch a dashboard.</p>
+      <p>This is a done-for-you service, not software you have to learn. Most shops go live in about one to four weeks. You never touch a dashboard.</p>
     </div>
     <div class="steps">
       <div class="card step reveal">
         <span class="step-num">1</span>
-        <h3>We learn your business</h3>
-        <p>One 45-minute call. Your services, your service area, your pricing, how you talk to customers. We script and build your receptionist, test it against real scenarios, and send you a number to call and hear it yourself before anything goes live.</p>
+        <h3>45-minute intake with us</h3>
+        <p>Your services, service area, pricing, and how you talk to customers. We script and build your receptionist, test it against real scenarios, and send you a number to call and hear it yourself before anything goes live.</p>
       </div>
       <div class="card step reveal" data-delay="1">
         <span class="step-num">2</span>
         <h3>Forward your phones</h3>
-        <p>Keep your existing number — nothing changes for your customers. Smart forwarding sends calls to your receptionist always, after-hours only, or only when you don't pick up. Want out? Rollback is instant, any time.</p>
+        <p>Keep your existing number — nothing changes for your customers. Smart forwarding sends calls always, after-hours only, or only when you don't pick up. Want out? Rollback is instant, any time.</p>
       </div>
       <div class="card step reveal" data-delay="2">
         <span class="step-num">3</span>
-        <h3>Leads land in your inbox</h3>
-        <p>Every call becomes an email: caller info, what they need, full transcript, and the recording. On higher tiers, appointments hit your calendar and contacts hit your CRM automatically. We review the calls and tune it every month.</p>
+        <h3>Jobs start landing in your inbox</h3>
+        <p>Every call becomes an email: caller info, what they need, full transcript, and the recording. On higher tiers, appointments hit your calendar and contacts hit your CRM automatically. We review and tune it every month.</p>
         <div class="mini-mail" aria-hidden="true">
           <div class="mini-mail-head"><span class="mm-dot"></span> New lead — 9:52 PM</div>
           <div class="mm-line"><strong>Mike Torres</strong> · (555) 284-9917 · Water heater leak</div>
@@ -939,13 +1033,40 @@ footer .logo-mark{background:var(--primary)}
   </div>
 </section>
 
+<!-- ══════════ FIT CHECKLIST ══════════ -->
+<section id="fit">
+  <div class="container">
+    <div class="fit-grid">
+      <div>
+        <div class="section-head reveal" style="margin-bottom:28px">
+          <span class="eyebrow">Is OwnerAI right for you?</span>
+          <h2>You're a good fit if any of these sound familiar.</h2>
+        </div>
+        <div class="fit-list reveal">
+          <div class="fit-item">You miss calls while you're on jobs or after hours</div>
+          <div class="fit-item">You're in plumbing, HVAC, electrical, or a similar trade</div>
+          <div class="fit-item">You want booked jobs and clean summaries — not another app</div>
+          <div class="fit-item">You're tired of voicemail and per-minute answering services</div>
+          <div class="fit-item">You want to try the product before you buy</div>
+        </div>
+      </div>
+      <div class="fit-aside reveal">
+        <h3>Hear it before you buy it</h3>
+        <p>The demo line is the exact product. Call it, text it, describe a fake emergency. If it works for you, book a free setup call and we'll size your plan.</p>
+        <a href="tel:+15169731973" class="btn btn-primary">Call the live demo</a>
+        <a href="https://cal.com/owneraitools/30min" target="_blank" rel="noopener" class="btn btn-ghost" style="border-color:rgba(255,255,255,.45);color:#fff;background:transparent">Book a free setup call</a>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- ══════════ OFFERING (id kept as #pricing for anchors) ══════════ -->
 <section id="pricing">
   <div class="container">
     <div class="section-head reveal">
       <span class="eyebrow">Offering</span>
-      <h2>Less than a receptionist's payroll taxes.</h2>
-      <p>Three packages. Flat monthly. Custom quote on the setup call — no per-minute meter while your customer explains the problem.</p>
+      <h2>Done-for-you setup. Flat monthly. No per-minute meter.</h2>
+      <p>Three packages sized by included minutes. Custom quote on the free setup call — we build it, you forward your phone.</p>
     </div>
     <div class="pricing-grid">
 
@@ -972,7 +1093,7 @@ footer .logo-mark{background:var(--primary)}
         <ul class="tier-features">
           <li class="plus-line">EVERYTHING IN BASIC, PLUS:</li>
           <li>Live calendar booking — Google, Outlook, Calendly, Cal.com — with real-time availability</li>
-          <li>SMS confirmations &amp; appointment reminders</li>
+          <li>SMS confirmations &amp; appointment reminders so jobs don't go cold</li>
           <li>Mid-call texting (sends the caller links, addresses, forms)</li>
           <li>Emergency warm transfer straight to your cell</li>
           <li>Lead qualification &amp; scoring — know which calls matter</li>
@@ -1023,6 +1144,30 @@ footer .logo-mark{background:var(--primary)}
       <div class="addon reveal" data-delay="2"><span class="addon-name">Custom cloned voice (yours)</span></div>
       <div class="addon reveal" data-delay="2"><span class="addon-name">Dedicated Spanish line</span></div>
     </div>
+
+    <p class="ai-search-note reveal">
+      <strong>Still paying for Google Ads, Meta ads, and the rest?</strong>
+      More homeowners now ask <strong>ChatGPT, Claude, Gemini, Grok,</strong> or <strong>Google’s AI</strong> who to call — before they ever click an ad. For OwnerAI customers, we can help your business get noticed there too — <a href="https://cal.com/owneraitools/30min" target="_blank" rel="noopener">ask for details</a> on your setup call.
+    </p>
+
+    <div class="website-build reveal">
+      <div>
+        <div class="website-build-kicker">OwnerAI customers only</div>
+        <h3>Custom website build</h3>
+        <p>Running an old site — or none at all? We can build a clean, conversion-focused site that works with your OwnerAI receptionist. Discounted for active customers.</p>
+        <ul class="website-build-list">
+          <li>Custom design from scratch</li>
+          <li>5–7 core pages</li>
+          <li>Chatbot enabled</li>
+          <li>Mobile-first &amp; conversion-focused</li>
+          <li>Tied into your OwnerAI setup</li>
+        </ul>
+      </div>
+      <div class="website-build-cta">
+        <a href="https://cal.com/owneraitools/30min" target="_blank" rel="noopener" class="btn btn-ghost">Ask for details</a>
+        <span class="ask">On your free setup call — no public pricing</span>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -1032,10 +1177,31 @@ footer .logo-mark{background:var(--primary)}
     <div class="section-head reveal">
       <span class="eyebrow">Compare</span>
       <h2>What answering the phone actually costs.</h2>
+      <p>OwnerAI vs. the ways most shops handle the phone today.</p>
+    </div>
+
+    <div class="cap-compare reveal">
+      <div class="section-subhead">OwnerAI vs. manual answering</div>
+      <div class="compare-wrap">
+        <table class="compare">
+          <thead>
+            <tr><th>Capability</th><th>OwnerAI</th><th>Manual / voicemail</th></tr>
+          </thead>
+          <tbody>
+            <tr class="winner"><td>24/7 availability</td><td>Yes — every call</td><td class="dim">No (40 hrs/week if you hire)</td></tr>
+            <tr><td>Response time</td><td>Under 2 seconds</td><td class="dim">Minutes to hours — or never</td></tr>
+            <tr><td>After-hours coverage</td><td>Yes</td><td class="dim">Voicemail or nothing</td></tr>
+            <tr><td>Automatic booking</td><td>Yes (Advanced+)</td><td class="dim">No</td></tr>
+            <tr><td>Lead capture &amp; summary</td><td>Email + transcript + recording</td><td class="dim">Sticky note or forgotten callback</td></tr>
+            <tr><td>Consistency</td><td>100% on-script for your business</td><td class="dim">Varies by who's free</td></tr>
+            <tr><td>Cost model</td><td>Flat monthly — custom quote</td><td class="dim">Payroll or per-minute bills</td></tr>
+          </tbody>
+        </table>
+      </div>
     </div>
 
     <!-- desktop table -->
-    <div class="compare-wrap reveal">
+    <div class="compare-wrap reveal" style="margin-top:28px">
       <table class="compare">
         <thead>
           <tr><th>Option</th><th>Cost</th><th>Coverage</th><th>The catch</th></tr>
@@ -1097,9 +1263,9 @@ footer .logo-mark{background:var(--primary)}
 <section id="roi">
   <div class="container">
     <div class="section-head reveal" style="text-align:center;max-width:640px;margin-left:auto;margin-right:auto">
-      <span class="eyebrow" style="justify-content:center">Do the math</span>
-      <h2>What are missed calls costing you?</h2>
-      <p>Don't trust our stats — use your own numbers.</p>
+      <span class="eyebrow" style="justify-content:center">Lost revenue</span>
+      <h2>See how much revenue missed calls are costing you.</h2>
+      <p>Use your own numbers. Most home service shops are surprised by the monthly total.</p>
     </div>
     <div class="card roi-card reveal">
       <div class="roi-sliders">
@@ -1115,7 +1281,7 @@ footer .logo-mark{background:var(--primary)}
       <div class="roi-result">
         <div class="roi-lost" id="roi-lost">$13,000</div>
         <div class="roi-lost-label">of potential revenue calling your business every month — and hanging up</div>
-        <p class="roi-note" id="roi-note">Win back just <strong>one</strong> of those jobs a month and the service typically pays for itself — with change.</p>
+        <p class="roi-note" id="roi-note">Win back just <strong>one</strong> of those jobs a month and the service typically pays for itself — with change. Then <a href="tel:+15169731973" style="color:var(--primary-600);font-weight:700">call the demo</a> and hear how you'd capture it.</p>
       </div>
     </div>
   </div>
@@ -1125,31 +1291,52 @@ footer .logo-mark{background:var(--primary)}
 <section id="verticals">
   <div class="container">
     <div class="section-head reveal">
-      <span class="eyebrow">Who it's for</span>
-      <h2>Built for businesses that live and die by the phone.</h2>
+      <span class="eyebrow">Industries</span>
+      <h2>Built for how your trade actually works.</h2>
+      <p>Built first for home services. Also works for practices and other phone-driven shops. <a href="/industries" style="color:var(--primary-600);font-weight:700">See all industries →</a></p>
     </div>
     <div class="grid-3">
       <div class="card vertical-card reveal">
-        <div class="card-img"><img src="/assets/img/vertical-home-services.jpg" alt="HVAC technician repairing a rooftop unit at dusk" loading="lazy" width="1200" height="900"></div>
+        <div class="card-img"><img src="/assets/img/vertical-home-services.jpg?v=elec2" alt="Electrician working on a wall box in bright daylight" loading="lazy" width="1400" height="934"></div>
         <div class="v-tag"><span class="chip">Home Services</span></div>
         <h3>Plumbing · HVAC · Electrical</h3>
-        <p>Emergencies don't book ahead. When a pipe bursts at 9 PM, the company that answers gets the job — full stop.</p>
+        <p><strong>Plumbing:</strong> capture leads even when your team is on site. <strong>HVAC:</strong> book jobs without missing emergency calls. <strong>Electrical:</strong> never lose after-hours leads.</p>
         <div class="v-example"><strong>Real scenario:</strong> 9 PM emergency call → caller intake, urgency flagged, booked into your first morning slot, summary in your inbox before you've finished dinner.</div>
       </div>
       <div class="card vertical-card reveal" data-delay="1">
-        <div class="card-img"><img src="/assets/img/vertical-medical.jpg" alt="Modern dental office reception area in the evening" loading="lazy" width="1200" height="900"></div>
+        <div class="card-img"><img src="/assets/img/vertical-medical.jpg" alt="Bright modern dental treatment room" loading="lazy" width="1400" height="936"></div>
         <div class="v-tag"><span class="chip">Medical · Dental · MedSpa</span></div>
         <h3>Practices &amp; clinics</h3>
-        <p>Your front desk is buried and every missed call is a patient who books elsewhere. Cut no-shows and fill the schedule without adding headcount.</p>
-        <div class="v-example"><strong>Built in:</strong> HIPAA with signed BAA, appointment confirmations that cut no-shows, and bilingual intake for every patient who calls.</div>
+        <p>Front desk buried? Every missed call is a patient who books elsewhere. Cut no-shows and fill the schedule without adding headcount.</p>
+        <div class="v-example"><strong>Built in:</strong> HIPAA with signed BAA, appointment confirmations, and bilingual intake.</div>
       </div>
       <div class="card vertical-card reveal" data-delay="2">
-        <div class="card-img"><img src="/assets/img/vertical-local-business.jpg" alt="Shop owner flipping the sign at closing time" loading="lazy" width="1200" height="900"></div>
-        <div class="v-tag"><span class="chip">Every Local Business</span></div>
-        <h3>If customers call you, this works</h3>
-        <p>Law offices, salons, auto shops, property managers, restaurants. If your phone rings and revenue depends on someone picking it up, this pays for itself.</p>
-        <div class="v-example"><strong>The math:</strong> what's your average customer worth? Now count last month's missed calls. That's the number this fixes.</div>
+        <div class="card-img"><img src="/assets/img/vertical-local-business.jpg" alt="Local business team collaborating in a bright office" loading="lazy" width="1400" height="1050"></div>
+        <div class="v-tag"><span class="chip">Also a fit</span></div>
+        <h3>Other phone-driven shops</h3>
+        <p>Roofing, restoration, property management, auto shops, and similar trades where a missed ring is missed revenue.</p>
+        <div class="v-example"><strong>The math:</strong> what's your average job worth? Count last month's missed calls. That's the number this fixes.</div>
       </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ PROOF BAND ══════════ -->
+<section class="proof-band" id="proof">
+  <div class="container">
+    <div class="section-head reveal" style="text-align:center;max-width:640px;margin-left:auto;margin-right:auto;margin-bottom:0">
+      <span class="eyebrow" style="justify-content:center">Proof</span>
+      <h2>Don't take our word for it. Call it.</h2>
+      <p>No fake testimonials. The product is live — stress-test it yourself in under two minutes.</p>
+    </div>
+    <div class="proof-challenges reveal">
+      <div class="proof-challenge"><strong>Fake an emergency</strong>Call as a homeowner with a water heater leak at 9 PM. See if it books you in.</div>
+      <div class="proof-challenge"><strong>Try to stump it</strong>Ask about hours, service area, pricing, or something weird. See how it handles.</div>
+      <div class="proof-challenge"><strong>Text the same number</strong>Prefer typing? SMS the demo line — it texts you right back.</div>
+    </div>
+    <div class="hero-ctas reveal" style="justify-content:center;margin-top:32px">
+      <a href="tel:+15169731973" class="btn btn-primary">Call or text (516) 973-1973</a>
+      <a href="https://cal.com/owneraitools/30min" target="_blank" rel="noopener" class="btn btn-ghost">Book a free setup call</a>
     </div>
   </div>
 </section>
@@ -1306,17 +1493,23 @@ footer .logo-mark{background:var(--primary)}
 <!-- ══════════ FOOTER ══════════ -->
 <footer>
   <div class="container footer-inner">
-    <a href="#" class="logo" style="font-size:1rem">
-      <span class="logo-mark" style="width:22px;height:22px">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-      </span>
-      OwnerAI Tools
-    </a>
+    <div>
+      <a href="#" class="logo" style="font-size:1rem">
+        <span class="logo-mark" style="width:22px;height:22px">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+        </span>
+        OwnerAI Tools
+      </a>
+      <p class="footer-tagline" style="margin-top:10px">Done-for-you AI receptionist for home service businesses.</p>
+    </div>
     <div class="footer-links">
+      <a href="#features">Features</a>
+      <a href="/industries">Industries</a>
+      <a href="#pricing">Offering</a>
+      <a href="#faq">FAQ</a>
       <a href="tel:+15169731973">(516) 973-1973</a>
       <a href="mailto:info@owneraitools.com">info@owneraitools.com</a>
     </div>
-    <div>Every call answered.</div>
   </div>
   <div class="container footer-legal">
     OwnerAI Tools is a service of CSM Integrated Solutions LLC.<br>
@@ -1403,38 +1596,6 @@ const updateRoi = () => {
 };
 [roiCalls, roiValue].forEach((el) => el.addEventListener('input', updateRoi));
 updateRoi();
-
-// Sample call player (button stays hidden until /assets/audio/sample-call.mp3 exists)
-const playBtn = document.getElementById('playSample');
-const sampleAudio = new Audio('/assets/audio/sample-call.mp3');
-sampleAudio.preload = 'metadata';
-sampleAudio.addEventListener('loadedmetadata', () => { playBtn.hidden = false; });
-const waveform = document.querySelector('.waveform');
-const playLabel = document.getElementById('playLabel');
-const playIcon = document.getElementById('playIcon');
-const setPlayingUI = (playing) => {
-  playLabel.textContent = playing ? 'Pause' : 'Hear a real call';
-  playIcon.innerHTML = playing
-    ? '<rect x="5" y="3" width="5" height="18"/><rect x="14" y="3" width="5" height="18"/>'
-    : '<polygon points="6 3 20 12 6 21"/>';
-  // While audio is paused mid-listen, freeze the waveform so it reads as a player
-  waveform.classList.toggle('paused', !playing && playBtn.dataset.used === '1');
-};
-playBtn.addEventListener('click', () => {
-  playBtn.dataset.used = '1';
-  if (sampleAudio.paused) { sampleAudio.play(); setPlayingUI(true); }
-  else { sampleAudio.pause(); setPlayingUI(false); }
-});
-sampleAudio.addEventListener('ended', () => setPlayingUI(false));
-
-// Hero halo parallax
-if (!reducedMotion) {
-  const halos = document.querySelectorAll('.hero .halo');
-  window.addEventListener('scroll', () => {
-    const y = window.scrollY;
-    if (y < 1200) halos.forEach((h, i) => { h.style.transform = 'translateY(' + y * (i ? 0.10 : 0.06) + 'px)'; });
-  }, {passive: true});
-}
 
 // Form fallback -> pre-filled mailto
 document.getElementById('fallbackForm').addEventListener('submit', (e) => {

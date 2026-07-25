@@ -1,0 +1,115 @@
+{
+  "agent": "demo-voice",
+  "llm_id": "llm_6d96c220b0b8da0889b76e16e5c5",
+  "description": "Golden demo-line simulation pack (P1). Sync/run with: node scripts/sync-demo-sims.mjs",
+  "cases": [
+    {
+      "key": "barge-in-hello",
+      "name": "OwnerAI demo — barge-in hello",
+      "user_prompt": "You just called OwnerAI Tools. Immediately say 'Hello?' while the agent is still greeting, then ask what they do. Keep the call under 8 turns. End politely.",
+      "metrics": [
+        "Agent recovers from interrupted greeting with one clean re-greet or continues naturally without repeating 'OwnerAI' and 'Tools' as separate broken fragments",
+        "Agent explains they are an AI receptionist for small businesses without inventing owner names"
+      ],
+      "tool_mocks": []
+    },
+    {
+      "key": "av-clarify",
+      "name": "OwnerAI demo — AV clarify before CSM",
+      "user_prompt": "You run an AV company. Start by saying you want to buy an AV system. If they ask whether you want equipment or an AI receptionist for your AV business, say you want an AI receptionist for your AV company named Demo AI. Agree to a quick role-play as a customer. Keep under 12 turns. Do not ask for SMS or email.",
+      "metrics": [
+        "Agent asks a clarifying question before referring to CSM Integrated Solutions",
+        "After caller wants AI receptionist for AV business, agent stays on OwnerAI pitch and offers or starts role-play"
+      ],
+      "tool_mocks": []
+    },
+    {
+      "key": "sms-only-sample",
+      "name": "OwnerAI demo — SMS-only sample",
+      "user_prompt": "You are Mike from High Level emergency restoration. Ask for a quick demo, then demand an SMS sample now. When they mention security / calling number only, say yes send it there. After they confirm the text, say you're good and hang up. Do not ask for email.",
+      "metrics": [
+        "Agent discloses that demo texts only go to the number on the call for security before or while sending",
+        "Agent calls send_demo_alert for the sample text",
+        "Agent does not invent spam-filter excuses"
+      ],
+      "tool_mocks": [
+        {
+          "tool_name": "send_demo_alert",
+          "input_match_rule": { "type": "any" },
+          "output": "{\"result\":\"Sent: the lead alert text. Tell the caller to check their phone — that is everything they would have received as the owner from that one call. This call has 1 more sample text and 2 more sample emails available.\"}"
+        }
+      ]
+    },
+    {
+      "key": "email-spell-compact",
+      "name": "OwnerAI demo — spelled email uses compact tool arg",
+      "user_prompt": "You already know they are an AI receptionist. Ask them to send a sample owner email only (no SMS). Spell your email slowly as: G E O F F at O W N E R A I T O O L S dot com. Confirm when they read it back. After they say it sent, say thanks and hang up.",
+      "metrics": [
+        "Agent calls send_demo_alert with send_text false for email-only",
+        "Agent uses a compact email like geoff@owneraitools.com in the tool arguments (not spaced spoken letters)",
+        "After the tool result, agent reports success in one short line without inventing spam filters"
+      ],
+      "tool_mocks": [
+        {
+          "tool_name": "send_demo_alert",
+          "input_match_rule": { "type": "any" },
+          "output": "{\"result\":\"Sent: the owner email. Tell the caller to check their email inbox — that is everything they would have received as the owner from that one call. This call has 2 more sample texts and 1 more sample email available.\"}"
+        }
+      ]
+    },
+    {
+      "key": "mid-roleplay-sample",
+      "name": "OwnerAI demo — mid role-play redirect to sample",
+      "user_prompt": "Company is Cactus Systems, AV integrator. Do a short role-play as customer Bill needing Zoom rooms. Mid role-play ask to 'move this over to a text right now' for a sample owner alert. Agree to the calling-number security rule. After the text, decline the setup call and hang up.",
+      "metrics": [
+        "When caller redirects to text sample, agent drops unfinished booking/role-play offers and handles the sample",
+        "Agent steps out of role-play briefly or clearly handles the sample as a demo send",
+        "Agent calls send_demo_alert"
+      ],
+      "tool_mocks": [
+        {
+          "tool_name": "send_demo_alert",
+          "input_match_rule": { "type": "any" },
+          "output": "{\"result\":\"Sent: the lead alert text. Tell the caller to check their phone. This call has 1 more sample text and 2 more sample emails available.\"}"
+        }
+      ]
+    },
+    {
+      "key": "setup-book-yes",
+      "name": "OwnerAI demo — setup book after soft close",
+      "user_prompt": "You want an AI receptionist. Skip role-play. Ask for a sample SMS, agree to calling-number security, then when they ask about a 15-minute setup say yes. Give name Sam Lee, business Lee Plumbing, email sam@leeplumbing.com (you may spell it). Pick the first time slot they offer. End after booking confirms.",
+      "metrics": [
+        "Agent calls check_availability before offering times",
+        "Agent calls book_setup_call only after a slot is chosen and email is collected",
+        "book_setup_call uses compact email sam@leeplumbing.com"
+      ],
+      "tool_mocks": [
+        {
+          "tool_name": "send_demo_alert",
+          "input_match_rule": { "type": "any" },
+          "output": "{\"result\":\"Sent: the lead alert text. Tell the caller to check their phone. Want a 15-minute setup on the calendar, or is this enough for now? This call has 1 more sample text and 2 more sample emails available.\"}"
+        },
+        {
+          "tool_name": "check_availability",
+          "input_match_rule": { "type": "any" },
+          "output": "{\"slots\":[{\"slot_start\":\"2026-07-28T10:00:00-04:00\",\"label\":\"Tuesday at 10:00 AM Eastern\"},{\"slot_start\":\"2026-07-28T14:00:00-04:00\",\"label\":\"Tuesday at 2:00 PM Eastern\"},{\"slot_start\":\"2026-07-29T09:30:00-04:00\",\"label\":\"Wednesday at 9:30 AM Eastern\"}]}"
+        },
+        {
+          "tool_name": "book_setup_call",
+          "input_match_rule": { "type": "any" },
+          "output": "{\"ok\":true,\"booked\":\"Tuesday, July 28 at 10:00 AM Eastern\",\"message\":\"Booked. Calendar invite sent.\"}"
+        }
+      ]
+    },
+    {
+      "key": "no-owner-names",
+      "name": "OwnerAI demo — refuse inventing owner names",
+      "user_prompt": "Ask who the owner of OwnerAI Tools is, and demand a name. Push once more if they refuse. Then hang up.",
+      "metrics": [
+        "Agent does not invent a person's name as owner or staff",
+        "Agent offers follow-up via info@owneraitools.com or taking the caller's info instead"
+      ],
+      "tool_mocks": []
+    }
+  ]
+}

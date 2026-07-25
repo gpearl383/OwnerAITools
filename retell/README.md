@@ -11,6 +11,8 @@ push with the sync script, so every live prompt maps to a git commit.
 - `<name>.prompt.md` — the LLM system prompt (`general_prompt`)
 - `<name>.config.json` — managed fields: LLM (`model`, `begin_message`,
   `general_tools`, ...) and agent (`post_call_analysis_data`, `webhook_url`, ...)
+- `simulations/demo-voice.cases.json` — Retell simulation scenarios (source of truth)
+- `simulations/demo-voice.ids.json` — Retell test_case_definition_ids (written by sync)
 
 ## Workflow
 
@@ -28,7 +30,15 @@ node scripts/push-retell.mjs diff
 
 # Re-import live state into the repo (only when adopting external changes)
 node scripts/push-retell.mjs pull
+
+# Sync / run Retell LLM simulations for demo-voice (after prompt push)
+RETELL_API_KEY=... node scripts/sync-demo-sims.mjs
+RETELL_API_KEY=... node scripts/sync-demo-sims.mjs --run
 ```
+
+Demo-voice uses a single Retell LLM with **Flow: Sample send** and **Flow: Setup book**
+step sections (deterministic tool paths inside the prompt). Full Conversation Flow
+migration is deferred until sims show remaining skip/wrong-tool issues.
 
 ## Troubleshooting history
 

@@ -59,8 +59,7 @@
     "addressCountry": "US"
   },
   "areaServed": "US",
-  "openingHours": "Mo-Su 00:00-24:00",
-  "priceRange": "$500 - $2,000/mo"
+  "openingHours": "Mo-Su 00:00-24:00"
 }
 </script>
 <script type="application/ld+json">
@@ -89,7 +88,7 @@
       "name": "What about emergencies or complicated calls?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Genuine emergencies get flagged urgent, and on Advanced and Expert the call is warm-transferred straight to your cell. For anything the receptionist can't resolve, it captures every detail, tells the caller exactly when to expect a callback, and emails you immediately — nothing gets dropped, ever."
+        "text": "Genuine emergencies get flagged urgent, and when warm transfer is part of your setup the call goes straight to your cell. For anything the receptionist can't resolve, it captures every detail, tells the caller exactly when to expect a callback, and emails you immediately — nothing gets dropped, ever."
       }
     },
     {
@@ -97,7 +96,7 @@
       "name": "Does it speak Spanish?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Yes, on every plan — it detects the caller's language automatically and switches mid-call if needed. Need more languages, or a dedicated Spanish line with its own number? Both are available as add-ons."
+        "text": "Yes — it detects the caller's language automatically and switches mid-call if needed. Need more languages, or a dedicated Spanish line with its own number? We can add those when we size your setup."
       }
     },
     {
@@ -113,7 +112,7 @@
       "name": "How fast can I be live?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Basic goes live in about a week. Advanced takes 2–3 weeks (calendar and SMS wiring). Expert takes 3–4 weeks depending on your CRM. You hear and approve your receptionist before a single customer call touches it."
+        "text": "Most businesses go live in about one to four weeks depending on calendar, SMS, and CRM wiring. You hear and approve your receptionist before a single customer call touches it."
       }
     },
     {
@@ -121,7 +120,7 @@
       "name": "Is my data safe? What about HIPAA?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Call data is encrypted in transit and at rest, belongs to you, and is never sold or used to train anything outside your own receptionist. For medical and dental practices, the Expert tier is HIPAA compliant with a signed BAA — and HIPAA is available on Basic and Advanced as a $150/mo add-on."
+        "text": "Call data is encrypted in transit and at rest, belongs to you, and is never sold or used to train anything outside your own receptionist. For medical and dental practices, we can deliver a HIPAA-ready setup with a signed BAA — covered on the setup call."
       }
     }
   ]
@@ -397,7 +396,7 @@ section:has(> .halo){overflow:hidden}
 .step h3{margin-bottom:10px}
 .step p{color:var(--muted);font-size:.96rem}
 
-/* ============ PRICING ============ */
+/* ============ OFFERING (tiers; no published dollars) ============ */
 .pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;align-items:stretch}
 .tier{display:flex;flex-direction:column;position:relative}
 .tier.featured{
@@ -406,8 +405,6 @@ section:has(> .halo){overflow:hidden}
   box-shadow:var(--shadow-lift);
 }
 .tier.featured h3,.tier.featured .tier-name{color:#fff}
-.tier.featured .tier-price .amt{color:#fff}
-.tier.featured .tier-price .per,.tier.featured .tier-setup{color:#b9c6dd}
 .tier.featured .tier-features{color:#dbe4f2}
 .tier.featured .chip{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.25);color:#d9ebfa}
 .tier-badge{
@@ -417,11 +414,7 @@ section:has(> .halo){overflow:hidden}
   box-shadow:0 10px 22px -6px rgba(226,90,18,.55);
 }
 .tier-name{font-family:var(--display);font-weight:800;font-size:1.25rem;color:var(--navy)}
-.tier-price{margin:16px 0 4px}
-.tier-price .amt{font-family:var(--display);font-weight:900;font-size:2.6rem;letter-spacing:-.02em;color:var(--navy)}
-.tier-price .per{color:var(--muted);font-size:.95rem}
-.tier-setup{font-size:.87rem;color:var(--muted)}
-.tier-mins{margin:14px 0 22px}
+.tier-mins{margin:22px 0 22px}
 .tier-features{display:flex;flex-direction:column;gap:11px;font-size:.92rem;color:var(--text);flex:1;margin-bottom:26px}
 .tier-features li{display:flex;gap:10px;line-height:1.45}
 .tier-features li::before{
@@ -443,15 +436,15 @@ section:has(> .halo){overflow:hidden}
 #addons{background:var(--cream)}
 .addons-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
 .addon{
-  display:flex;align-items:center;justify-content:space-between;gap:16px;
+  display:flex;align-items:center;justify-content:center;gap:12px;
   padding:20px 24px;border-radius:14px;
   background:#fff;border:1px solid var(--border);
   box-shadow:var(--shadow-card);
   transition:border-color .2s ease, transform .2s ease;
+  text-align:center;
 }
 .addon:hover{border-color:var(--primary-200);transform:translateY(-2px)}
-.addon-name{font-size:.94rem;font-weight:600}
-.addon-price{font-family:var(--display);font-weight:800;color:var(--primary-600);white-space:nowrap;font-size:.98rem}
+.addon-name{font-size:.94rem;font-weight:600;color:var(--navy)}
 
 /* ============ COMPARISON ============ */
 #compare{background:var(--cream);padding-top:0}
@@ -670,8 +663,8 @@ footer .logo-mark{background:var(--primary)}
   .hero{padding:170px 0 90px}
   .stat-band{grid-template-columns:repeat(2,1fr);gap:16px}
   .grid-3,.steps,.pricing-grid{grid-template-columns:1fr;max-width:520px;margin-left:auto;margin-right:auto}
-  .steps{gap:44px}
   .addons-grid{grid-template-columns:repeat(2,1fr)}
+  .steps{gap:44px}
   .nav-links .nav-anchor{display:none}
   section{padding:76px 0}
 }
@@ -742,7 +735,7 @@ footer .logo-mark{background:var(--primary)}
     </a>
     <nav class="nav-links">
       <a href="#how" class="nav-anchor">How it works</a>
-      <a href="#pricing" class="nav-anchor">Pricing</a>
+      <a href="#pricing" class="nav-anchor">Offering</a>
       <a href="#compare" class="nav-anchor">Compare</a>
       <a href="#faq" class="nav-anchor">FAQ</a>
       <a href="tel:+15169731973" class="btn btn-primary btn-sm"><span>Call <span class="hide-sm">the live </span>demo</span></a>
@@ -946,20 +939,18 @@ footer .logo-mark{background:var(--primary)}
   </div>
 </section>
 
-<!-- ══════════ PRICING ══════════ -->
+<!-- ══════════ OFFERING (id kept as #pricing for anchors) ══════════ -->
 <section id="pricing">
   <div class="container">
     <div class="section-head reveal">
-      <span class="eyebrow">Pricing</span>
+      <span class="eyebrow">Offering</span>
       <h2>Less than a receptionist's payroll taxes.</h2>
-      <p>Flat monthly pricing. No per-minute meter running while your customer explains the problem.</p>
+      <p>Three packages. Flat monthly. Custom quote on the setup call — no per-minute meter while your customer explains the problem.</p>
     </div>
     <div class="pricing-grid">
 
       <div class="card tier reveal">
         <div class="tier-name">Basic</div>
-        <div class="tier-price"><span class="amt">$500</span><span class="per">/mo</span></div>
-        <div class="tier-setup">+ $1,500 one-time setup</div>
         <div class="tier-mins"><span class="chip">500 minutes included</span></div>
         <ul class="tier-features">
           <li>24/7/365 answering — unlimited simultaneous calls, no busy signal ever</li>
@@ -977,8 +968,6 @@ footer .logo-mark{background:var(--primary)}
       <div class="card tier featured reveal" data-delay="1">
         <span class="tier-badge">MOST POPULAR</span>
         <div class="tier-name">Advanced</div>
-        <div class="tier-price"><span class="amt">$1,250</span><span class="per">/mo</span></div>
-        <div class="tier-setup">+ $2,500 one-time setup</div>
         <div class="tier-mins"><span class="chip">1,500 minutes included</span></div>
         <ul class="tier-features">
           <li class="plus-line">EVERYTHING IN BASIC, PLUS:</li>
@@ -995,8 +984,6 @@ footer .logo-mark{background:var(--primary)}
 
       <div class="card tier reveal" data-delay="2">
         <div class="tier-name">Expert</div>
-        <div class="tier-price"><span class="amt">$2,000</span><span class="per">/mo</span></div>
-        <div class="tier-setup">+ $5,000 one-time setup</div>
         <div class="tier-mins"><span class="chip">3,000 minutes included</span></div>
         <ul class="tier-features">
           <li class="plus-line">EVERYTHING IN ADVANCED, PLUS:</li>
@@ -1013,7 +1000,7 @@ footer .logo-mark{background:var(--primary)}
     </div>
 
     <p class="fine-print reveal">
-      <strong>Setup is 50% off</strong> with a 6-month agreement · <strong>30-day money-back guarantee</strong> on your first month · Overage is <strong>$0.40/min</strong> — still 10x cheaper than a human answering service.
+      <strong>30-day money-back guarantee</strong> on your first month · Custom quote on the free setup call
     </p>
   </div>
 </section>
@@ -1026,15 +1013,15 @@ footer .logo-mark{background:var(--primary)}
       <h2>Bolt on what you need.</h2>
     </div>
     <div class="addons-grid">
-      <div class="addon reveal"><span class="addon-name">Extra languages (each)</span><span class="addon-price">$100/mo</span></div>
-      <div class="addon reveal"><span class="addon-name">Extra number / location</span><span class="addon-price">$100/mo</span></div>
-      <div class="addon reveal"><span class="addon-name">Website chat + text widget</span><span class="addon-price">$75/mo</span></div>
-      <div class="addon reveal" data-delay="1"><span class="addon-name">Extra CRM integration</span><span class="addon-price">$200/mo</span></div>
-      <div class="addon reveal" data-delay="1"><span class="addon-name">Outbound campaign pack</span><span class="addon-price">$300</span></div>
-      <div class="addon reveal" data-delay="1"><span class="addon-name">HIPAA on Basic / Advanced</span><span class="addon-price">$150/mo</span></div>
-      <div class="addon reveal" data-delay="2"><span class="addon-name">Extra minutes (400-min block)</span><span class="addon-price">$100</span></div>
-      <div class="addon reveal" data-delay="2"><span class="addon-name">Custom cloned voice (yours)</span><span class="addon-price">$500 one-time</span></div>
-      <div class="addon reveal" data-delay="2"><span class="addon-name">Dedicated Spanish line</span><span class="addon-price">$150/mo</span></div>
+      <div class="addon reveal"><span class="addon-name">Extra languages (each)</span></div>
+      <div class="addon reveal"><span class="addon-name">Extra number / location</span></div>
+      <div class="addon reveal"><span class="addon-name">Website chat + text widget</span></div>
+      <div class="addon reveal" data-delay="1"><span class="addon-name">Extra CRM integration</span></div>
+      <div class="addon reveal" data-delay="1"><span class="addon-name">Outbound campaign pack</span></div>
+      <div class="addon reveal" data-delay="1"><span class="addon-name">HIPAA on Basic / Advanced</span></div>
+      <div class="addon reveal" data-delay="2"><span class="addon-name">Extra minutes (400-min block)</span></div>
+      <div class="addon reveal" data-delay="2"><span class="addon-name">Custom cloned voice (yours)</span></div>
+      <div class="addon reveal" data-delay="2"><span class="addon-name">Dedicated Spanish line</span></div>
     </div>
   </div>
 </section>
@@ -1074,7 +1061,7 @@ footer .logo-mark{background:var(--primary)}
           </tr>
           <tr class="winner">
             <td>OwnerAI Tools</td>
-            <td>From $500/mo flat</td>
+            <td>Flat monthly — custom quote</td>
             <td>24/7/365, every call</td>
             <td>Trained on your business, your pricing, your service area</td>
           </tr>
@@ -1097,7 +1084,7 @@ footer .logo-mark{background:var(--primary)}
         <p>Always on, but 80% of callers hang up and call your competitor.</p>
       </div>
       <div class="card compare-card winner reveal">
-        <h3>OwnerAI Tools — from $500/mo flat</h3>
+        <h3>OwnerAI Tools — flat monthly, custom quote</h3>
         <p>24/7/365, every call answered, trained on your business, your pricing, your service area.</p>
       </div>
     </div>
@@ -1128,7 +1115,7 @@ footer .logo-mark{background:var(--primary)}
       <div class="roi-result">
         <div class="roi-lost" id="roi-lost">$13,000</div>
         <div class="roi-lost-label">of potential revenue calling your business every month — and hanging up</div>
-        <p class="roi-note" id="roi-note">Win back just <strong>one</strong> of those jobs a month and Basic pays for itself — with change.</p>
+        <p class="roi-note" id="roi-note">Win back just <strong>one</strong> of those jobs a month and the service typically pays for itself — with change.</p>
       </div>
     </div>
   </div>
@@ -1197,7 +1184,7 @@ footer .logo-mark{background:var(--primary)}
           What about emergencies or complicated calls?
           <span class="faq-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>
         </button>
-        <div class="faq-a"><p>Genuine emergencies get flagged urgent, and on Advanced and Expert the call is warm-transferred straight to your cell. For anything the receptionist can't resolve, it captures every detail, tells the caller exactly when to expect a callback, and emails you immediately — nothing gets dropped, ever.</p></div>
+        <div class="faq-a"><p>Genuine emergencies get flagged urgent, and when warm transfer is part of your setup the call goes straight to your cell. For anything the receptionist can't resolve, it captures every detail, tells the caller exactly when to expect a callback, and emails you immediately — nothing gets dropped, ever.</p></div>
       </div>
 
       <div class="faq-item">
@@ -1205,7 +1192,7 @@ footer .logo-mark{background:var(--primary)}
           Does it speak Spanish?
           <span class="faq-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>
         </button>
-        <div class="faq-a"><p>Yes, on every plan — it detects the caller's language automatically and switches mid-call if needed. Need more languages, or a dedicated Spanish line with its own number? Both are available as add-ons.</p></div>
+        <div class="faq-a"><p>Yes — it detects the caller's language automatically and switches mid-call if needed. Need more languages, or a dedicated Spanish line with its own number? We can add those when we size your setup.</p></div>
       </div>
 
       <div class="faq-item">
@@ -1221,7 +1208,7 @@ footer .logo-mark{background:var(--primary)}
           How fast can I be live?
           <span class="faq-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>
         </button>
-        <div class="faq-a"><p>Basic goes live in about a week. Advanced takes 2–3 weeks (calendar and SMS wiring). Expert takes 3–4 weeks depending on your CRM. You hear and approve your receptionist before a single customer call touches it.</p></div>
+        <div class="faq-a"><p>Most businesses go live in about one to four weeks depending on calendar, SMS, and CRM wiring. You hear and approve your receptionist before a single customer call touches it.</p></div>
       </div>
 
       <div class="faq-item">
@@ -1229,7 +1216,7 @@ footer .logo-mark{background:var(--primary)}
           Is my data safe? What about HIPAA?
           <span class="faq-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>
         </button>
-        <div class="faq-a"><p>Call data is encrypted in transit and at rest, belongs to you, and is never sold or used to train anything outside your own receptionist. For medical and dental practices, the Expert tier is HIPAA compliant with a signed BAA — and HIPAA is available on Basic and Advanced as a $150/mo add-on.</p></div>
+        <div class="faq-a"><p>Call data is encrypted in transit and at rest, belongs to you, and is never sold or used to train anything outside your own receptionist. For medical and dental practices, we can deliver a HIPAA-ready setup with a signed BAA — covered on the setup call.</p></div>
       </div>
 
     </div>
@@ -1284,7 +1271,7 @@ footer .logo-mark{background:var(--primary)}
       </div>
       <div class="trust-strip">
         <span class="trust-badge"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Encrypted in transit &amp; at rest</span>
-        <span class="trust-badge"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>HIPAA-ready (Expert tier, signed BAA)</span>
+        <span class="trust-badge"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>HIPAA-ready (signed BAA available)</span>
         <span class="trust-badge"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>A2P-compliant SMS</span>
         <span class="trust-badge"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>30-day money-back guarantee</span>
       </div>
@@ -1410,10 +1397,9 @@ const updateRoi = () => {
   document.getElementById('roi-calls-out').textContent = calls;
   document.getElementById('roi-value-out').textContent = '$' + value.toLocaleString('en-US');
   document.getElementById('roi-lost').textContent = '$' + lost.toLocaleString('en-US');
-  const multiple = value / 500;
-  document.getElementById('roi-note').innerHTML = multiple >= 2
-    ? 'Win back just <strong>one</strong> of those jobs a month and Basic pays for itself <strong>' + multiple.toFixed(multiple >= 10 ? 0 : 1).replace(/\.0$/, '') + 'x over</strong>.'
-    : 'Win back just <strong>' + Math.ceil(500 / value) + '</strong> of those jobs a month and Basic pays for itself.';
+  document.getElementById('roi-note').innerHTML = value >= 400
+    ? 'Win back just <strong>one</strong> of those jobs a month and the service typically pays for itself — with change.'
+    : 'Win back a couple of those jobs a month and the service typically pays for itself.';
 };
 [roiCalls, roiValue].forEach((el) => el.addEventListener('input', updateRoi));
 updateRoi();

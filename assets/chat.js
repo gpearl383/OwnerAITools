@@ -14,10 +14,10 @@
   var CAL_URL = 'https://cal.com/owneraitools/30min';
 
   var GREETING =
-    "Hi — I'm the OwnerAI Assistant. I can explain how our AI receptionist answers your business's calls 24/7, walk you through pricing, or get you set up. Fair warning: I'm the same technology that answers our phones. What kind of business do you run?";
+    "Hi — I'm the OwnerAI Assistant. I can walk you through Basic, Advanced, and Expert, how setup works, or get you on a free quote call. Fair warning: I'm the same technology that answers our phones. What kind of business do you run?";
 
   var QUICK = [
-    'How much does it cost?',
+    'What\u2019s in each package?',
     'How does setup work?',
     'Will callers know it\u2019s AI?',
   ];
@@ -258,7 +258,7 @@
         t.className = 'cw-teaser';
         t.setAttribute('role', 'status');
         t.innerHTML =
-          '<strong>Questions about pricing or setup?</strong>' +
+          '<strong>Questions about setup or how it works?</strong>' +
           'Ask the OwnerAI Assistant \u2014 answers in seconds.' +
           '<button class="cw-teaser-x" aria-label="Dismiss">\u2715</button>';
         t.querySelector('.cw-teaser-x').onclick = function (e) {

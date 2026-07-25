@@ -16,7 +16,7 @@
         "timeout_ms": 20000,
         "speak_after_execution": true,
         "name": "send_demo_alert",
-        "description": "Send the prospect sample owner notifications: a [DEMO] lead-alert text, a [DEMO] appointment-booked text (when a role-play booked one), and — if they gave an email — a calendar invite plus a sample owner email. Only call after the caller explicitly agreed. Each call has a budget of 2 sample texts and 2 sample emails; the tool result reports what was sent and what remains — relay that in one short line only. For security, demo sample texts ONLY go to the number the caller is calling from — always omit prospect_mobile (server uses caller ID). Never pass a different cell. For an email-only send set send_text to false.",
+        "description": "Send the prospect sample owner notifications: a [DEMO] lead-alert text, a [DEMO] appointment-booked text (when a role-play booked one), and — if they gave an email — a calendar invite plus a sample owner email. Only call after the caller explicitly agreed. Each call has a budget of 2 sample texts and 2 sample emails; the tool result reports what was sent and what remains — relay that in one short line only. For security, demo sample texts ONLY go to the number the caller is calling from — always omit prospect_mobile (server uses caller ID). Never pass a different cell. prospect_email must be compact (name@domain.com), never spoken letter form. Email-only: set send_text to false and include prospect_email. SMS+email: set send_text to true and include prospect_email.",
         "type": "custom",
         "speak_during_execution": false,
         "parameters": {
@@ -31,7 +31,7 @@
             },
             "prospect_email": {
               "type": "string",
-              "description": "The prospect's email address, only if they volunteered it for the full owner experience (calendar invite + sample email). Omit otherwise."
+              "description": "Compact email only (e.g. geoff@owneraitools.com). Never pass spoken/spelled forms like 'G E O F F at … dot com'. Omit if not sending email."
             },
             "address": {
               "type": "string",
@@ -39,7 +39,7 @@
             },
             "send_text": {
               "type": "boolean",
-              "description": "Set to false for an email-only send (no sample texts). Defaults to true."
+              "description": "Set true to send sample SMS. Set false (or omit when prospect_email is set) for email-only — when prospect_email is present, SMS is off unless send_text is true."
             },
             "prospect_mobile": {
               "type": "string",

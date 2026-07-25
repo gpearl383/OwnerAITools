@@ -22,6 +22,7 @@
 
 import crypto from 'node:crypto';
 import { createAllowanceTracker, remainingText, DEMO_LIMITS } from './lib/demo-limits.mjs';
+import { resolveEmail } from './lib/spoken-email.mjs';
 
 const TZ = 'America/New_York';
 
@@ -51,11 +52,6 @@ function normalizePhone(v) {
   if (/^1\d{10}$/.test(digits)) return `+${digits}`;
   if (/^\d{10}$/.test(digits)) return `+1${digits}`;
   return null;
-}
-
-function validEmail(v) {
-  const s = String(v ?? '').trim().toLowerCase();
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s) ? s : null;
 }
 
 function escapeHtml(v) {
@@ -364,8 +360,16 @@ export async function POST(request) {
   // so "text the number I'm calling from" arrives with no usable
   // prospect_mobile. The server knows the real number — use it.
   const to = providedTo || from;
-  const wantsText = args.send_text !== false;
-  const email = validEmail(args.prospect_email);
+  const {
+    email,
+    normalized: emailNormalized,
+    raw: emailRaw,
+  } = resolveEmail(args.prospect_email);
+  // When prospect_email is set, SMS is off unless send_text is explicitly true
+  // (stops "send me an email" from burning the SMS budget).
+  const emailAttempted = args.prospect_email != null && String(args.prospect_email).trim() !== '';
+  const doSmsPreferred =
+    args.send_text === true || (!emailAttempted && args.send_text !== false);
   const apptStart =
     args.appointment_start && !Number.isNaN(new Date(args.appointment_start).getTime())
       ? args.appointment_start
@@ -382,12 +386,22 @@ export async function POST(request) {
     appointment: args.appointment,
     urgent: args.urgent === true,
   };
+  const emailDebug = {
+    prospect_email_raw: emailRaw,
+    prospect_email_normalized: emailNormalized,
+  };
 
   // Guard rejections get an audit row so failed attempts show on the
   // dashboard instead of vanishing (last night's failures were invisible).
   async function blocked(reason, speakable) {
     await logAuditBatch([
-      { ...base, event_type: 'demo_alert_blocked', status: 'skipped', detail: reason, payload: rolePlay },
+      {
+        ...base,
+        event_type: 'demo_alert_blocked',
+        status: 'skipped',
+        detail: reason,
+        payload: { ...rolePlay, ...emailDebug },
+      },
     ]);
     return toolResult(speakable);
   }
@@ -408,7 +422,7 @@ export async function POST(request) {
 
   // Decide which channels this invocation can use.
   const skips = [];
-  let doSms = wantsText;
+  let doSms = doSmsPreferred;
   if (doSms && !to) {
     doSms = false;
     skips.push('no valid mobile number for this call');
@@ -427,15 +441,27 @@ export async function POST(request) {
     skips.push('that number already received the maximum sample texts this hour');
   }
   let doEmail = !!(email && process.env.RESEND_API_KEY);
+  if (emailAttempted && !email) {
+    skips.push('email address was invalid after parsing');
+  }
+  if (email && !process.env.RESEND_API_KEY) {
+    console.error('demo-alert: RESEND_API_KEY missing');
+    doEmail = false;
+    skips.push('email is unavailable right now');
+  }
   if (email && doEmail && !allowance.canEmail(call.call_id)) {
     doEmail = false;
     skips.push(`the ${DEMO_LIMITS.emailPerCall}-email limit for this call was reached`);
   }
 
   if (!doSms && !doEmail) {
+    const emailParseFail = emailAttempted && !email;
+    const speakable = emailParseFail
+      ? 'Nothing could be sent: that email still was not valid after parsing. Ask them to re-spell it once, then retry with a compact address like name@domain.com. Do not invent spam-filter or security excuses.'
+      : `Nothing could be sent: ${skips.join('; ') || 'no valid text number or email was available'}. Tell the caller honestly and continue the conversation. Do not invent spam-filter or security excuses.`;
     return blocked(
-      `nothing sendable: ${skips.join('; ') || 'no valid channel'}`,
-      `Nothing could be sent: ${skips.join('; ') || 'no valid text number or email was available'}. Tell the caller honestly and continue the conversation.`
+      `nothing sendable: ${skips.join('; ') || 'no valid channel'}; raw=${emailRaw || ''}; normalized=${emailNormalized || ''}`,
+      speakable,
     );
   }
 

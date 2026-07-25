@@ -243,10 +243,26 @@ async function persistCallRecord({ id, kind, callerName, fromNumber, summary, tr
   if (!url || !key || !id || !callLinkToken(id)) return null;
 
   // Copy the recording while Retell's signed URL is still valid.
+  // Host allowlist — never fetch arbitrary https URLs (SSRF).
   let recordingPath = null;
-  if (recordingUrl && /^https:\/\//.test(recordingUrl)) {
+  const recordingHostOk = (() => {
     try {
-      const audio = await fetch(recordingUrl);
+      const u = new URL(recordingUrl);
+      if (u.protocol !== 'https:') return false;
+      const h = u.hostname.toLowerCase();
+      return (
+        h === 'retellai.com' ||
+        h.endsWith('.retellai.com') ||
+        h.endsWith('.amazonaws.com') ||
+        h.endsWith('.cloudfront.net')
+      );
+    } catch {
+      return false;
+    }
+  })();
+  if (recordingUrl && recordingHostOk) {
+    try {
+      const audio = await fetch(recordingUrl, { redirect: 'error' });
       if (audio.ok) {
         const bytes = Buffer.from(await audio.arrayBuffer());
         // Storage rejects Content-Type params (e.g. "; codecs=...") and needs

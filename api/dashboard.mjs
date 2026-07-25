@@ -29,9 +29,16 @@ function sign(value, secret) {
   return crypto.createHmac('sha256', secret).update(value).digest('base64url');
 }
 
-function makeSessionCookie(secret) {
+/** Binds sessions to the current password so rotation invalidates old cookies. */
+function passwordVersion(password) {
+  return crypto.createHash('sha256').update(String(password || '')).digest('base64url').slice(0, 16);
+}
+
+function makeSessionCookie(secret, password) {
   const exp = String(Date.now() + SESSION_TTL_MS);
-  const token = `${exp}.${sign(exp, secret)}`;
+  const ver = passwordVersion(password);
+  const payload = `${exp}.${ver}`;
+  const token = `${payload}.${sign(payload, secret)}`;
   // Path=/ so the same session works for /dashboard and /billing.
   return `${COOKIE_NAME}=${token}; Path=/; Max-Age=86400; HttpOnly; Secure; SameSite=Strict`;
 }
@@ -40,15 +47,19 @@ function clearSessionCookie() {
   return `${COOKIE_NAME}=; Path=/; Max-Age=0; HttpOnly; Secure; SameSite=Strict`;
 }
 
-function hasValidSession(request, secret) {
-  if (!secret) return false;
+function hasValidSession(request, secret, password) {
+  if (!secret || !password) return false;
   const cookies = request.headers.get('cookie') || '';
   const match = cookies.match(new RegExp(`(?:^|;\\s*)${COOKIE_NAME}=([^;]+)`));
   if (!match) return false;
-  const [exp, sig] = match[1].split('.');
-  if (!exp || !sig) return false;
+  const parts = match[1].split('.');
+  // New format: exp.ver.sig — legacy exp.sig rejected after password-bound rollout.
+  if (parts.length !== 3) return false;
+  const [exp, ver, sig] = parts;
+  if (!exp || !ver || !sig) return false;
   if (Number(exp) < Date.now()) return false;
-  const expected = sign(exp, secret);
+  if (ver !== passwordVersion(password)) return false;
+  const expected = sign(`${exp}.${ver}`, secret);
   try {
     return crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expected));
   } catch {
@@ -219,12 +230,13 @@ export async function POST(request) {
     return json(401, { error: 'Wrong password' });
   }
 
-  return json(200, { ok: true }, { 'Set-Cookie': makeSessionCookie(secret) });
+  return json(200, { ok: true }, { 'Set-Cookie': makeSessionCookie(secret, password) });
 }
 
 export async function GET(request) {
   const secret = process.env.DASHBOARD_SESSION_SECRET;
-  if (!hasValidSession(request, secret)) {
+  const password = process.env.DASHBOARD_PASSWORD;
+  if (!hasValidSession(request, secret, password)) {
     return json(401, { error: 'Not signed in' });
   }
 
@@ -266,7 +278,8 @@ export async function GET(request) {
 
 export async function PATCH(request) {
   const secret = process.env.DASHBOARD_SESSION_SECRET;
-  if (!hasValidSession(request, secret)) {
+  const password = process.env.DASHBOARD_PASSWORD;
+  if (!hasValidSession(request, secret, password)) {
     return json(401, { error: 'Not signed in' });
   }
 

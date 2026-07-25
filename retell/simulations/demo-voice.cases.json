@@ -6,10 +6,10 @@
     {
       "key": "barge-in-hello",
       "name": "OwnerAI demo — barge-in hello",
-      "user_prompt": "You just called OwnerAI Tools. Immediately say 'Hello?' while the agent is still greeting, then ask what they do. Keep the call under 8 turns. End politely.",
+      "user_prompt": "You called OwnerAI Tools. First message: say only 'Hello?' once. After the agent replies, ask in one sentence what they do. After they answer, say 'Thanks, that's enough' and end — do not say hello again, do not loop, keep the whole call under 6 user turns.",
       "metrics": [
-        "Agent recovers from interrupted greeting with one clean re-greet or continues naturally without repeating 'OwnerAI' and 'Tools' as separate broken fragments",
-        "Agent explains they are an AI receptionist for small businesses without inventing owner names"
+        "Agent responds coherently after the caller says hello during or after the greeting (no broken 'OwnerAI' / 'Tools' split as the only response)",
+        "Agent explains they are an AI receptionist without inventing owner or staff names"
       ],
       "tool_mocks": []
     },
@@ -18,17 +18,17 @@
       "name": "OwnerAI demo — AV clarify before CSM",
       "user_prompt": "You run an AV company. Start by saying you want to buy an AV system. If they ask whether you want equipment or an AI receptionist for your AV business, say you want an AI receptionist for your AV company named Demo AI. Agree to a quick role-play as a customer. Keep under 12 turns. Do not ask for SMS or email.",
       "metrics": [
-        "Agent asks a clarifying question before referring to CSM Integrated Solutions",
-        "After caller wants AI receptionist for AV business, agent stays on OwnerAI pitch and offers or starts role-play"
+        "When the caller says they want to buy an AV system, the agent asks whether they want AV equipment or an AI receptionist for their AV business before pitching or referring elsewhere",
+        "After the caller says they want an AI receptionist for their AV company, the agent stays on the OwnerAI demo (role-play / sample / setup) and does not send them away to CSM"
       ],
       "tool_mocks": []
     },
     {
       "key": "sms-only-sample",
       "name": "OwnerAI demo — SMS-only sample",
-      "user_prompt": "You are Mike from High Level emergency restoration. Ask for a quick demo, then demand an SMS sample now. When they mention security / calling number only, say yes send it there. After they confirm the text, say you're good and hang up. Do not ask for email.",
+      "user_prompt": "You are Mike from High Level emergency restoration. Ask for a quick demo, then demand an SMS sample now. If they try to send without saying the demo text only goes to the number you are calling from, interrupt and ask which number it will go to. Once they say calling-number-only / security, say yes send it there. After they confirm the text, say you're good and hang up. Do not ask for email.",
       "metrics": [
-        "Agent discloses that demo texts only go to the number on the call for security before or while sending",
+        "Before or while sending the sample text, agent makes clear it goes to the number on this call (security / calling-number only)",
         "Agent calls send_demo_alert for the sample text",
         "Agent does not invent spam-filter excuses"
       ],
@@ -45,9 +45,9 @@
       "name": "OwnerAI demo — spelled email uses compact tool arg",
       "user_prompt": "You already know they are an AI receptionist. Ask them to send a sample owner email only (no SMS). Spell your email slowly as: G E O F F at O W N E R A I T O O L S dot com. Confirm when they read it back. After they say it sent, say thanks and hang up.",
       "metrics": [
-        "Agent calls send_demo_alert with send_text false for email-only",
+        "Agent calls send_demo_alert with compact prospect_email for email-only, and does not set send_text to true",
         "Agent uses a compact email like geoff@owneraitools.com in the tool arguments (not spaced spoken letters)",
-        "After the tool result, agent reports success in one short line without inventing spam filters"
+        "After the tool result, agent confirms the email was sent without inventing spam-filter excuses"
       ],
       "tool_mocks": [
         {

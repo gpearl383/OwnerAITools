@@ -23,6 +23,13 @@ function fail(msg) {
   process.exit(1);
 }
 
+class ApiError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = 'ApiError';
+  }
+}
+
 async function api(method, endpoint, body) {
   const res = await fetch(`${API}${endpoint}`, {
     method,
@@ -36,8 +43,24 @@ async function api(method, endpoint, body) {
   } catch {
     data = { raw: text };
   }
-  if (!res.ok) fail(`${method} ${endpoint} -> ${res.status}: ${text}`);
+  if (!res.ok) throw new ApiError(`${method} ${endpoint} -> ${res.status}: ${text}`);
   return data;
+}
+
+/** Flatten nested/legacy ids.json shapes into a flat key -> definition_id map. */
+function loadIds(filePath) {
+  if (!fs.existsSync(filePath)) return {};
+  const store = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+  const out = {};
+  function walk(node) {
+    if (!node || typeof node !== 'object' || Array.isArray(node)) return;
+    for (const [k, v] of Object.entries(node)) {
+      if (typeof v === 'string' && v.startsWith('test_case_')) out[k] = v;
+      else if (k === 'ids' && v && typeof v === 'object') walk(v);
+    }
+  }
+  walk(store);
+  return out;
 }
 
 async function main() {
@@ -50,10 +73,7 @@ async function main() {
   if (!agent) fail(`agent ${pack.agent} not in manifest`);
   const llmId = pack.llm_id || agent.llm_id;
 
-  let ids = {};
-  if (fs.existsSync(IDS_PATH)) {
-    ids = JSON.parse(fs.readFileSync(IDS_PATH, 'utf8'));
-  }
+  const ids = loadIds(IDS_PATH);
 
   const definitionIds = [];
   for (const c of pack.cases) {
@@ -69,7 +89,7 @@ async function main() {
     let def;
     if (existingId) {
       try {
-        def = await api('PATCH', `/update-test-case-definition/${existingId}`, body);
+        def = await api('PUT', `/update-test-case-definition/${existingId}`, body);
         console.log(`updated ${c.key} -> ${existingId}`);
       } catch (err) {
         console.warn(`update failed for ${c.key}, creating new: ${err.message || err}`);

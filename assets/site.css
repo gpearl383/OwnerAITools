@@ -221,7 +221,8 @@ body.nav-open{overflow:hidden}
 .hero-bg{
   position:absolute;inset:0;
   background:url('/assets/img/homepage-hero.jpg') center/cover no-repeat;
-  transform:scale(1.05);
+  transform:scale(1.08);
+  filter:blur(4px);
 }
 .hero-wash{
   position:absolute;inset:0;
@@ -793,7 +794,11 @@ footer .logo{color:#fff}
   background:url('/assets/img/industries-hero.jpg') center/cover no-repeat;
 }
 .page-hero-bg.features-hero,
-.page-hero-bg.offering-hero{background-image:url('/assets/img/homepage-hero.jpg')}
+.page-hero-bg.offering-hero{
+  background-image:url('/assets/img/homepage-hero.jpg');
+  transform:scale(1.08);
+  filter:blur(4px);
+}
 .page-hero-bg.faq-hero{background-image:url('/assets/img/industries-hero.jpg')}
 .page-hero-wash{
   position:absolute;inset:0;

@@ -1,6 +1,13 @@
 {
   "cleanUrls": true,
   "trailingSlash": false,
+  "redirects": [
+    {
+      "source": "/pricing",
+      "destination": "/offering",
+      "permanent": true
+    }
+  ],
   "crons": [
     {
       "path": "/api/purge-call-records",

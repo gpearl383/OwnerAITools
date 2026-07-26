@@ -62,765 +62,8 @@
   "openingHours": "Mo-Su 00:00-24:00"
 }
 </script>
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "FAQPage",
-  "mainEntity": [
-    {
-      "@type": "Question",
-      "name": "Will callers hate talking to an AI?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "Callers hate voicemail. They hate hold music. They don't hate getting their problem handled at 9 PM on a Saturday. Our receptionists sound natural, and most callers can't tell in the first ten seconds — but we never hide it if they ask. Don't take our word for it: call the demo line and judge for yourself."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "Do I have to change my phone number?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "No. You keep your number and your customers notice nothing. We set up smart forwarding — all calls, after-hours only, or only when you don't answer within a few rings. If you ever want out, rollback takes one call and is instant."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "What about emergencies or complicated calls?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "Genuine emergencies get flagged urgent, and when warm transfer is part of your setup the call goes straight to your cell. For anything the receptionist can't resolve, it captures every detail, tells the caller exactly when to expect a callback, and emails you immediately — nothing gets dropped, ever."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "Does it speak Spanish?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "Yes — it detects the caller's language automatically and switches mid-call if needed. Need more languages, or a dedicated Spanish line with its own number? We can add those when we size your setup."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "How is this different from a $49/mo AI phone app?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "Those are do-it-yourself tools: you write the scripts, you configure the flows, you babysit the dashboard, and when it mangles a call at 2 AM, that's your problem. This is a managed service. We build it, test it against your real call scenarios, monitor it, and tune it every month. You forward your phone and read your leads. That's your entire job."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "How fast can I be live?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "Most businesses go live in about one to four weeks depending on calendar, SMS, and CRM wiring. You hear and approve your receptionist before a single customer call touches it."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "Is my data safe? What about HIPAA?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "Call data is encrypted in transit and at rest, belongs to you, and is never sold or used to train anything outside your own receptionist. For medical and dental practices, we can deliver a HIPAA-ready setup with a signed BAA — covered on the setup call."
-      }
-    }
-  ]
-}
-</script>
 
-<style>
-/* ============ TOKENS & RESET ============ */
-:root{
-  --navy: #14355e;
-  --navy-soft: #1d4879;
-  --primary: #2680cf;
-  --primary-600: #1a66b0;
-  --primary-700: #17528e;
-  --primary-50: #eef6fd;
-  --primary-100: #d9ebfa;
-  --primary-200: #b6d8f5;
-  --accent: #f97125;
-  --accent-600: #e25a12;
-  --accent-dim: rgba(249,113,37,.12);
-  --mist: #f2f7fc;
-  --cream: #fdf9f3;
-  --bg: #ffffff;
-  --surface: #ffffff;
-  --border: rgba(20,53,94,.10);
-  --border-strong: rgba(20,53,94,.18);
-  --text: #24384f;
-  --muted: #5a6b81;
-  --display: "Nunito", ui-sans-serif, system-ui, sans-serif;
-  --body: "Source Sans 3", ui-sans-serif, system-ui, sans-serif;
-  --radius: 16px;
-  --shadow-card: 0 14px 40px -18px rgba(20,53,94,.22);
-  --shadow-lift: 0 22px 55px -22px rgba(20,53,94,.32);
-}
-*{margin:0;padding:0;box-sizing:border-box}
-html{scroll-behavior:smooth;scroll-padding-top:118px;overflow-x:clip}
-body{
-  background:var(--bg);
-  color:var(--text);
-  font-family:var(--body);
-  font-size:17px;
-  line-height:1.6;
-  -webkit-font-smoothing:antialiased;
-  overflow-x:hidden;
-}
-::selection{background:var(--primary);color:#fff}
-img,svg{display:block}
-a{color:inherit;text-decoration:none}
-ul{list-style:none}
-button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
-
-h1,h2,h3{font-family:var(--display);font-weight:800;line-height:1.12;letter-spacing:-.015em;color:var(--navy)}
-h1{font-size:clamp(2.5rem,5.4vw,4.1rem);font-weight:900}
-h2{font-size:clamp(1.9rem,3.6vw,2.7rem)}
-h3{font-size:1.2rem}
-
-.container{max-width:1160px;margin:0 auto;padding:0 24px}
-section{padding:96px 0;position:relative}
-
-.eyebrow{
-  display:inline-flex;align-items:center;gap:8px;
-  font-size:.8rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
-  color:var(--primary-600);margin-bottom:18px;
-}
-.eyebrow::before{content:"";width:22px;height:2px;border-radius:2px;background:var(--accent)}
-.hero .eyebrow{
-  display:inline-flex;align-items:center;gap:8px;
-  font-size:.76rem;letter-spacing:.13em;
-  padding:8px 16px;border-radius:999px;
-  border:1px solid rgba(255,255,255,.28);background:rgba(255,255,255,.12);
-  box-shadow:none;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
-  margin-bottom:26px;color:#fff;
-}
-.hero .eyebrow::before{display:none}
-.hero .eyebrow svg{width:13px;height:13px;flex-shrink:0}
-.hero h1{font-size:clamp(2.35rem,5.6vw,4.15rem);line-height:1.06;letter-spacing:-.02em;color:#fff}
-.section-head{max-width:640px;margin-bottom:56px}
-.section-head p{color:var(--muted);margin-top:16px;font-size:1.05rem}
-
-/* ============ BACKGROUND TEXTURE ============ */
-.dotgrid::before{
-  content:"";position:absolute;inset:0;pointer-events:none;
-  background-image:radial-gradient(circle at 1px 1px, rgba(20,53,94,.09) 1px, transparent 0);
-  background-size:20px 20px;
-  mask-image:radial-gradient(ellipse 70% 60% at 50% 0%, black 0%, transparent 100%);
-  -webkit-mask-image:radial-gradient(ellipse 70% 60% at 50% 0%, black 0%, transparent 100%);
-}
-.halo{position:absolute;border-radius:50%;filter:blur(90px);pointer-events:none;opacity:.6}
-section:has(> .halo){overflow:hidden}
-
-/* ============ BUTTONS ============ */
-.btn{
-  display:inline-flex;align-items:center;justify-content:center;gap:10px;
-  padding:15px 28px;border-radius:999px;font-weight:700;font-size:1rem;
-  font-family:var(--body);
-  transition:transform .18s ease, box-shadow .18s ease, background .18s ease, border-color .18s ease, color .18s ease;
-  white-space:nowrap;
-}
-.btn:active{transform:translateY(1px)}
-.btn-primary{
-  background:var(--accent);color:#fff;
-  box-shadow:var(--shadow-lift);
-}
-.btn-primary:hover{transform:translateY(-2px);background:var(--accent-600);box-shadow:0 26px 60px -20px rgba(226,90,18,.55)}
-.btn-ghost{
-  background:#fff;border:2px solid var(--primary-600);color:var(--primary-700);
-  padding-top:13px;padding-bottom:13px;
-}
-.btn-ghost:hover{transform:translateY(-2px);background:var(--primary-50)}
-.btn-sm{padding:10px 20px;font-size:.9rem}
-.btn-sm.btn-ghost{padding-top:8px;padding-bottom:8px}
-
-/* ============ CARDS / CHIPS ============ */
-.card{
-  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
-  padding:32px;box-shadow:var(--shadow-card);
-  transition:transform .25s ease, border-color .25s ease, box-shadow .25s ease;
-}
-.card:hover{
-  transform:translateY(-4px);border-color:var(--primary-200);
-  box-shadow:var(--shadow-lift);
-}
-.chip{
-  display:inline-flex;align-items:center;gap:6px;
-  font-size:.78rem;font-weight:700;padding:5px 12px;border-radius:999px;
-  background:var(--primary-50);border:1px solid var(--primary-200);color:var(--primary-700);
-}
-
-/* ============ SCROLL REVEALS ============ */
-.reveal{opacity:0;transform:translateY(26px);transition:opacity .7s ease, transform .7s ease}
-.reveal.is-visible{opacity:1;transform:none}
-.reveal[data-delay="1"]{transition-delay:.1s}
-.reveal[data-delay="2"]{transition-delay:.2s}
-.reveal[data-delay="3"]{transition-delay:.3s}
-
-/* ============ NAV ============ */
-.nav{
-  position:fixed;top:0;left:0;right:0;z-index:100;
-  background:#fff;
-  transition:box-shadow .3s ease;
-  border-bottom:1px solid var(--border);
-}
-.nav.scrolled{
-  box-shadow:var(--shadow-card);
-}
-.nav-inner{display:flex;align-items:center;justify-content:space-between;height:72px}
-.logo{font-family:var(--display);font-weight:800;font-size:1.15rem;letter-spacing:-.01em;display:flex;align-items:center;gap:9px;color:var(--navy)}
-.logo-mark{
-  width:30px;height:30px;border-radius:50%;background:var(--primary-600);
-  display:flex;align-items:center;justify-content:center;
-}
-.logo-mark svg{width:15px;height:15px}
-.nav-links{display:flex;align-items:center;gap:32px;font-size:.93rem;font-weight:600;color:var(--muted)}
-.nav-links a:hover{color:var(--navy)}
-.nav-links a{transition:color .18s ease}
-
-/* ============ HERO ============ */
-.hero{
-  position:relative;overflow:hidden;
-  min-height:min(90vh,920px);
-  display:flex;align-items:center;
-  padding:200px 0 110px;
-  background:var(--navy);
-  text-align:center;
-}
-.hero-bg{
-  position:absolute;inset:0;
-  background:url('/assets/img/homepage-hero.jpg') center/cover no-repeat;
-  transform:scale(1.05);
-}
-.hero-wash{
-  position:absolute;inset:0;
-  background:linear-gradient(
-    to right,
-    rgba(20,53,94,.94),
-    rgba(20,53,94,.82),
-    rgba(20,53,94,.58)
-  );
-}
-.hero-content{position:relative;z-index:1;max-width:780px;margin:0 auto}
-.hero h1 .accent{color:#ff9046}
-.hero-sub{color:#dbe4f2;font-size:1.15rem;margin:24px auto 28px;max-width:620px}
-.hero-ctas{display:flex;gap:14px;flex-wrap:wrap;justify-content:center}
-.hero .btn-ghost{
-  background:transparent;border-color:rgba(255,255,255,.55);color:#fff;
-}
-.hero .btn-ghost:hover{background:rgba(255,255,255,.1);border-color:#fff}
-.proof-line{
-  display:flex;align-items:center;justify-content:center;gap:10px;
-  margin-top:28px;font-size:.94rem;font-weight:600;color:#dbe4f2;
-}
-.pulse-dot{position:relative;width:9px;height:9px;border-radius:50%;background:#22a06b;flex-shrink:0}
-.pulse-dot::after{
-  content:"";position:absolute;inset:-5px;border-radius:50%;
-  border:1.5px solid #22a06b;opacity:0;
-  animation:pulse-ring 2s ease-out infinite;
-}
-@keyframes pulse-ring{0%{transform:scale(.5);opacity:.9}80%,100%{transform:scale(1.6);opacity:0}}
-
-/* staggered entrance */
-.hero-anim{opacity:0;transform:translateY(24px);animation:hero-in .8s cubic-bezier(.22,.8,.3,1) forwards}
-.hero-anim.d1{animation-delay:.05s}
-.hero-anim.d2{animation-delay:.22s}
-.hero-anim.d3{animation-delay:.4s}
-.hero-anim.d4{animation-delay:.58s}
-@keyframes hero-in{to{opacity:1;transform:none}}
-
-/* ============ STAT BAND ============ */
-.stats{padding:0;margin-top:-46px;position:relative;z-index:5}
-.stat-band{
-  display:grid;grid-template-columns:repeat(4,1fr);gap:20px;
-}
-.stat{
-  padding:30px 26px;
-  background:#fff;
-  border:1px solid var(--border);border-radius:var(--radius);
-  box-shadow:var(--shadow-card);
-}
-.stat-icon{
-  width:54px;height:54px;border-radius:50%;
-  background:var(--primary-50);border:1px solid var(--primary-200);
-  display:flex;align-items:center;justify-content:center;
-  margin-bottom:20px;
-}
-.stat-icon svg{width:21px;height:21px;color:var(--primary-600)}
-.stat-num{font-family:var(--display);font-weight:900;font-size:2.4rem;color:var(--navy);letter-spacing:-.02em;line-height:1}
-.stat-label{font-size:.88rem;color:var(--muted);margin-top:10px;line-height:1.45}
-
-/* ============ PAIN ============ */
-.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
-.pain-card .card-img::after{background:linear-gradient(180deg,transparent 75%,rgba(20,53,94,.06))}
-.pain-card .pain-icon{
-  width:46px;height:46px;border-radius:50%;background:var(--primary-50);
-  display:flex;align-items:center;justify-content:center;margin-bottom:20px;
-  border:1px solid var(--primary-200);
-}
-.pain-card .pain-icon svg{width:22px;height:22px;stroke:var(--primary-600)}
-.pain-card h3{margin-bottom:10px}
-.pain-card p{color:var(--muted);font-size:.96rem}
-
-/* ============ HOW IT WORKS ============ */
-#how{background:var(--mist)}
-.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;counter-reset:step}
-.step{position:relative;padding-top:38px}
-.step-num{
-  font-family:var(--display);font-weight:800;font-size:.95rem;color:#fff;
-  width:34px;height:34px;border-radius:50%;background:var(--accent);
-  display:flex;align-items:center;justify-content:center;
-  position:absolute;top:-17px;left:32px;
-  box-shadow:0 10px 22px -6px rgba(226,90,18,.55);
-}
-.step h3{margin-bottom:10px}
-.step p{color:var(--muted);font-size:.96rem}
-
-/* ============ OFFERING (tiers; no published dollars) ============ */
-.pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;align-items:stretch}
-.tier{display:flex;flex-direction:column;position:relative}
-.tier.featured{
-  border-color:var(--navy);
-  background:var(--navy);
-  box-shadow:var(--shadow-lift);
-}
-.tier.featured h3,.tier.featured .tier-name{color:#fff}
-.tier.featured .tier-features{color:#dbe4f2}
-.tier.featured .chip{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.25);color:#d9ebfa}
-.tier-badge{
-  position:absolute;top:-13px;left:50%;transform:translateX(-50%);
-  background:var(--accent);color:#fff;font-size:.7rem;font-weight:800;
-  letter-spacing:.12em;padding:5px 14px;border-radius:999px;white-space:nowrap;
-  box-shadow:0 10px 22px -6px rgba(226,90,18,.55);
-}
-.tier-name{font-family:var(--display);font-weight:800;font-size:1.25rem;color:var(--navy)}
-.tier-mins{margin:22px 0 22px}
-.tier-features{display:flex;flex-direction:column;gap:11px;font-size:.92rem;color:var(--text);flex:1;margin-bottom:26px}
-.tier-features li{display:flex;gap:10px;line-height:1.45}
-.tier-features li::before{
-  content:"";flex-shrink:0;width:17px;height:17px;margin-top:2px;
-  background:var(--accent);
-  -webkit-mask:url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>') center/contain no-repeat;
-  mask:url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>') center/contain no-repeat;
-}
-.tier-features li.plus-line{color:var(--primary-600);font-weight:700;font-size:.85rem;letter-spacing:.04em}
-.tier.featured .tier-features li.plus-line{color:#85bdec}
-.tier-features li.plus-line::before{display:none}
-.fine-print{
-  margin-top:36px;text-align:center;color:var(--muted);font-size:.9rem;
-  max-width:760px;margin-left:auto;margin-right:auto;line-height:1.7;
-}
-.fine-print strong{color:var(--navy);font-weight:700}
-
-/* ============ ADD-ONS ============ */
-#addons{background:var(--cream)}
-.addons-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
-.addon{
-  display:flex;align-items:center;justify-content:center;gap:12px;
-  padding:20px 24px;border-radius:14px;
-  background:#fff;border:1px solid var(--border);
-  box-shadow:var(--shadow-card);
-  transition:border-color .2s ease, transform .2s ease;
-  text-align:center;
-}
-.addon:hover{border-color:var(--primary-200);transform:translateY(-2px)}
-.addon-name{font-size:.94rem;font-weight:600;color:var(--navy)}
-.ai-search-note{
-  margin:28px 0 0;padding:14px 18px;border-radius:12px;
-  background:var(--primary-50);border:1px solid var(--primary-200);
-  font-size:.92rem;color:var(--text);line-height:1.55;
-}
-.ai-search-note strong{color:var(--navy)}
-.ai-search-note a{color:var(--primary-600);font-weight:700;text-decoration:underline;text-underline-offset:2px}
-.website-build{
-  margin-top:16px;padding:28px 32px;border-radius:var(--radius);
-  background:#fff;border:1px solid var(--border);box-shadow:var(--shadow-card);
-  display:grid;grid-template-columns:1.4fr auto;gap:24px 32px;align-items:center;
-}
-.website-build-kicker{
-  display:inline-flex;align-items:center;gap:8px;font-size:.72rem;font-weight:800;
-  letter-spacing:.1em;text-transform:uppercase;color:var(--primary-600);margin-bottom:10px;
-}
-.website-build h3{font-size:1.2rem;margin-bottom:8px}
-.website-build > p{color:var(--muted);font-size:.94rem;max-width:520px}
-.website-build-list{
-  display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:16px;
-  font-size:.88rem;color:var(--text);
-}
-.website-build-list li{
-  display:flex;align-items:center;gap:8px;
-}
-.website-build-list li::before{
-  content:"";width:7px;height:7px;border-radius:50%;background:var(--primary);flex-shrink:0;
-}
-.website-build-cta{text-align:right;justify-self:end}
-.website-build-cta .btn{white-space:nowrap}
-.website-build-cta .ask{display:block;margin-top:8px;font-size:.82rem;color:var(--muted)}
-@media (max-width:720px){
-  .website-build{grid-template-columns:1fr;padding:22px}
-  .website-build-cta{text-align:left;justify-self:stretch;width:100%}
-  .website-build-cta .btn{width:100%;white-space:normal}
-}
-
-/* ============ COMPARISON ============ */
-#compare{background:var(--cream)}
-.compare-wrap{border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;background:#fff;box-shadow:var(--shadow-card)}
-table.compare{width:100%;border-collapse:collapse;font-size:.95rem}
-.compare th,.compare td{padding:22px 26px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
-.compare thead th{
-  font-size:.75rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);
-  background:var(--mist);padding-top:18px;padding-bottom:18px;
-}
-.compare tbody tr:last-child td{border-bottom:none}
-.compare td:first-child{font-weight:700;color:var(--navy)}
-.compare td{color:var(--text)}
-.compare .dim{color:var(--muted)}
-.compare tr.winner td{
-  background:var(--primary-50);
-  color:var(--navy);
-}
-.compare tr.winner td:first-child{color:var(--primary-600)}
-.compare-kicker{
-  text-align:center;margin-top:32px;font-family:var(--display);font-weight:700;
-  font-size:1.3rem;color:var(--navy);
-}
-.compare-kicker em{color:var(--accent-600);font-style:normal}
-.compare-cards{display:none}
-
-/* ============ VERTICALS ============ */
-.vertical-card .v-tag{margin-bottom:18px}
-.vertical-card h3{margin-bottom:10px}
-.vertical-card p{color:var(--muted);font-size:.96rem}
-.vertical-card .v-example{
-  margin-top:18px;padding:14px 16px;border-radius:11px;font-size:.87rem;
-  background:var(--mist);border:1px solid var(--border);color:var(--text);line-height:1.5;
-}
-.vertical-card .v-example strong{color:var(--primary-600)}
-
-/* ============ HERO OUTCOMES + TRUST + FEATURES + FIT ============ */
-.hero-outcomes{
-  display:flex;flex-direction:column;gap:8px;
-  margin:0 auto 28px;max-width:520px;text-align:left;
-}
-.hero-outcomes li{
-  display:flex;align-items:flex-start;gap:10px;
-  font-size:.95rem;color:#dbe4f2;line-height:1.45;
-}
-.hero-outcomes li::before{
-  content:"";flex-shrink:0;width:16px;height:16px;margin-top:3px;
-  background:var(--accent);
-  -webkit-mask:url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>') center/contain no-repeat;
-  mask:url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>') center/contain no-repeat;
-}
-.hero-tertiary{
-  display:inline-block;margin-top:14px;font-size:.92rem;font-weight:600;
-  color:#85bdec;border-bottom:1px solid transparent;
-  transition:border-color .2s ease, color .2s ease;
-}
-.hero-tertiary:hover{border-color:#fff;color:#fff}
-.trust-strip-band{
-  padding:36px 0;border-bottom:1px solid var(--border);background:var(--mist);
-}
-.trust-strip-band .trust-strip-grid{
-  display:grid;grid-template-columns:repeat(3,1fr);gap:18px;
-}
-.trust-strip-item{
-  text-align:center;padding:8px 16px;
-  font-family:var(--display);font-weight:700;font-size:1.02rem;color:var(--navy);line-height:1.35;
-}
-.trust-strip-item span{display:block;margin-top:6px;font-family:var(--body);font-weight:400;font-size:.88rem;color:var(--muted)}
-#features{background:var(--cream)}
-.feature-pillars{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
-.feature-pillar{padding:28px 24px}
-.feature-pillar .fp-icon{
-  width:44px;height:44px;border-radius:12px;margin-bottom:18px;
-  display:flex;align-items:center;justify-content:center;
-  background:var(--primary-50);border:1px solid var(--primary-200);color:var(--primary-600);
-}
-.feature-pillar .fp-icon svg{width:22px;height:22px}
-.feature-pillar h3{margin-bottom:10px}
-.feature-pillar p{color:var(--muted);font-size:.94rem}
-#fit{background:#fff}
-.fit-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:40px;align-items:center}
-.fit-list{display:flex;flex-direction:column;gap:12px}
-.fit-item{
-  display:flex;align-items:flex-start;gap:12px;
-  padding:16px 18px;border-radius:14px;
-  background:var(--mist);border:1px solid var(--border);
-  font-size:.98rem;font-weight:600;color:var(--navy);line-height:1.4;
-}
-.fit-item::before{
-  content:"";flex-shrink:0;width:18px;height:18px;margin-top:2px;
-  background:var(--accent);
-  -webkit-mask:url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>') center/contain no-repeat;
-  mask:url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>') center/contain no-repeat;
-}
-.fit-aside{
-  padding:32px 28px;border-radius:var(--radius);
-  background:var(--navy);color:#dbe4f2;box-shadow:var(--shadow-lift);
-}
-.fit-aside h3{color:#fff;margin-bottom:12px;font-size:1.35rem}
-.fit-aside p{margin-bottom:22px;font-size:.96rem;line-height:1.55;color:#b9c6dd}
-.fit-aside .btn{width:100%;margin-bottom:10px}
-.proof-band{
-  background:var(--mist);border-top:1px solid var(--border);border-bottom:1px solid var(--border);
-  padding:56px 0;
-}
-.proof-challenges{
-  display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:28px;
-}
-.proof-challenge{
-  padding:22px 20px;border-radius:14px;background:#fff;border:1px solid var(--border);
-  box-shadow:var(--shadow-card);font-size:.94rem;color:var(--text);line-height:1.45;
-}
-.proof-challenge strong{display:block;font-family:var(--display);color:var(--navy);margin-bottom:6px;font-size:1.02rem}
-.cap-compare{margin-top:40px}
-.cap-compare .section-subhead{
-  font-family:var(--display);font-weight:800;font-size:1.25rem;color:var(--navy);
-  margin-bottom:16px;text-align:center;
-}
-.footer-tagline{color:var(--muted);font-size:.9rem;max-width:280px;line-height:1.45}
-.footer-links{display:flex;flex-wrap:wrap;gap:14px 22px;align-items:center}
-
-/* ============ FAQ ============ */
-.faq-list{max-width:760px;margin:0 auto}
-.faq-item{border-bottom:1px solid var(--border)}
-.faq-q{
-  width:100%;display:flex;justify-content:space-between;align-items:center;gap:20px;
-  padding:24px 4px;text-align:left;font-family:var(--display);font-weight:700;font-size:1.12rem;
-  color:var(--navy);
-  transition:color .2s ease;
-}
-.faq-q:hover{color:var(--primary-600)}
-.faq-q .faq-icon{
-  flex-shrink:0;width:26px;height:26px;border-radius:50%;border:1px solid var(--border-strong);
-  display:flex;align-items:center;justify-content:center;
-  transition:transform .3s ease, background .3s ease, border-color .3s ease;
-}
-.faq-q .faq-icon svg{width:12px;height:12px;stroke:currentColor}
-.faq-item.open .faq-icon{transform:rotate(45deg);background:var(--primary-50);border-color:var(--primary-200);color:var(--primary-600)}
-.faq-a{max-height:0;overflow:hidden;transition:max-height .4s ease}
-.faq-a p{padding:0 4px 26px;color:var(--muted);font-size:.98rem;max-width:660px}
-
-/* ============ FINAL CTA ============ */
-#insights{background:var(--mist)}
-.final-cta{text-align:center;background:var(--navy)}
-.final-cta .eyebrow{color:#85bdec}
-.final-cta .eyebrow::before{background:var(--accent)}
-.final-cta h2{color:#fff;font-size:clamp(2.2rem,4.6vw,3.5rem)}
-.final-cta .big-phone{
-  display:inline-flex;align-items:center;gap:14px;
-  font-family:var(--display);font-weight:800;font-size:clamp(1.6rem,3.4vw,2.4rem);
-  color:#ff9046;margin:30px 0 8px;letter-spacing:-.01em;
-  transition:transform .2s ease;
-}
-.final-cta .big-phone:hover{transform:scale(1.03)}
-.final-cta .big-phone svg{width:30px;height:30px;stroke:#ff9046}
-.final-sub{color:#b9c6dd;margin-bottom:36px}
-.final-cta .btn-ghost{background:transparent;border-color:rgba(255,255,255,.45);color:#fff}
-.final-cta .btn-ghost:hover{background:rgba(255,255,255,.08)}
-section.final-cta.dotgrid::before{
-  background-image:radial-gradient(circle at 1px 1px, rgba(255,255,255,.09) 1px, transparent 0);
-}
-
-.fallback-form{
-  max-width:520px;margin:56px auto 0;padding:34px;text-align:left;
-  background:#fff;border:1px solid var(--border);border-radius:var(--radius);
-  box-shadow:var(--shadow-lift);
-}
-.fallback-form h3{margin-bottom:6px}
-.fallback-form .form-sub{color:var(--muted);font-size:.9rem;margin-bottom:22px}
-.field{margin-bottom:16px}
-.field label{display:block;font-size:.82rem;font-weight:700;margin-bottom:7px;color:var(--navy)}
-.field input,.field textarea{
-  width:100%;padding:13px 15px;border-radius:11px;font:inherit;font-size:.95rem;
-  background:#fff;border:1px solid var(--border-strong);color:var(--text);
-  transition:border-color .2s ease, box-shadow .2s ease;resize:vertical;
-}
-.field input:focus,.field textarea:focus{
-  outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-100);
-}
-.field ::placeholder{color:rgba(90,107,129,.55)}
-.form-note{font-size:.78rem;color:var(--muted);margin-top:12px;text-align:center}
-.consent{display:flex;gap:10px;align-items:flex-start;margin:2px 0 18px}
-.consent input{width:16px;height:16px;margin-top:3px;accent-color:var(--primary-600);flex-shrink:0;cursor:pointer}
-.consent label{font-size:.76rem;color:var(--muted);line-height:1.55;cursor:pointer}
-.consent a{color:var(--primary-600);text-decoration:underline;text-underline-offset:2px}
-
-/* ============ FOOTER ============ */
-footer{background:var(--navy);border-top:1px solid rgba(255,255,255,.12);padding:44px 0;font-size:.88rem;color:#b9c6dd}
-footer .logo{color:#fff}
-footer .logo-mark{background:var(--primary)}
-.footer-inner{display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap}
-.footer-links{display:flex;gap:26px}
-.footer-links a{transition:color .18s ease}
-.footer-links a:hover{color:#fff}
-.footer-legal{
-  margin-top:28px;padding-top:24px;border-top:1px solid rgba(255,255,255,.12);
-  font-size:.8rem;line-height:1.8;text-align:center;color:#8d9bc4;
-}
-.footer-legal a{text-decoration:underline;text-underline-offset:3px;transition:color .18s ease}
-.footer-legal a:hover{color:#fff}
-
-/* ============ ANNOUNCE BAR ============ */
-.announce{
-  position:relative;z-index:101;padding:8px 0;
-  font-size:.82rem;font-weight:600;color:#d7ddea;
-  background:var(--navy);
-  border-bottom:1px solid rgba(255,255,255,.08);
-}
-.announce-inner{display:flex;align-items:center;justify-content:space-between;gap:16px}
-.announce-tag{opacity:.85}
-.announce-contact{display:flex;align-items:center;gap:10px;white-space:nowrap}
-.announce-sep{opacity:.5}
-.announce a{color:#ff9046;font-weight:700}
-.announce a:hover{text-decoration:underline;text-underline-offset:3px}
-@media (max-width:720px){
-  .announce-tag{display:none}
-  .announce-inner{justify-content:center}
-  .announce-contact{white-space:normal;justify-content:center;flex-wrap:wrap;gap:4px 8px;text-align:center}
-  .announce-contact a[href^="mailto"],
-  .announce-sep{display:none}
-}
-
-/* ============ CARD PHOTOS ============ */
-.card-img{
-  margin:-32px -32px 24px;border-radius:var(--radius) var(--radius) 0 0;
-  overflow:hidden;aspect-ratio:16/9;position:relative;
-}
-.card-img img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .6s cubic-bezier(.22,.8,.3,1)}
-.card:hover .card-img img{transform:scale(1.045)}
-.card-img::after{
-  content:"";position:absolute;inset:0;pointer-events:none;
-  background:linear-gradient(180deg,transparent 70%,rgba(20,53,94,.10));
-}
-.vertical-card .card-img::after{background:linear-gradient(180deg,transparent 75%,rgba(20,53,94,.06))}
-
-/* ============ MARQUEE ============ */
-.marquee{overflow:hidden;padding:26px 0;border-bottom:1px solid var(--border);background:#fff;-webkit-mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent);mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent)}
-.marquee-track{display:flex;gap:52px;width:max-content;animation:marquee 38s linear infinite}
-.marquee-track span{
-  font-family:var(--display);font-weight:700;font-size:.85rem;letter-spacing:.18em;
-  text-transform:uppercase;color:var(--muted);white-space:nowrap;opacity:.85;
-  display:flex;align-items:center;gap:52px;
-}
-.marquee-track span::after{content:"·";color:var(--accent);opacity:.9}
-@keyframes marquee{to{transform:translateX(-50%)}}
-
-/* ============ ROI CALCULATOR ============ */
-#roi{background:var(--mist)}
-.roi-card{max-width:760px;margin:0 auto;padding:40px}
-.roi-sliders{display:grid;grid-template-columns:1fr 1fr;gap:34px;margin-bottom:34px}
-.roi-slider label{display:flex;justify-content:space-between;align-items:baseline;font-size:.88rem;font-weight:700;color:var(--navy);margin-bottom:14px}
-.roi-slider label output{font-family:var(--display);font-size:1.25rem;color:var(--primary-600);font-weight:800}
-.roi-slider input[type=range]{width:100%;accent-color:var(--primary-600);cursor:pointer;height:26px}
-.roi-result{border-top:1px dashed var(--border-strong);padding-top:28px;text-align:center}
-.roi-lost{font-family:var(--display);font-weight:900;font-size:clamp(2.4rem,5vw,3.4rem);color:var(--accent-600);letter-spacing:-.02em;line-height:1.1}
-.roi-lost-label{color:var(--muted);font-size:.92rem;margin-top:8px}
-.roi-note{margin-top:18px;font-size:.95rem;color:var(--text)}
-.roi-note strong{color:var(--primary-600)}
-
-/* ============ MINI EMAIL (step 3) ============ */
-.mini-mail{
-  margin-top:20px;padding:14px 16px;border-radius:12px;
-  background:var(--primary-50);border:1px solid var(--primary-200);
-  font-size:.82rem;opacity:0;transform:translateY(12px);
-}
-.step.is-visible .mini-mail{animation:mail-in .7s cubic-bezier(.22,.8,.3,1) .55s forwards}
-@keyframes mail-in{to{opacity:1;transform:none}}
-.mini-mail-head{display:flex;align-items:center;gap:8px;font-weight:700;color:var(--primary-700);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px}
-.mm-dot{width:7px;height:7px;border-radius:50%;background:#22a06b}
-.mini-mail .mm-line{color:var(--text);line-height:1.5}
-.mini-mail .mm-line.dim{color:var(--muted)}
-
-/* ============ INSIGHTS ============ */
-.insight-card{display:flex;flex-direction:column;text-decoration:none;color:inherit}
-.insight-card:hover{transform:translateY(-4px);border-color:var(--primary-200)}
-.insight-meta{font-size:.76rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
-.insight-card h3{margin-bottom:10px;line-height:1.35}
-.insight-card p{color:var(--muted);font-size:.93rem;flex:1}
-.read-more{margin-top:18px;font-size:.88rem;font-weight:700;color:var(--primary-600)}
-
-/* ============ TRUST STRIP ============ */
-.trust-strip{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;margin-top:44px}
-.trust-badge{
-  display:inline-flex;align-items:center;gap:8px;padding:9px 16px;border-radius:999px;
-  border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.06);
-  font-size:.8rem;font-weight:600;color:#d7ddea;
-}
-.trust-badge svg{width:13px;height:13px;stroke:#ff9046;flex-shrink:0}
-
-/* ============ RESPONSIVE ============ */
-@media (max-width:960px){
-  .hero{padding:170px 0 90px;min-height:auto}
-  .hero-wash{
-    background:linear-gradient(
-      to bottom,
-      rgba(20,53,94,.95),
-      rgba(20,53,94,.84),
-      rgba(20,53,94,.90)
-    );
-  }
-  .stat-band{grid-template-columns:repeat(2,1fr);gap:16px}
-  .grid-3,.steps,.pricing-grid,.feature-pillars,.proof-challenges{grid-template-columns:1fr;max-width:520px;margin-left:auto;margin-right:auto}
-  .trust-strip-band .trust-strip-grid,.fit-grid{grid-template-columns:1fr}
-  .addons-grid{grid-template-columns:repeat(2,1fr)}
-  .steps{gap:44px}
-  .nav-links .nav-anchor{display:none}
-  section{padding:76px 0}
-}
-@media (max-width:1100px) and (min-width:961px){
-  .feature-pillars{grid-template-columns:repeat(2,1fr)}
-}
-@media (max-width:640px){
-  /* 16px+ prevents iOS Safari from zooming the page when an input is focused */
-  .field input,.field textarea{font-size:16px}
-}
-@media (max-width:480px){
-  .hide-sm{display:none}
-  .nav .btn-sm{padding:9px 16px;font-size:.85rem}
-  .logo{font-size:1.05rem}
-}
-@media (max-width:640px){
-  body{font-size:16px}
-  .container{padding:0 18px}
-  .h1-br{display:none}
-  .hero{padding:150px 0 72px}
-  .hero h1{font-size:clamp(1.95rem,8.2vw,2.55rem)}
-  .hero-sub{font-size:1.02rem;margin:18px auto 22px}
-  .hero .eyebrow{letter-spacing:.09em;padding:7px 13px}
-  .hero-outcomes{max-width:100%;margin-bottom:22px}
-  .hero-outcomes li{font-size:.92rem}
-  .ai-search-note{padding:14px 16px;font-size:.9rem;margin-top:22px}
-  .website-build-list{gap:8px 14px;font-size:.86rem}
-  .stat-band{grid-template-columns:1fr;gap:14px}
-  .stats{margin-top:0;padding-top:56px}
-  .addons-grid{grid-template-columns:1fr}
-  .btn{white-space:normal}
-  .hero-ctas .btn{width:100%;text-align:center}
-  .final-cta .hero-ctas .btn,
-  .proof-band .hero-ctas .btn{width:100%}
-  .compare-wrap{display:none}
-  .compare-cards{display:grid;gap:14px}
-  .compare-card{padding:22px}
-  .compare-card h3{font-size:1.05rem;margin-bottom:8px}
-  .compare-card p{color:var(--muted);font-size:.9rem}
-  .compare-card.winner{border-color:var(--primary-200);background:var(--primary-50)}
-  .compare-card.winner h3{color:var(--primary-700)}
-  .compare-card.winner p{color:var(--text)}
-  .fallback-form{padding:26px 20px}
-  .footer-inner{align-items:flex-start}
-  .footer-links{gap:14px 18px}
-}
-
-/* ============ REDUCED MOTION ============ */
-@media (prefers-reduced-motion:reduce){
-  html{scroll-behavior:auto}
-  .hero-anim{animation:none;opacity:1;transform:none}
-  .reveal{opacity:1;transform:none;transition:none}
-  .pulse-dot::after{animation:none}
-  *{transition-duration:.01ms !important}
-}
-</style>
+<link rel="stylesheet" href="/assets/site.css">
 </head>
 <body>
 
@@ -837,19 +80,25 @@ footer .logo-mark{background:var(--primary)}
     </div>
   </div>
   <div class="container nav-inner">
-    <a href="#" class="logo">
+    <a href="/" class="logo">
       <span class="logo-mark">
         <svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
       </span>
       OwnerAI Tools
     </a>
-    <nav class="nav-links">
-      <a href="#features" class="nav-anchor">Features</a>
+    <nav class="nav-links" id="nav-menu">
+      <a href="/features" class="nav-anchor">Features</a>
       <a href="/industries" class="nav-anchor">Industries</a>
-      <a href="#pricing" class="nav-anchor">Offering</a>
-      <a href="#faq" class="nav-anchor">FAQ</a>
-      <a href="tel:+15169731973" class="btn btn-primary btn-sm"><span>Call <span class="hide-sm">the live </span>demo</span></a>
+      <a href="/offering" class="nav-anchor">Offering</a>
+      <a href="/faq" class="nav-anchor">FAQ</a>
+      <a href="https://cal.com/owneraitools/30min" target="_blank" rel="noopener" class="btn btn-ghost btn-sm nav-menu-cal">Book a free setup call</a>
     </nav>
+    <div class="nav-end">
+      <a href="tel:+15169731973" class="btn btn-primary btn-sm nav-demo-btn"><span>Call <span class="hide-sm">the live </span>demo</span></a>
+      <button type="button" class="nav-toggle" aria-expanded="false" aria-controls="nav-menu" aria-label="Open menu">
+        <span class="nav-toggle-bars" aria-hidden="true"></span>
+      </button>
+    </div>
   </div>
 </header>
 
@@ -877,7 +126,7 @@ footer .logo-mark{background:var(--primary)}
       </a>
       <a href="https://cal.com/owneraitools/30min" target="_blank" rel="noopener" class="btn btn-ghost">Book a free setup call</a>
     </div>
-    <a href="#roi" class="hero-tertiary hero-anim d3">See what missed calls cost you →</a>
+    <a href="/offering#roi" class="hero-tertiary hero-anim d3">See what missed calls cost you →</a>
     <div class="proof-line hero-anim d4">
       <span class="pulse-dot"></span>
       It's live right now. Call it and see for yourself.
@@ -943,7 +192,7 @@ footer .logo-mark{background:var(--primary)}
   <div class="container">
     <div class="section-head reveal">
       <span class="eyebrow">The problem</span>
-      <h2>Most jobs are lost in the first 5 minutes.</h2>
+      <h2>The phone rings while you're under a sink — and the job walks.</h2>
       <p>When you don't answer, the next company on Google does. Speed-to-lead is the whole game — and after-hours is where the best jobs hide.</p>
     </div>
     <div class="grid-3">
@@ -952,66 +201,53 @@ footer .logo-mark{background:var(--primary)}
         <div class="pain-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
         </div>
-        <h3>Missed calls while you're on a job</h3>
-        <p>Hands in a water heater, under a roof, running a crew. The phone rings, you can't grab it, and that $4,000 emergency calls the next name on Google. It happens every week — you just never see the invoice you lost.</p>
+        <h3>On-the-job rings you can't grab</h3>
+        <p>Hands in a water heater, under a roof, running a crew. The phone lights up, you can't pick up, and that emergency books the next name on Google. You never see the invoice you lost.</p>
       </div>
       <div class="card pain-card reveal" data-delay="1">
         <div class="card-img"><img src="/assets/img/pain-answering-service.jpg?v=crisp1" alt="Office worker on a desk phone following up with a caller" loading="lazy" width="1400" height="933"></div>
         <div class="pain-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
         </div>
-        <h3>Slow or inconsistent follow-up</h3>
-        <p>Voicemail sits for hours. Answering services take a message you chase down later. By the time you call back, the homeowner already booked someone else — often in the first five minutes.</p>
+        <h3>Callbacks that die in the notes app</h3>
+        <p>A sticky note, a half-heard voicemail, a "I'll call them back at lunch." By the time you dial, the homeowner already hired someone else — often before you've wiped your hands.</p>
       </div>
       <div class="card pain-card reveal" data-delay="2">
         <div class="card-img"><img src="/assets/img/pain-after-hours.jpg?v=crisp1" alt="Bright empty office lounge with nobody available to answer" loading="lazy" width="1400" height="933"></div>
         <div class="pain-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
         </div>
-        <h3>No reliable booking after hours</h3>
-        <p>A receptionist covers 40 of 168 hours. Emergencies love the other 128. Without a way to answer, qualify, and book overnight, those jobs walk — every single night.</p>
+        <h3>Nights and weekends with no booker</h3>
+        <p>A receptionist covers 40 of 168 hours. Emergencies love the other 128. Without someone who can answer, qualify, and put a job on the calendar overnight, those leads walk — every single night.</p>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ══════════ FEATURES ══════════ -->
+<!-- ══════════ FEATURES TEASER ══════════ -->
 <section id="features">
   <div class="container">
     <div class="section-head reveal">
       <span class="eyebrow">What you get</span>
-      <h2>OwnerAI handles the moments that cost you jobs.</h2>
-      <p>Answer. Capture. Book. Follow up. Built for how home service actually works — managed by us, not another app for you to babysit.</p>
+      <h2>What your after-hours phone should already be doing.</h2>
+      <p>Answer. Capture. Book. Follow up — managed by us, not another DIY app for you to babysit.</p>
     </div>
-    <div class="feature-pillars">
-      <div class="card feature-pillar reveal">
-        <div class="fp-icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-        </div>
+    <div class="teaser-grid">
+      <a href="/features#answer" class="card teaser-card reveal">
         <h3>Answer every call</h3>
-        <p>24/7/365 in under 2 seconds. English and Spanish auto-detect. Unlimited simultaneous calls — no busy signal, no voicemail.</p>
-      </div>
-      <div class="card feature-pillar reveal" data-delay="1">
-        <div class="fp-icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-        </div>
+        <p>Under 2 seconds, 24/7/365. English and Spanish. Unlimited simultaneous calls — no busy signal.</p>
+        <span class="teaser-link">See how answering works →</span>
+      </a>
+      <a href="/features#capture" class="card teaser-card reveal" data-delay="1">
         <h3>Capture the lead</h3>
-        <p>Name, number, address, and problem — plus transcript and recording — emailed to you before they hang up. Nothing gets dropped.</p>
-      </div>
-      <div class="card feature-pillar reveal" data-delay="2">
-        <div class="fp-icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-        </div>
-        <h3>Book the job</h3>
-        <p>Live calendar booking with real availability. Reschedules and cancellations handled. You show up knowing who's on the board.</p>
-      </div>
-      <div class="card feature-pillar reveal" data-delay="3">
-        <div class="fp-icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-        </div>
-        <h3>Follow up fast</h3>
-        <p>SMS confirmations and reminders. Warm transfer for real emergencies. Outbound follow-ups and review requests on higher tiers so leads don't go cold.</p>
-      </div>
+        <p>Name, number, address, problem, transcript, and recording in your inbox before they hang up.</p>
+        <span class="teaser-link">See lead capture →</span>
+      </a>
+      <a href="/features#book" class="card teaser-card reveal" data-delay="2">
+        <h3>Book &amp; follow up</h3>
+        <p>Live calendar booking, SMS confirmations, warm transfer for real emergencies.</p>
+        <span class="teaser-link">Explore all features →</span>
+      </a>
     </div>
   </div>
 </section>
@@ -1056,8 +292,8 @@ footer .logo-mark{background:var(--primary)}
     <div class="fit-grid">
       <div>
         <div class="section-head reveal" style="margin-bottom:28px">
-          <span class="eyebrow">Is OwnerAI right for you?</span>
-          <h2>You're a good fit if any of these sound familiar.</h2>
+          <span class="eyebrow">Fit check</span>
+          <h2>Does this sound like your shop?</h2>
         </div>
         <div class="fit-list reveal">
           <div class="fit-item">You miss calls while you're on jobs or after hours</div>
@@ -1072,266 +308,6 @@ footer .logo-mark{background:var(--primary)}
         <p>The demo line is the exact product. Call it, text it, describe a fake emergency. If it works for you, book a free setup call and we'll size your plan.</p>
         <a href="tel:+15169731973" class="btn btn-primary">Call the live demo</a>
         <a href="https://cal.com/owneraitools/30min" target="_blank" rel="noopener" class="btn btn-ghost" style="border-color:rgba(255,255,255,.45);color:#fff;background:transparent">Book a free setup call</a>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ══════════ OFFERING (id kept as #pricing for anchors) ══════════ -->
-<section id="pricing">
-  <div class="container">
-    <div class="section-head reveal">
-      <span class="eyebrow">Offering</span>
-      <h2>Done-for-you setup. Monthly packages with included minutes.</h2>
-      <p>Three packages — extra minutes available if you need them. Custom quote on the free setup call — we build it, you forward your phone.</p>
-    </div>
-    <div class="pricing-grid">
-
-      <div class="card tier reveal">
-        <div class="tier-name">Basic</div>
-        <div class="tier-mins"><span class="chip">500 minutes included</span></div>
-        <ul class="tier-features">
-          <li>24/7/365 answering — unlimited simultaneous calls, no busy signal ever</li>
-          <li>Full caller intake: name, number, address, business, reason for calling</li>
-          <li>Instant email summary + full transcript + call recording</li>
-          <li>English + Spanish, auto-detected</li>
-          <li>Answers your FAQs: hours, services, service area, pricing</li>
-          <li>Spam screening — solicitors never reach you or your bill</li>
-          <li>Keep your existing number</li>
-          <li>Monthly lead report</li>
-        </ul>
-        <a href="https://cal.com/owneraitools/30min" target="_blank" rel="noopener" class="btn btn-ghost" style="width:100%">Start with Basic</a>
-      </div>
-
-      <div class="card tier featured reveal" data-delay="1">
-        <span class="tier-badge">MOST POPULAR</span>
-        <div class="tier-name">Advanced</div>
-        <div class="tier-mins"><span class="chip">1,500 minutes included</span></div>
-        <ul class="tier-features">
-          <li class="plus-line">EVERYTHING IN BASIC, PLUS:</li>
-          <li>Live calendar booking — Google, Outlook, Calendly, Cal.com — with real-time availability</li>
-          <li>SMS confirmations &amp; appointment reminders so jobs don't go cold</li>
-          <li>Mid-call texting (sends the caller links, addresses, forms)</li>
-          <li>Emergency warm transfer straight to your cell</li>
-          <li>Lead qualification &amp; scoring — know which calls matter</li>
-          <li>Handles reschedules &amp; cancellations</li>
-          <li>Monthly optimization call with our team</li>
-        </ul>
-        <a href="https://cal.com/owneraitools/30min" target="_blank" rel="noopener" class="btn btn-primary" style="width:100%">Start with Advanced</a>
-      </div>
-
-      <div class="card tier reveal" data-delay="2">
-        <div class="tier-name">Expert</div>
-        <div class="tier-mins"><span class="chip">3,000 minutes included</span></div>
-        <ul class="tier-features">
-          <li class="plus-line">EVERYTHING IN ADVANCED, PLUS:</li>
-          <li>CRM &amp; field-service integration: HubSpot, Salesforce, GoHighLevel, Jobber, Housecall Pro, ServiceTitan — auto contacts, jobs, tickets, logged calls</li>
-          <li>Recognizes existing customers and their history</li>
-          <li>Outbound follow-ups, reminders &amp; review requests</li>
-          <li>Multi-location / multi-department routing</li>
-          <li>HIPAA compliant with signed BAA</li>
-          <li>Analytics dashboard + call QA scoring</li>
-          <li>Priority support</li>
-        </ul>
-        <a href="https://cal.com/owneraitools/30min" target="_blank" rel="noopener" class="btn btn-ghost" style="width:100%">Start with Expert</a>
-      </div>
-    </div>
-
-    <p class="fine-print reveal">
-      <strong>30-day money-back guarantee</strong> on your first month · Custom quote on the free setup call
-    </p>
-  </div>
-</section>
-
-<!-- ══════════ ADD-ONS ══════════ -->
-<section id="addons">
-  <div class="container">
-    <div class="section-head reveal">
-      <span class="eyebrow">Add-ons</span>
-      <h2>Bolt on what you need.</h2>
-    </div>
-    <div class="addons-grid">
-      <div class="addon reveal"><span class="addon-name">Extra languages (each)</span></div>
-      <div class="addon reveal"><span class="addon-name">Extra number / location</span></div>
-      <div class="addon reveal"><span class="addon-name">Website chat + text widget</span></div>
-      <div class="addon reveal" data-delay="1"><span class="addon-name">Extra CRM integration</span></div>
-      <div class="addon reveal" data-delay="1"><span class="addon-name">Outbound campaign pack</span></div>
-      <div class="addon reveal" data-delay="1"><span class="addon-name">HIPAA on Basic / Advanced</span></div>
-      <div class="addon reveal" data-delay="2"><span class="addon-name">Extra minutes (400-min block)</span></div>
-      <div class="addon reveal" data-delay="2"><span class="addon-name">Custom cloned voice (yours)</span></div>
-      <div class="addon reveal" data-delay="2"><span class="addon-name">Dedicated Spanish line</span></div>
-    </div>
-
-    <p class="ai-search-note reveal">
-      <strong>Still paying for Google Ads, Meta ads, and the rest?</strong>
-      More homeowners now ask <strong>ChatGPT, Claude, Gemini, Grok,</strong> or <strong>Google’s AI</strong> who to call — before they ever click an ad. For OwnerAI customers, we can help your business get noticed there too — <a href="https://cal.com/owneraitools/30min" target="_blank" rel="noopener">ask for details</a> on your setup call.
-    </p>
-
-    <div class="website-build reveal">
-      <div>
-        <div class="website-build-kicker">OwnerAI customers only</div>
-        <h3>Custom website build</h3>
-        <p>Running an old site — or none at all? We can build a clean, conversion-focused site that works with your OwnerAI receptionist. Discounted for active customers.</p>
-        <ul class="website-build-list">
-          <li>Custom design from scratch</li>
-          <li>5–7 core pages</li>
-          <li>Chatbot enabled</li>
-          <li>Mobile-first &amp; conversion-focused</li>
-          <li>Tied into your OwnerAI setup</li>
-        </ul>
-      </div>
-      <div class="website-build-cta">
-        <a href="https://cal.com/owneraitools/30min" target="_blank" rel="noopener" class="btn btn-ghost">Ask for details</a>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ══════════ COMPARISON ══════════ -->
-<section id="compare" class="dotgrid">
-  <div class="container">
-    <div class="section-head reveal">
-      <span class="eyebrow">Compare</span>
-      <h2>What answering the phone actually costs.</h2>
-      <p>OwnerAI vs. the ways most shops handle the phone today.</p>
-    </div>
-
-    <div class="cap-compare reveal">
-      <div class="section-subhead">OwnerAI vs. manual answering</div>
-      <div class="compare-wrap">
-        <table class="compare">
-          <thead>
-            <tr><th>Capability</th><th>OwnerAI</th><th>Manual / voicemail</th></tr>
-          </thead>
-          <tbody>
-            <tr class="winner"><td>24/7 availability</td><td>Yes — every call</td><td class="dim">No (40 hrs/week if you hire)</td></tr>
-            <tr><td>Response time</td><td>Under 2 seconds</td><td class="dim">Minutes to hours — or never</td></tr>
-            <tr><td>After-hours coverage</td><td>Yes</td><td class="dim">Voicemail or nothing</td></tr>
-            <tr><td>Automatic booking</td><td>Yes (Advanced+)</td><td class="dim">No</td></tr>
-            <tr><td>Lead capture &amp; summary</td><td>Email + transcript + recording</td><td class="dim">Sticky note or forgotten callback</td></tr>
-            <tr><td>Consistency</td><td>100% on-script for your business</td><td class="dim">Varies by who's free</td></tr>
-            <tr><td>Cost model</td><td>Monthly package — custom quote</td><td class="dim">Payroll or open-ended per-minute bills</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- desktop table -->
-    <div class="compare-wrap reveal" style="margin-top:28px">
-      <table class="compare">
-        <thead>
-          <tr><th>Option</th><th>Cost</th><th>Coverage</th><th>The catch</th></tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Full-time receptionist</td>
-            <td>$2,800–$4,500/mo</td>
-            <td class="dim">40 hrs/week</td>
-            <td class="dim">Sick days, vacations, turnover — and nobody's there at 9 PM</td>
-          </tr>
-          <tr>
-            <td>Human answering service</td>
-            <td>$2–$5 per minute</td>
-            <td class="dim">24/7</td>
-            <td class="dim">Script-readers who know nothing about your business — and spam calls get billed to you</td>
-          </tr>
-          <tr>
-            <td>Voicemail</td>
-            <td>"Free"</td>
-            <td class="dim">Always on</td>
-            <td class="dim">80% of callers hang up and call your competitor</td>
-          </tr>
-          <tr class="winner">
-            <td>OwnerAI Tools</td>
-            <td>Monthly package — custom quote</td>
-            <td>24/7/365, every call</td>
-            <td>Trained on your business, your pricing, your service area</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <!-- mobile stacked cards -->
-    <div class="compare-cards">
-      <div class="card compare-card reveal">
-        <h3>Full-time receptionist — $2,800–$4,500/mo</h3>
-        <p>Covers 40 hrs/week. Sick days, vacations, turnover — and nobody's there at 9 PM.</p>
-      </div>
-      <div class="card compare-card reveal">
-        <h3>Human answering service — $2–$5/min</h3>
-        <p>24/7, but script-readers who know nothing about your business. Spam calls get billed to you.</p>
-      </div>
-      <div class="card compare-card reveal">
-        <h3>Voicemail — "free"</h3>
-        <p>Always on, but 80% of callers hang up and call your competitor.</p>
-      </div>
-      <div class="card compare-card winner reveal">
-        <h3>OwnerAI Tools — monthly package, custom quote</h3>
-        <p>24/7/365, every call answered, trained on your business, your pricing, your service area.</p>
-      </div>
-    </div>
-
-    <p class="compare-kicker reveal">One saved job a month typically pays for <em>the entire service</em>.</p>
-  </div>
-</section>
-
-<!-- ══════════ ROI CALCULATOR ══════════ -->
-<section id="roi">
-  <div class="container">
-    <div class="section-head reveal" style="text-align:center;max-width:640px;margin-left:auto;margin-right:auto">
-      <span class="eyebrow" style="justify-content:center">Lost revenue</span>
-      <h2>See how much revenue missed calls are costing you.</h2>
-      <p>Use your own numbers. Most home service shops are surprised by the monthly total.</p>
-    </div>
-    <div class="card roi-card reveal">
-      <div class="roi-sliders">
-        <div class="roi-slider">
-          <label for="roi-calls">Missed calls per week <output id="roi-calls-out">5</output></label>
-          <input type="range" id="roi-calls" min="1" max="25" step="1" value="5">
-        </div>
-        <div class="roi-slider">
-          <label for="roi-value">Average job / customer value <output id="roi-value-out">$600</output></label>
-          <input type="range" id="roi-value" min="100" max="5000" step="100" value="600">
-        </div>
-      </div>
-      <div class="roi-result">
-        <div class="roi-lost" id="roi-lost">$13,000</div>
-        <div class="roi-lost-label">of potential revenue calling your business every month — and hanging up</div>
-        <p class="roi-note" id="roi-note">Win back just <strong>one</strong> of those jobs a month and the service typically pays for itself — with change. Then <a href="tel:+15169731973" style="color:var(--primary-600);font-weight:700">call the demo</a> and hear how you'd capture it.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ══════════ VERTICALS ══════════ -->
-<section id="verticals">
-  <div class="container">
-    <div class="section-head reveal">
-      <span class="eyebrow">Industries</span>
-      <h2>Built for how your trade actually works.</h2>
-      <p>Built first for home services. Also works for practices and other phone-driven shops. <a href="/industries" style="color:var(--primary-600);font-weight:700">See all industries →</a></p>
-    </div>
-    <div class="grid-3">
-      <div class="card vertical-card reveal">
-        <div class="card-img"><img src="/assets/img/vertical-home-services.jpg?v=elec2" alt="Electrician working on a wall box in bright daylight" loading="lazy" width="1400" height="934"></div>
-        <div class="v-tag"><span class="chip">Home Services</span></div>
-        <h3>Plumbing · HVAC · Electrical</h3>
-        <p><strong>Plumbing:</strong> capture leads even when your team is on site. <strong>HVAC:</strong> book jobs without missing emergency calls. <strong>Electrical:</strong> never lose after-hours leads.</p>
-        <div class="v-example"><strong>Real scenario:</strong> 9 PM emergency call → caller intake, urgency flagged, booked into your first morning slot, summary in your inbox before you've finished dinner.</div>
-      </div>
-      <div class="card vertical-card reveal" data-delay="1">
-        <div class="card-img"><img src="/assets/img/vertical-medical.jpg" alt="Bright modern dental treatment room" loading="lazy" width="1400" height="936"></div>
-        <div class="v-tag"><span class="chip">Medical · Dental · MedSpa</span></div>
-        <h3>Practices &amp; clinics</h3>
-        <p>Front desk buried? Every missed call is a patient who books elsewhere. Cut no-shows and fill the schedule without adding headcount.</p>
-        <div class="v-example"><strong>Built in:</strong> HIPAA with signed BAA, appointment confirmations, and bilingual intake.</div>
-      </div>
-      <div class="card vertical-card reveal" data-delay="2">
-        <div class="card-img"><img src="/assets/img/vertical-local-business.jpg" alt="Local business team collaborating in a bright office" loading="lazy" width="1400" height="1050"></div>
-        <div class="v-tag"><span class="chip">Also a fit</span></div>
-        <h3>Other phone-driven shops</h3>
-        <p>Roofing, restoration, property management, auto shops, and similar trades where a missed ring is missed revenue.</p>
-        <div class="v-example"><strong>The math:</strong> what's your average job worth? Count last month's missed calls. That's the number this fixes.</div>
       </div>
     </div>
   </div>
@@ -1357,71 +333,86 @@ footer .logo-mark{background:var(--primary)}
   </div>
 </section>
 
-<!-- ══════════ FAQ ══════════ -->
+<!-- ══════════ INDUSTRIES TEASER ══════════ -->
+<section id="verticals">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="eyebrow">Industries</span>
+      <h2>Trades that live and die by the phone.</h2>
+      <p>Built first for home services. Also a fit for practices and other phone-driven shops.</p>
+    </div>
+    <div class="teaser-grid">
+      <a href="/industries#core-home-systems" class="card teaser-card reveal">
+        <h3>Plumbing · HVAC · Electrical</h3>
+        <p>Emergency calls, after-hours leads, and jobs that shouldn't wait until you're off a ladder.</p>
+        <span class="teaser-link">See home systems →</span>
+      </a>
+      <a href="/industries#exterior-structure" class="card teaser-card reveal" data-delay="1">
+        <h3>Roofing · Restoration · More</h3>
+        <p>Storm damage, leak calls, and specialty trades where a missed ring is missed revenue.</p>
+        <span class="teaser-link">Browse trades →</span>
+      </a>
+      <a href="/industries" class="card teaser-card reveal" data-delay="2">
+        <h3>All industries</h3>
+        <p>From lawn care to pest control — if the phone feeds your calendar, we cover it.</p>
+        <span class="teaser-link">View all industries →</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ OFFERING TEASER ══════════ -->
+<section id="offering-teaser">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="eyebrow">Offering &amp; ROI</span>
+      <h2>Run the numbers on unanswered calls.</h2>
+      <p>Packages, add-ons, and a calculator with your own missed-call math — custom quote on the setup call.</p>
+    </div>
+    <div class="teaser-grid">
+      <a href="/offering#pricing" class="card teaser-card reveal">
+        <h3>Packages</h3>
+        <p>Basic, Advanced, and Expert — minutes included, managed by us, quote-led pricing.</p>
+        <span class="teaser-link">See packages →</span>
+      </a>
+      <a href="/offering#compare" class="card teaser-card reveal" data-delay="1">
+        <h3>Compare options</h3>
+        <p>OwnerAI vs. receptionist, answering service, and voicemail — side by side.</p>
+        <span class="teaser-link">See the compare →</span>
+      </a>
+      <a href="/offering#roi" class="card teaser-card reveal" data-delay="2">
+        <h3>ROI calculator</h3>
+        <p>Plug in missed calls and average job value. Most shops are surprised by the monthly total.</p>
+        <span class="teaser-link">Run the calculator →</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ FAQ TEASER ══════════ -->
 <section id="faq">
   <div class="container">
     <div class="section-head reveal" style="text-align:center;margin-left:auto;margin-right:auto">
       <span class="eyebrow" style="justify-content:center">FAQ</span>
-      <h2>Straight answers.</h2>
+      <h2>Straight answers before you buy.</h2>
+      <p>Number changes, Spanish, emergencies, DIY apps vs. managed service, HIPAA, and more.</p>
     </div>
-    <div class="faq-list reveal">
-
-      <div class="faq-item">
-        <button class="faq-q" aria-expanded="false">
-          Will callers hate talking to an AI?
-          <span class="faq-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>
-        </button>
-        <div class="faq-a"><p>Callers hate voicemail. They hate hold music. They don't hate getting their problem handled at 9 PM on a Saturday. Our receptionists sound natural, and most callers can't tell in the first ten seconds — but we never hide it if they ask. Don't take our word for it: call the demo line and judge for yourself.</p></div>
-      </div>
-
-      <div class="faq-item">
-        <button class="faq-q" aria-expanded="false">
-          Do I have to change my phone number?
-          <span class="faq-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>
-        </button>
-        <div class="faq-a"><p>No. You keep your number and your customers notice nothing. We set up smart forwarding — all calls, after-hours only, or only when you don't answer within a few rings. If you ever want out, rollback takes one call and is instant.</p></div>
-      </div>
-
-      <div class="faq-item">
-        <button class="faq-q" aria-expanded="false">
-          What about emergencies or complicated calls?
-          <span class="faq-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>
-        </button>
-        <div class="faq-a"><p>Genuine emergencies get flagged urgent, and when warm transfer is part of your setup the call goes straight to your cell. For anything the receptionist can't resolve, it captures every detail, tells the caller exactly when to expect a callback, and emails you immediately — nothing gets dropped, ever.</p></div>
-      </div>
-
-      <div class="faq-item">
-        <button class="faq-q" aria-expanded="false">
-          Does it speak Spanish?
-          <span class="faq-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>
-        </button>
-        <div class="faq-a"><p>Yes — it detects the caller's language automatically and switches mid-call if needed. Need more languages, or a dedicated Spanish line with its own number? We can add those when we size your setup.</p></div>
-      </div>
-
-      <div class="faq-item">
-        <button class="faq-q" aria-expanded="false">
-          How is this different from a $49/mo AI phone app?
-          <span class="faq-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>
-        </button>
-        <div class="faq-a"><p>Those are do-it-yourself tools: you write the scripts, you configure the flows, you babysit the dashboard, and when it mangles a call at 2 AM, that's your problem. This is a managed service. We build it, test it against your real call scenarios, monitor it, and tune it every month. You forward your phone and read your leads. That's your entire job.</p></div>
-      </div>
-
-      <div class="faq-item">
-        <button class="faq-q" aria-expanded="false">
-          How fast can I be live?
-          <span class="faq-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>
-        </button>
-        <div class="faq-a"><p>Most businesses go live in about one to four weeks depending on calendar, SMS, and CRM wiring. You hear and approve your receptionist before a single customer call touches it.</p></div>
-      </div>
-
-      <div class="faq-item">
-        <button class="faq-q" aria-expanded="false">
-          Is my data safe? What about HIPAA?
-          <span class="faq-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>
-        </button>
-        <div class="faq-a"><p>Call data is encrypted in transit and at rest, belongs to you, and is never sold or used to train anything outside your own receptionist. For medical and dental practices, we can deliver a HIPAA-ready setup with a signed BAA — covered on the setup call.</p></div>
-      </div>
-
+    <div class="teaser-grid" style="max-width:900px;margin:0 auto">
+      <a href="/faq" class="card teaser-card reveal">
+        <h3>Will callers hate talking to an AI?</h3>
+        <p>They hate voicemail. Call the demo and judge the voice yourself.</p>
+        <span class="teaser-link">Read the answer →</span>
+      </a>
+      <a href="/faq" class="card teaser-card reveal" data-delay="1">
+        <h3>Do I have to change my number?</h3>
+        <p>No. Smart forwarding — keep your number, rollback anytime.</p>
+        <span class="teaser-link">Read the answer →</span>
+      </a>
+      <a href="/faq" class="card teaser-card reveal" data-delay="2">
+        <h3>How is this different from a $49 app?</h3>
+        <p>We're a managed service. We build, monitor, and tune it — you forward your phone.</p>
+        <span class="teaser-link">See all FAQs →</span>
+      </a>
     </div>
   </div>
 </section>
@@ -1511,7 +502,7 @@ footer .logo-mark{background:var(--primary)}
 <footer>
   <div class="container footer-inner">
     <div>
-      <a href="#" class="logo" style="font-size:1rem">
+      <a href="/" class="logo" style="font-size:1rem">
         <span class="logo-mark" style="width:22px;height:22px">
           <svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
         </span>
@@ -1520,10 +511,10 @@ footer .logo-mark{background:var(--primary)}
       <p class="footer-tagline" style="margin-top:10px">Done-for-you AI receptionist for home service businesses.</p>
     </div>
     <div class="footer-links">
-      <a href="#features">Features</a>
+      <a href="/features">Features</a>
       <a href="/industries">Industries</a>
-      <a href="#pricing">Offering</a>
-      <a href="#faq">FAQ</a>
+      <a href="/offering">Offering</a>
+      <a href="/faq">FAQ</a>
       <a href="tel:+15169731973">(516) 973-1973</a>
       <a href="mailto:info@owneraitools.com">info@owneraitools.com</a>
     </div>
@@ -1535,132 +526,7 @@ footer .logo-mark{background:var(--primary)}
   </div>
 </footer>
 
-<script>
-// Sticky nav background on scroll
-const nav = document.getElementById('nav');
-const onScroll = () => nav.classList.toggle('scrolled', window.scrollY > 12);
-onScroll();
-window.addEventListener('scroll', onScroll, {passive: true});
 
-// Scroll-triggered reveals
-const observer = new IntersectionObserver((entries) => {
-  entries.forEach((entry) => {
-    if (entry.isIntersecting) {
-      entry.target.classList.add('is-visible');
-      observer.unobserve(entry.target);
-    }
-  });
-}, {threshold: 0.12, rootMargin: '0px 0px -40px 0px'});
-document.querySelectorAll('.reveal').forEach((el) => observer.observe(el));
-
-// FAQ accordion
-document.querySelectorAll('.faq-item').forEach((item) => {
-  const btn = item.querySelector('.faq-q');
-  const answer = item.querySelector('.faq-a');
-  btn.addEventListener('click', () => {
-    const isOpen = item.classList.contains('open');
-    document.querySelectorAll('.faq-item.open').forEach((other) => {
-      other.classList.remove('open');
-      other.querySelector('.faq-a').style.maxHeight = null;
-      other.querySelector('.faq-q').setAttribute('aria-expanded', 'false');
-    });
-    if (!isOpen) {
-      item.classList.add('open');
-      answer.style.maxHeight = answer.scrollHeight + 'px';
-      btn.setAttribute('aria-expanded', 'true');
-    }
-  });
-});
-
-const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-// Stat band count-up
-const fmt = (el, val) => {
-  el.textContent = (el.dataset.prefix || '') + Math.round(val).toLocaleString('en-US') + (el.dataset.suffix || '');
-};
-const counterObserver = new IntersectionObserver((entries) => {
-  entries.forEach((entry) => {
-    if (!entry.isIntersecting) return;
-    counterObserver.unobserve(entry.target);
-    const el = entry.target;
-    const target = Number(el.dataset.count);
-    if (reducedMotion) { fmt(el, target); return; }
-    const t0 = performance.now();
-    const dur = 1400;
-    const tick = (t) => {
-      const p = Math.min(1, (t - t0) / dur);
-      fmt(el, target * (1 - Math.pow(1 - p, 3)));
-      if (p < 1) requestAnimationFrame(tick);
-    };
-    requestAnimationFrame(tick);
-  });
-}, {threshold: 0.5});
-document.querySelectorAll('.cnt[data-count]').forEach((el) => counterObserver.observe(el));
-
-// ROI calculator
-const roiCalls = document.getElementById('roi-calls');
-const roiValue = document.getElementById('roi-value');
-const updateRoi = () => {
-  const calls = Number(roiCalls.value);
-  const value = Number(roiValue.value);
-  const lost = Math.round(calls * 4.33 * value);
-  document.getElementById('roi-calls-out').textContent = calls;
-  document.getElementById('roi-value-out').textContent = '$' + value.toLocaleString('en-US');
-  document.getElementById('roi-lost').textContent = '$' + lost.toLocaleString('en-US');
-  document.getElementById('roi-note').innerHTML = value >= 400
-    ? 'Win back just <strong>one</strong> of those jobs a month and the service typically pays for itself — with change.'
-    : 'Win back a couple of those jobs a month and the service typically pays for itself.';
-};
-[roiCalls, roiValue].forEach((el) => el.addEventListener('input', updateRoi));
-updateRoi();
-
-// Callback form -> /api/chat lead capture (Resend + queue)
-document.getElementById('fallbackForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const form = e.target;
-  const btn = document.getElementById('f-submit');
-  const errEl = document.getElementById('f-error');
-  const name = document.getElementById('f-name').value.trim();
-  const phone = document.getElementById('f-phone').value.trim();
-  const biz = document.getElementById('f-biz').value.trim();
-  const smsConsent = document.getElementById('f-sms-consent').checked;
-  errEl.style.display = 'none';
-  errEl.textContent = '';
-  if (!name || !phone || !biz) return;
-  btn.disabled = true;
-  btn.textContent = 'Sending…';
-  try {
-    const res = await fetch('/api/chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        lead: {
-          name,
-          phone,
-          business: biz,
-          page: location.href,
-          source: 'callback_form',
-          sms_consent: smsConsent,
-        },
-      }),
-    });
-    if (!res.ok) throw new Error('bad status');
-    form.innerHTML =
-      '<h3>Got it — we\'ll call you.</h3>' +
-      '<p class="form-sub">Thanks' + (name ? ', ' + name.replace(/[<>&]/g, '') : '') +
-      '. We\'ll reach out within one business day. Prefer to hear it now? Call the live demo: ' +
-      '<a href="tel:+15169731973">(516) 973-1973</a> · ' +
-      '<a href="https://cal.com/owneraitools/30min" target="_blank" rel="noopener">Book a free setup call</a>.</p>';
-  } catch {
-    btn.disabled = false;
-    btn.textContent = 'Request a callback';
-    errEl.style.display = 'block';
-    errEl.innerHTML =
-      'Something went wrong. Email us at ' +
-      '<a href="mailto:info@owneraitools.com">info@owneraitools.com</a> or call ' +
-      '<a href="tel:+15169731973">(516) 973-1973</a>.';
-  }
-});
-</script>
+<script src="/assets/site.js" defer></script>
 </body>
 </html>

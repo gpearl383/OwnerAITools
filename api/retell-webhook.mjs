@@ -1,4 +1,4 @@
-// Retell post-call webhook for the OwnerAI Tools demo line (+1 516-973-1973).
+// Retell post-call webhook for the OwnerAI demo line (+1 516-973-1973).
 // Vercel serverless function (web-standard handler). Sends the owner an email
 // summary of every analyzed call via Resend, plus two optional SMS legs
 // through Retell's create-sms-chat API (the number lives in Retell under an
@@ -21,7 +21,7 @@
 //   OWNERAI_ALERT_PHONE     — owner cell for alert texts
 //   RETELL_SMS_AGENT_ID     — SMS receptionist chat agent (chat_analyzed pipeline)
 //   OWNERAI_NOTIFY_EMAIL    — recipient (default: info@owneraitools.com)
-//   OWNERAI_RESEND_FROM     — sender (default: OwnerAI Tools <info@owneraitools.com>)
+//   OWNERAI_RESEND_FROM     — sender (default: OwnerAI <info@owneraitools.com>)
 //   CALL_LINK_SECRET        — HMAC key for /api/call links (durable transcript/recording page);
 //                             when unset, a key is derived from SUPABASE_SERVICE_ROLE_KEY
 //   OWNERAI_SITE_URL        — base URL for links (default: https://owneraitools.com)
@@ -339,7 +339,7 @@ function buildEmailHtml(call, data, record, lead) {
   if (!record?.url) return buildLegacyEmailHtml(call, data, lead);
 
   return `
-    <h2>OwnerAI Tools — Demo Line Call</h2>
+    <h2>OwnerAI — Demo Line Call</h2>
     ${duration > 0 && duration < 15 ? '<p style="color:#b45309;"><strong>⚠ Caller hung up early</strong> — details may be incomplete.</p>' : ''}
     <p><strong>${e(name)}</strong>${data.business ? ` · ${e(data.business)}` : ''}</p>
     <table cellpadding="6" style="font-family:sans-serif;font-size:14px;">
@@ -401,7 +401,7 @@ function buildLegacyEmailHtml(call, data, lead) {
       : null;
 
   return `
-    <h2>OwnerAI Tools — Demo Line Call</h2>
+    <h2>OwnerAI — Demo Line Call</h2>
     ${duration > 0 && duration < 15 ? '<p style="color:#b45309;"><strong>⚠ Caller hung up early</strong> — details may be incomplete.</p>' : ''}
     <p><strong>${e(name)}</strong>${data.business ? ` · ${e(data.business)}` : ''}</p>
     <table cellpadding="6" style="font-family:sans-serif;font-size:14px;">
@@ -508,7 +508,7 @@ function buildAlertSms(data, duration, record, lead) {
 function buildConfirmSms(data) {
   const first = (data.name || '').split(/\s+/)[0];
   return [
-    `${first ? first + ', thanks' : 'Thanks'} for calling OwnerAI Tools!`,
+    `${first ? first + ', thanks' : 'Thanks'} for calling OwnerAI!`,
     data.setup_call_booked_time
       ? `You're booked for your setup call: ${data.setup_call_booked_time}. Calendar invite is in your email. Need to change it? https://cal.com/owneraitools/30min`
       : 'Book your 15-minute setup call here: https://cal.com/owneraitools/30min',
@@ -519,7 +519,7 @@ function buildConfirmSms(data) {
 async function sendResendEmail(subject, html) {
   const apiKey = process.env.RESEND_API_KEY;
   const to = process.env.OWNERAI_NOTIFY_EMAIL || 'info@owneraitools.com';
-  const from = process.env.OWNERAI_RESEND_FROM || 'OwnerAI Tools <info@owneraitools.com>';
+  const from = process.env.OWNERAI_RESEND_FROM || 'OwnerAI <info@owneraitools.com>';
 
   if (!apiKey) {
     console.warn('RESEND_API_KEY missing — skipping email');
@@ -631,7 +631,7 @@ function buildChatEmailHtml(chat, data, record, lead) {
   if (!record?.url) return buildLegacyChatEmailHtml(chat, data, lead);
 
   return `
-    <h2>OwnerAI Tools — Demo Line Text Conversation</h2>
+    <h2>OwnerAI — Demo Line Text Conversation</h2>
     <p><strong>${e(name)}</strong>${data.business ? ` · ${e(data.business)}` : ''}</p>
     <table cellpadding="6" style="font-family:sans-serif;font-size:14px;">
       <tr><td><strong>From</strong></td><td>${e(data.prospect_number) || '—'}</td></tr>
@@ -655,7 +655,7 @@ function buildLegacyChatEmailHtml(chat, data, lead) {
   const e = escapeHtml;
   const name = data.name || '(name not captured)';
   return `
-    <h2>OwnerAI Tools — Demo Line Text Conversation</h2>
+    <h2>OwnerAI — Demo Line Text Conversation</h2>
     <p><strong>${e(name)}</strong>${data.business ? ` · ${e(data.business)}` : ''}</p>
     <table cellpadding="6" style="font-family:sans-serif;font-size:14px;">
       <tr><td><strong>From</strong></td><td>${e(data.prospect_number) || '—'}</td></tr>

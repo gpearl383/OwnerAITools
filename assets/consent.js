@@ -1,4 +1,4 @@
-/* OwnerAI Tools — cookie consent + tracking loader.
+/* OwnerAI — cookie consent + tracking loader.
  *
  * Fill in the IDs below to activate tracking. While all IDs are empty this
  * script does nothing: no banner, no cookies, no requests.

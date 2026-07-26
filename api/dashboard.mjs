@@ -1,4 +1,4 @@
-// Dashboard API for the OwnerAI Tools audit trail + call stats page.
+// Dashboard API for the OwnerAI audit trail + call stats page.
 //
 //   POST /api/dashboard { password }  -> sets a signed HttpOnly session cookie
 //   POST /api/dashboard { logout }    -> clears the cookie

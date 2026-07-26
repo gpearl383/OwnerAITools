@@ -2,14 +2,14 @@
   "agents": [
     {
       "name": "demo-voice",
-      "description": "OwnerAI Tools — Website Demo Line (voice)",
+      "description": "OwnerAI — Website Demo Line (voice)",
       "kind": "voice",
       "agent_id": "agent_fcec78e0c72574d61945abdbf3",
       "llm_id": "llm_6d96c220b0b8da0889b76e16e5c5"
     },
     {
       "name": "sms-receptionist",
-      "description": "OwnerAI Tools — SMS Receptionist (chat)",
+      "description": "OwnerAI — SMS Receptionist (chat)",
       "kind": "chat",
       "agent_id": "agent_464d6d1636bdf8b135f04f2990",
       "llm_id": "llm_ef8d3d7395a5e2a9efecfe20760f"

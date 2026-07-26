@@ -1,4 +1,4 @@
-// Live Cal.com booking for the OwnerAI Tools demo line.
+// Live Cal.com booking for the OwnerAI demo line.
 //
 // The demo voice agent calls this endpoint through two Retell custom tools:
 //   check_availability — reads real open slots from Cal.com

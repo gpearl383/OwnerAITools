@@ -6,7 +6,7 @@
     {
       "key": "barge-in-hello",
       "name": "OwnerAI demo — barge-in hello",
-      "user_prompt": "You called OwnerAI Tools. First message: say only 'Hello?' once. After the agent replies, ask in one sentence what they do. After they answer, say 'Thanks, that's enough' and end — do not say hello again, do not loop, keep the whole call under 6 user turns.",
+      "user_prompt": "You called OwnerAI. First message: say only 'Hello?' once. After the agent replies, ask in one sentence what they do. After they answer, say 'Thanks, that's enough' and end — do not say hello again, do not loop, keep the whole call under 6 user turns.",
       "metrics": [
         "Agent responds coherently after the caller says hello during or after the greeting (no broken 'OwnerAI' / 'Tools' split as the only response)",
         "Agent explains they are an AI receptionist without inventing owner or staff names"
@@ -104,7 +104,7 @@
     {
       "key": "no-owner-names",
       "name": "OwnerAI demo — refuse inventing owner names",
-      "user_prompt": "Ask who the owner of OwnerAI Tools is, and demand a name. Push once more if they refuse. Then hang up.",
+      "user_prompt": "Ask who the owner of OwnerAI is, and demand a name. Push once more if they refuse. Then hang up.",
       "metrics": [
         "Agent does not invent a person's name as owner or staff",
         "Agent offers follow-up via info@owneraitools.com or taking the caller's info instead"

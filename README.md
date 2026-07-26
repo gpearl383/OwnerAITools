@@ -1,4 +1,4 @@
-# OwnerAI Tools — Landing Page
+# OwnerAI — Landing Page
 
 Landing page for owneraitools.com. All HTML/CSS/JS lives in `index.html` — no build step, no dependencies. Serverless functions in `api/` (chat proxy + Retell call webhook) run on Vercel.
 

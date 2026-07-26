@@ -1,4 +1,4 @@
-// Mid-call "full owner experience" demo for the OwnerAI Tools demo line.
+// Mid-call "full owner experience" demo for the OwnerAI demo line.
 //
 // The demo voice agent calls this endpoint (Retell custom function
 // `send_demo_alert`) right after a role-play. Up to four legs run, each
@@ -115,7 +115,7 @@ function buildDemoAlertBody(args) {
     args.customer_phone ? `Callback: ${args.customer_phone}` : '',
     args.address ? `Address: ${args.address}` : '',
     args.appointment ? `Booked: ${args.appointment}` : '',
-    'This is a sample owner alert from the OwnerAI Tools demo. Reply STOP to opt out.',
+    'This is a sample owner alert from the OwnerAI demo. Reply STOP to opt out.',
   ];
   return lines.filter(Boolean).join('\n').slice(0, 1200);
 }
@@ -126,7 +126,7 @@ function buildDemoApptBody(args) {
     [args.customer_name, args.issue].filter(Boolean).join(' — '),
     args.appointment ? `When: ${args.appointment}` : '',
     'Added to your calendar automatically by your AI receptionist.',
-    'Sample from the OwnerAI Tools demo. Reply STOP to opt out.',
+    'Sample from the OwnerAI demo. Reply STOP to opt out.',
   ];
   return lines.filter(Boolean).join('\n').slice(0, 1000);
 }
@@ -136,7 +136,7 @@ function buildDemoEmailHtml(args) {
   const biz = args.business_name || 'Your Business';
   return `
     <div style="background:#fff7ed;border:1px solid #fdba74;border-radius:8px;padding:10px 14px;font-family:sans-serif;font-size:13px;color:#9a3412;margin-bottom:16px;">
-      <strong>DEMO</strong> — this is a sample of the lead email you'd receive for every call your AI receptionist answers. Requested by you during the OwnerAI Tools demo call.
+      <strong>DEMO</strong> — this is a sample of the lead email you'd receive for every call your AI receptionist answers. Requested by you during the OwnerAI demo call.
     </div>
     <h2 style="font-family:sans-serif;">${e(biz)} — New Lead Captured</h2>
     <table cellpadding="6" style="font-family:sans-serif;font-size:14px;">
@@ -156,7 +156,7 @@ function buildDemoEmailHtml(args) {
       or email <a href="mailto:info@owneraitools.com">info@owneraitools.com</a>.
     </p>
     <p style="font-family:sans-serif;font-size:12px;color:#6b7280;">
-      OwnerAI Tools · owneraitools.com · This one-time sample was sent at your request during a demo call. No mailing list — you won't receive further emails unless you contact us.
+      OwnerAI · owneraitools.com · This one-time sample was sent at your request during a demo call. No mailing list — you won't receive further emails unless you contact us.
     </p>
   `;
 }
@@ -210,13 +210,13 @@ function buildInviteIcs({ startIso, args, toEmail, fromEmail, uid }) {
   const end = new Date(start.getTime() + 30 * 60 * 1000);
   const summary = `[DEMO] ${args.customer_name || 'Customer'} — ${args.issue || 'appointment'}`;
   const description =
-    `Sample appointment from your OwnerAI Tools demo call. ` +
+    `Sample appointment from your OwnerAI demo call. ` +
     `In the real product, appointments your AI receptionist books land on your calendar automatically like this. ` +
     `Customer: ${args.customer_name || '—'} · ${args.customer_phone || '—'}. Not a real appointment.`;
   return [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//OwnerAI Tools//Demo//EN',
+    'PRODID:-//OwnerAI//Demo//EN',
     'METHOD:REQUEST',
     'BEGIN:VEVENT',
     `UID:${uid}`,
@@ -226,7 +226,7 @@ function buildInviteIcs({ startIso, args, toEmail, fromEmail, uid }) {
     `SUMMARY:${icsEscape(summary)}`,
     `DESCRIPTION:${icsEscape(description)}`,
     ...(args.address ? [`LOCATION:${icsEscape(args.address)}`] : []),
-    `ORGANIZER;CN=${icsEscape((args.business_name || 'OwnerAI Tools Demo') + ' (via OwnerAI)')}:mailto:${fromEmail}`,
+    `ORGANIZER;CN=${icsEscape((args.business_name || 'OwnerAI Demo') + ' (via OwnerAI)')}:mailto:${fromEmail}`,
     `ATTENDEE;CN=Business Owner;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=TRUE:mailto:${toEmail}`,
     'STATUS:CONFIRMED',
     'END:VEVENT',
@@ -238,7 +238,7 @@ function buildInviteIcs({ startIso, args, toEmail, fromEmail, uid }) {
 // intentionally does not create a Cal.com booking — demo bookings block real
 // setup-call slots on the owner's calendar (verified in testing).
 async function sendDemoInvite(toEmail, args, startIso) {
-  const from = process.env.OWNERAI_RESEND_FROM || 'OwnerAI Tools <info@owneraitools.com>';
+  const from = process.env.OWNERAI_RESEND_FROM || 'OwnerAI <info@owneraitools.com>';
   const fromEmail = (/<([^>]+)>/.exec(from) || [null, from])[1];
   const uid = `demo-${crypto.randomUUID()}@owneraitools.com`;
   const ics = buildInviteIcs({ startIso, args, toEmail, fromEmail, uid });
@@ -263,7 +263,7 @@ async function sendDemoInvite(toEmail, args, startIso) {
           ${escapeHtml(when)}${args.address ? `<br/>${escapeHtml(args.address)}` : ''}
         </p>
         <p style="font-family:sans-serif;font-size:12px;color:#6b7280;">
-          Sample from the OwnerAI Tools demo, sent at your request. Not a real appointment.
+          Sample from the OwnerAI demo, sent at your request. Not a real appointment.
         </p>
       `,
       attachments: [
@@ -280,7 +280,7 @@ async function sendDemoInvite(toEmail, args, startIso) {
 }
 
 async function sendDemoEmail(toEmail, args) {
-  const from = process.env.OWNERAI_RESEND_FROM || 'OwnerAI Tools <info@owneraitools.com>';
+  const from = process.env.OWNERAI_RESEND_FROM || 'OwnerAI <info@owneraitools.com>';
   const res = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: {

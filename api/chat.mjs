@@ -126,12 +126,24 @@ async function sendLeadEmail(lead, transcript, queueLead) {
   const doneUrl = queueLead?.id ? leadActionUrl(queueLead.id, 'done') : null;
   if (doneUrl) actions.push(`<a href="${e(doneUrl)}">Mark done</a>`);
 
+  const isForm = lead.source === 'callback_form';
+  const title = isForm ? 'Website Callback Form Lead' : 'Website Chat Lead';
+  const label = isForm ? 'Callback form lead' : 'Chat lead';
+  const smsLine =
+    lead.sms_consent === true
+      ? 'YES — agreed to receive texts'
+      : lead.sms_consent === false
+        ? 'No'
+        : '—';
+
   const html = `
-    <h2>OwnerAI Tools — Website Chat Lead</h2>
+    <h2>OwnerAI Tools — ${e(title)}</h2>
     <table cellpadding="6" style="font-family:sans-serif;font-size:14px;">
       <tr><td><strong>Name</strong></td><td>${e(lead.name) || '—'}</td></tr>
       <tr><td><strong>Phone</strong></td><td>${e(lead.phone) || '—'}</td></tr>
       <tr><td><strong>Business</strong></td><td>${e(lead.business) || '—'}</td></tr>
+      <tr><td><strong>Source</strong></td><td>${e(lead.source || 'chat')}</td></tr>
+      <tr><td><strong>SMS consent</strong></td><td>${e(smsLine)}</td></tr>
       <tr><td><strong>Page</strong></td><td>${e(lead.page) || '—'}</td></tr>
     </table>
     ${actions.length ? `<p><strong>Actions</strong> — ${actions.join(' &nbsp;·&nbsp; ')}</p>` : ''}
@@ -144,7 +156,7 @@ async function sendLeadEmail(lead, transcript, queueLead) {
     body: JSON.stringify({
       from,
       to: [to],
-      subject: `[OwnerAI] Chat lead: ${lead.name || 'Unknown'}${lead.business ? ' — ' + lead.business : ''}`,
+      subject: `[OwnerAI] ${label}: ${lead.name || 'Unknown'}${lead.business ? ' — ' + lead.business : ''}`,
       html,
     }),
   });
@@ -169,12 +181,16 @@ async function logChatLead(lead) {
       },
       body: JSON.stringify([
         {
-          event_type: 'chat_lead',
+          event_type: lead.source === 'callback_form' ? 'web_form_lead' : 'chat_lead',
           status: 'ok',
           caller_name: lead.name || null,
           from_number: lead.phone || null,
           detail: lead.business || null,
-          payload: { page: lead.page },
+          payload: {
+            page: lead.page,
+            source: lead.source || 'chat',
+            sms_consent: lead.sms_consent,
+          },
         },
       ]),
     });
@@ -206,25 +222,38 @@ export async function POST(request) {
     return json(400, { error: 'Invalid request' }, origin);
   }
 
-  // Lead capture branch: the widget posts { lead: {name, phone, business, page}, transcript }.
+  // Lead capture branch: chat widget or homepage callback form posts { lead, transcript? }.
   if (payload.lead && typeof payload.lead === 'object') {
+    const sourceRaw = String(payload.lead.source || 'chat').slice(0, 40);
+    const isForm = sourceRaw === 'callback_form';
     const lead = {
       name: String(payload.lead.name || '').slice(0, 200),
       phone: String(payload.lead.phone || '').slice(0, 50),
       business: String(payload.lead.business || '').slice(0, 300),
       page: String(payload.lead.page || '').slice(0, 300),
+      source: isForm ? 'callback_form' : 'chat',
+      sms_consent:
+        typeof payload.lead.sms_consent === 'boolean' ? payload.lead.sms_consent : null,
     };
     if (!lead.name && !lead.phone) {
       return json(400, { error: 'Name or phone required' }, origin);
     }
     try {
+      const channel = isForm ? 'web_form' : 'chat';
+      const label = isForm ? 'Callback form lead' : 'Chat lead';
+      const consentNote =
+        lead.sms_consent === true
+          ? 'SMS consent: yes'
+          : lead.sms_consent === false
+            ? 'SMS consent: no'
+            : null;
       const queueLead = await upsertLead({
         phone: lead.phone,
         name: lead.name,
         business: lead.business,
-        channel: 'chat',
-        reason: lead.business || 'Website chat lead',
-        summary: `Chat lead from ${lead.page || 'site'}`,
+        channel,
+        reason: lead.business || label,
+        summary: [label, `from ${lead.page || 'site'}`, consentNote].filter(Boolean).join(' — '),
         wantsSetup: false,
         leadQuality: 'warm',
       });

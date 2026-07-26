@@ -62,6 +62,13 @@ async function serveStatic(pathname, res) {
 createServer(async (req, res) => {
   const url = new URL(req.url, `http://localhost:${PORT}`);
 
+  // Mirror vercel.json redirects for local preview
+  if (url.pathname === '/pricing') {
+    res.writeHead(308, { Location: '/offering' });
+    res.end();
+    return;
+  }
+
   if (url.pathname === '/api/chat' && req.method === 'POST') {
     try {
       const { POST } = await import('../api/chat.mjs');

@@ -11,7 +11,7 @@
 <meta property="og:url" content="https://owneraitools.com/industries">
 <meta property="og:site_name" content="OwnerAI Tools">
 <meta property="og:title" content="Industries — OwnerAI Tools">
-<meta property="og:description" content="Built for HVAC, plumbing, electrical, roofing, restoration, and home service trades. Call the live demo: (516) 973-1973.">
+<meta property="og:description" content="AI receptionist for HVAC, plumbing, electrical, roofing, restoration, and home service trades. Call the live demo: (516) 973-1973.">
 <meta property="og:image" content="https://owneraitools.com/og-image.png">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Industries — OwnerAI Tools">
@@ -40,203 +40,8 @@
 }
 </script>
 
-<style>
-:root{
-  --navy: #14355e;
-  --navy-soft: #1d4879;
-  --primary: #2680cf;
-  --primary-600: #1a66b0;
-  --primary-700: #17528e;
-  --primary-50: #eef6fd;
-  --primary-100: #d9ebfa;
-  --primary-200: #b6d8f5;
-  --accent: #f97125;
-  --accent-600: #e25a12;
-  --mist: #f2f7fc;
-  --cream: #fdf9f3;
-  --bg: #ffffff;
-  --surface: #ffffff;
-  --border: rgba(20,53,94,.10);
-  --border-strong: rgba(20,53,94,.18);
-  --text: #24384f;
-  --muted: #5a6b81;
-  --display: "Nunito", ui-sans-serif, system-ui, sans-serif;
-  --body: "Source Sans 3", ui-sans-serif, system-ui, sans-serif;
-  --radius: 16px;
-  --shadow-card: 0 14px 40px -18px rgba(20,53,94,.22);
-  --shadow-lift: 0 22px 55px -22px rgba(20,53,94,.32);
-}
-*{margin:0;padding:0;box-sizing:border-box}
-html{scroll-behavior:smooth;scroll-padding-top:100px;overflow-x:clip}
-body{
-  background:var(--bg);color:var(--text);
-  font-family:var(--body);font-size:17px;line-height:1.6;
-  -webkit-font-smoothing:antialiased;overflow-x:hidden;
-}
-::selection{background:var(--primary);color:#fff}
-img,svg{display:block}
-a{color:inherit;text-decoration:none}
-ul{list-style:none}
-h1,h2,h3{font-family:var(--display);font-weight:800;line-height:1.12;letter-spacing:-.015em;color:var(--navy)}
-h1{font-size:clamp(2.2rem,4.8vw,3.4rem);font-weight:900}
-h2{font-size:clamp(1.6rem,3vw,2.1rem)}
-h3{font-size:1.2rem}
-.container{max-width:1160px;margin:0 auto;padding:0 24px}
 
-.btn{
-  display:inline-flex;align-items:center;justify-content:center;gap:10px;
-  padding:15px 28px;border-radius:999px;font-weight:700;font-size:1rem;
-  font-family:var(--body);
-  transition:transform .18s ease, box-shadow .18s ease, background .18s ease, border-color .18s ease, color .18s ease;
-  white-space:nowrap;
-}
-.btn:active{transform:translateY(1px)}
-.btn-primary{
-  background:var(--accent);color:#fff;box-shadow:var(--shadow-lift);
-}
-.btn-primary:hover{transform:translateY(-2px);background:var(--accent-600)}
-.btn-ghost{
-  background:#fff;border:2px solid var(--primary-600);color:var(--primary-700);
-  padding-top:13px;padding-bottom:13px;
-}
-.btn-ghost:hover{transform:translateY(-2px);background:var(--primary-50)}
-.btn-sm{padding:10px 20px;font-size:.9rem}
-
-.nav{
-  position:fixed;top:0;left:0;right:0;z-index:100;
-  background:#fff;border-bottom:1px solid var(--border);
-  transition:box-shadow .3s ease;
-}
-.nav.scrolled{box-shadow:var(--shadow-card)}
-.announce{background:var(--navy);color:#dbe4f2;font-size:.82rem}
-.announce-inner{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:9px 0;flex-wrap:wrap}
-.announce a{color:#ffb07a;font-weight:600}
-.announce a:hover{color:#fff}
-.announce-tag{font-weight:600;color:#fff}
-.announce-sep{opacity:.45;margin:0 8px}
-.nav-inner{display:flex;align-items:center;justify-content:space-between;height:72px}
-.logo{font-family:var(--display);font-weight:800;font-size:1.15rem;letter-spacing:-.01em;display:flex;align-items:center;gap:9px;color:var(--navy)}
-.logo-mark{
-  width:30px;height:30px;border-radius:50%;background:var(--primary-600);
-  display:flex;align-items:center;justify-content:center;
-}
-.logo-mark svg{width:15px;height:15px}
-.nav-links{display:flex;align-items:center;gap:32px;font-size:.93rem;font-weight:600;color:var(--muted)}
-.nav-links a:hover{color:var(--navy)}
-.nav-links a.is-active{color:var(--navy)}
-
-.page-hero{
-  padding:170px 0 72px;position:relative;overflow:hidden;
-  background:var(--mist);text-align:center;
-}
-.page-hero-bg{
-  position:absolute;inset:0;
-  background:url('/assets/img/industries-hero.jpg') center/cover no-repeat;
-}
-.page-hero-wash{
-  position:absolute;inset:0;
-  background:linear-gradient(
-    to bottom,
-    rgba(255,255,255,.88),
-    rgba(242,247,252,.78),
-    rgba(255,255,255,.92)
-  );
-}
-.page-hero-content{position:relative;z-index:1}
-.page-hero .eyebrow{
-  display:inline-flex;align-items:center;gap:8px;
-  font-size:.76rem;font-weight:700;letter-spacing:.13em;text-transform:uppercase;
-  padding:8px 16px;border-radius:999px;margin-bottom:22px;
-  border:1px solid var(--primary-200);background:#fff;color:var(--primary-700);
-  box-shadow:var(--shadow-card);
-}
-.page-hero p{color:var(--muted);font-size:1.12rem;max-width:640px;margin:18px auto 0;line-height:1.55}
-.hero-pills{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-top:28px}
-.hero-pill{
-  display:inline-flex;align-items:center;gap:8px;
-  padding:10px 16px;border-radius:999px;background:#fff;
-  border:1px solid var(--border);font-size:.88rem;font-weight:700;color:var(--navy);
-  box-shadow:var(--shadow-card);
-}
-.hero-pill::before{
-  content:"";width:8px;height:8px;border-radius:50%;background:var(--accent);
-}
-
-.industry-group{padding:72px 0}
-.industry-group:nth-child(even){background:var(--cream)}
-.industry-group:nth-child(odd){background:#fff}
-.group-head{max-width:640px;margin-bottom:36px}
-.group-head p{color:var(--muted);margin-top:10px;font-size:1.02rem}
-.industry-grid{
-  display:grid;grid-template-columns:repeat(2,1fr);gap:18px;
-}
-.industry-card{
-  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
-  padding:28px 26px;box-shadow:var(--shadow-card);
-  transition:transform .25s ease, border-color .25s ease, box-shadow .25s ease;
-}
-.industry-card:hover{
-  transform:translateY(-3px);border-color:var(--primary-200);box-shadow:var(--shadow-lift);
-}
-.industry-card h3{margin-bottom:6px}
-.industry-card .tagline{
-  font-weight:700;color:var(--primary-600);font-size:.95rem;margin-bottom:12px;
-}
-.industry-card p{color:var(--muted);font-size:.95rem;line-height:1.55}
-
-.final-cta{text-align:center;background:var(--navy);padding:88px 0}
-.final-cta h2{color:#fff;font-size:clamp(1.9rem,4vw,2.8rem)}
-.final-cta p{color:#b9c6dd;margin:16px auto 32px;max-width:520px}
-.final-cta .btn-ghost{background:transparent;border-color:rgba(255,255,255,.45);color:#fff}
-.final-cta .btn-ghost:hover{background:rgba(255,255,255,.08)}
-.cta-row{display:flex;gap:14px;flex-wrap:wrap;justify-content:center}
-
-footer{background:#0f2745;color:#9aadc4;padding:42px 0 28px;font-size:.9rem}
-.footer-inner{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;flex-wrap:wrap;margin-bottom:28px}
-.footer-tagline{color:#7f95b0;font-size:.9rem;max-width:280px;line-height:1.45;margin-top:10px}
-.footer-links{display:flex;flex-wrap:wrap;gap:14px 22px;align-items:center}
-.footer-links a{transition:color .18s ease}
-.footer-links a:hover{color:#fff}
-.footer-legal{border-top:1px solid rgba(255,255,255,.08);padding-top:22px;font-size:.8rem;line-height:1.8;color:#6f849c}
-.footer-legal a{color:#9aadc4;text-decoration:underline;text-underline-offset:2px}
-.footer-legal a:hover{color:#fff}
-.footer .logo{color:#fff}
-
-.reveal{opacity:0;transform:translateY(22px);transition:opacity .7s ease, transform .7s ease}
-.reveal.is-visible{opacity:1;transform:none}
-
-@media (max-width:960px){
-  .industry-grid{grid-template-columns:1fr}
-  .nav-links .nav-anchor{display:none}
-  .page-hero{padding:150px 0 56px}
-  .industry-group{padding:56px 0}
-}
-@media (max-width:720px){
-  .announce-tag{display:none}
-  .announce-inner{justify-content:center}
-  .announce-contact{display:flex;flex-wrap:wrap;justify-content:center;gap:4px 8px;text-align:center}
-  .announce-contact a[href^="mailto"],
-  .announce-sep{display:none}
-}
-@media (max-width:640px){
-  .container{padding:0 18px}
-  .page-hero{padding:140px 0 48px}
-  .page-hero h1{font-size:clamp(1.85rem,7.5vw,2.4rem)}
-  .page-hero p{font-size:1.02rem}
-  .hero-pills{gap:8px;margin-top:22px}
-  .hero-pill{font-size:.85rem;padding:8px 14px}
-  .final-cta .btn{width:100%}
-}
-@media (max-width:480px){
-  .hide-sm{display:none}
-  .cta-row .btn{width:100%}
-  .nav .btn-sm{padding:9px 16px;font-size:.85rem}
-  .logo{font-size:1.05rem}
-}
-@media (prefers-reduced-motion:reduce){
-  .reveal{opacity:1;transform:none;transition:none}
-}
-</style>
+<link rel="stylesheet" href="/assets/site.css">
 </head>
 <body>
 
@@ -258,13 +63,19 @@ footer{background:#0f2745;color:#9aadc4;padding:42px 0 28px;font-size:.9rem}
       </span>
       OwnerAI Tools
     </a>
-    <nav class="nav-links">
-      <a href="/#features" class="nav-anchor">Features</a>
+    <nav class="nav-links" id="nav-menu">
+      <a href="/features" class="nav-anchor">Features</a>
       <a href="/industries" class="nav-anchor is-active">Industries</a>
-      <a href="/#pricing" class="nav-anchor">Offering</a>
-      <a href="/#faq" class="nav-anchor">FAQ</a>
-      <a href="tel:+15169731973" class="btn btn-primary btn-sm"><span>Call <span class="hide-sm">the live </span>demo</span></a>
+      <a href="/offering" class="nav-anchor">Offering</a>
+      <a href="/faq" class="nav-anchor">FAQ</a>
+      <a href="https://cal.com/owneraitools/30min" target="_blank" rel="noopener" class="btn btn-ghost btn-sm nav-menu-cal">Book a free setup call</a>
     </nav>
+    <div class="nav-end">
+      <a href="tel:+15169731973" class="btn btn-primary btn-sm nav-demo-btn"><span>Call <span class="hide-sm">the live </span>demo</span></a>
+      <button type="button" class="nav-toggle" aria-expanded="false" aria-controls="nav-menu" aria-label="Open menu">
+        <span class="nav-toggle-bars" aria-hidden="true"></span>
+      </button>
+    </div>
   </div>
 </header>
 
@@ -273,7 +84,7 @@ footer{background:#0f2745;color:#9aadc4;padding:42px 0 28px;font-size:.9rem}
   <div class="page-hero-wash" aria-hidden="true"></div>
   <div class="container page-hero-content">
     <span class="eyebrow">Industries</span>
-    <h1>Built for Home Service Professionals</h1>
+    <h1>Trades that live and die by the phone.</h1>
     <p>OwnerAI’s done-for-you receptionist works 24/7 to answer every call, book every job, and capture every lead — no matter your trade.</p>
     <div class="hero-pills">
       <span class="hero-pill">24/7 Call Answering</span>
@@ -503,10 +314,10 @@ footer{background:#0f2745;color:#9aadc4;padding:42px 0 28px;font-size:.9rem}
       <p class="footer-tagline">Done-for-you AI receptionist for home service businesses.</p>
     </div>
     <div class="footer-links">
-      <a href="/#features">Features</a>
+      <a href="/features">Features</a>
       <a href="/industries">Industries</a>
-      <a href="/#pricing">Offering</a>
-      <a href="/#faq">FAQ</a>
+      <a href="/offering">Offering</a>
+      <a href="/faq">FAQ</a>
       <a href="tel:+15169731973">(516) 973-1973</a>
       <a href="mailto:info@owneraitools.com">info@owneraitools.com</a>
     </div>
@@ -518,21 +329,7 @@ footer{background:#0f2745;color:#9aadc4;padding:42px 0 28px;font-size:.9rem}
   </div>
 </footer>
 
-<script>
-const nav = document.getElementById('nav');
-const onScroll = () => nav.classList.toggle('scrolled', window.scrollY > 12);
-onScroll();
-window.addEventListener('scroll', onScroll, {passive: true});
+<script src="/assets/site.js" defer></script>
 
-const observer = new IntersectionObserver((entries) => {
-  entries.forEach((entry) => {
-    if (entry.isIntersecting) {
-      entry.target.classList.add('is-visible');
-      observer.unobserve(entry.target);
-    }
-  });
-}, {threshold: 0.12, rootMargin: '0px 0px -40px 0px'});
-document.querySelectorAll('.reveal').forEach((el) => observer.observe(el));
-</script>
 </body>
 </html>

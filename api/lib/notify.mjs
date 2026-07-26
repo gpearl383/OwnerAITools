@@ -92,7 +92,7 @@ async function sendMonitorSms(body) {
 async function sendMonitorEmail(subject, html) {
   const apiKey = process.env.RESEND_API_KEY;
   const to = process.env.OWNERAI_NOTIFY_EMAIL || 'info@owneraitools.com';
-  const from = process.env.OWNERAI_RESEND_FROM || 'OwnerAI Tools <info@owneraitools.com>';
+  const from = process.env.OWNERAI_RESEND_FROM || 'OwnerAI <info@owneraitools.com>';
   if (!apiKey) {
     console.warn('monitor email skipped — RESEND_API_KEY missing');
     return { skipped: true };

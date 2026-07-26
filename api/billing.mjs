@@ -1,4 +1,4 @@
-// Usage billing API for OwnerAI Tools (no payment processing).
+// Usage billing API for OwnerAI (no payment processing).
 //
 //   POST /api/billing { password }     -> signed HttpOnly session cookie
 //   POST /api/billing { logout }       -> clears the cookie

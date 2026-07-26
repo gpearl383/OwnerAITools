@@ -22,7 +22,7 @@ export function shouldSendHangupNurture({ durationSec, name, business }) {
 
 export function buildHangupNurtureSms() {
   return [
-    'Looks like we got disconnected — this is OwnerAI Tools.',
+    'Looks like we got disconnected — this is OwnerAI.',
     'Call or text us back at (516) 973-1973, or book a setup call: https://cal.com/owneraitools/30min',
     'Msg & data rates may apply. Reply STOP to opt out, HELP for help.',
   ].join(' ');

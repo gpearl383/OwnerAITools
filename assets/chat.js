@@ -1,4 +1,4 @@
-/* OwnerAI Tools — website chat widget.
+/* OwnerAI — website chat widget.
  *
  * Talks to /api/chat (Anthropic proxy; system prompt server-side). Lead
  * capture posts to the same endpoint, which emails info@owneraitools.com via

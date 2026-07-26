@@ -1,9 +1,9 @@
-# OwnerAI Tools — Dual-Purpose Business Plan
+# OwnerAI — Dual-Purpose Business Plan
 
 **Version:** 2026-07-24  
 **Audiences:** Founder operating guide + investor/partner narrative  
 **Stage:** Pre-revenue — live product demo, sales funnel, and ops stack  
-**Entity:** CSM Integrated Solutions LLC d/b/a OwnerAI Tools  
+**Entity:** CSM Integrated Solutions LLC d/b/a OwnerAI  
 **Site:** https://owneraitools.com  
 **Demo line:** (516) 973-1973  
 **Setup booking:** https://cal.com/owneraitools/30min  
@@ -29,7 +29,7 @@
 
 ## 1. Cover / positioning
 
-**One-sentence offer:** OwnerAI Tools is a done-for-you AI receptionist service for small businesses — every call answered 24/7/365, every lead captured, appointments booked, summaries delivered to the owner.
+**One-sentence offer:** OwnerAI is a done-for-you AI receptionist service for small businesses — every call answered 24/7/365, every lead captured, appointments booked, summaries delivered to the owner.
 
 **What we are not:** A DIY $49/mo AI phone app. Customers do not script, train, or babysit an agent. They forward their phone and read their leads.
 
@@ -420,7 +420,7 @@ Path to learning is **closes**, not ad scale. Warm intros remain the primary Ask
 
 ## Appendix A — One-paragraph partner blurb (copy/paste)
 
-> OwnerAI Tools (CSM Integrated Solutions LLC) is a done-for-you AI receptionist for phone-dependent small businesses. We’re live with a demo line and sales funnel at owneraitools.com as a managed service — not a DIY AI app (public pricing is quote-led while we validate willingness to pay; internal default close is Advanced). We’re pre-revenue and focused on closing the first 3–5 home-services clients in 90 days. We’re self-funding ads and tools; what we want from partners is warm intros to owner-operators — not a capital raise or a multi-year platform build.
+> OwnerAI (CSM Integrated Solutions LLC) is a done-for-you AI receptionist for phone-dependent small businesses. We’re live with a demo line and sales funnel at owneraitools.com as a managed service — not a DIY AI app (public pricing is quote-led while we validate willingness to pay; internal default close is Advanced). We’re pre-revenue and focused on closing the first 3–5 home-services clients in 90 days. We’re self-funding ads and tools; what we want from partners is warm intros to owner-operators — not a capital raise or a multi-year platform build.
 
 ## Appendix B — Document maintenance
 

@@ -14,9 +14,9 @@ import { allowRate, hashIp } from './lib/rate-limit.mjs';
 //                       Retell webhook)
 // Optional:
 //   OWNERAI_NOTIFY_EMAIL — lead recipient (default: info@owneraitools.com)
-//   OWNERAI_RESEND_FROM  — sender (default: OwnerAI Tools <info@owneraitools.com>)
+//   OWNERAI_RESEND_FROM  — sender (default: OwnerAI <info@owneraitools.com>)
 
-const SYSTEM_PROMPT = `You are the OwnerAI Assistant on owneraitools.com — the website of OwnerAI Tools, a done-for-you AI phone answering service for small businesses, operated by CSM Integrated Solutions LLC (Albany, NY, serving the US).
+const SYSTEM_PROMPT = `You are the OwnerAI Assistant on owneraitools.com — the website of OwnerAI, a done-for-you AI phone answering service for small businesses, operated by CSM Integrated Solutions LLC (Albany, NY, serving the US).
 
 WHAT OWNERAI TOOLS DOES:
 A fully managed AI receptionist answers a business's phone 24/7/365 in under 2 seconds — nights, weekends, holidays. Every caller's name, number, and problem is captured and emailed to the owner before the caller hangs up, with full transcript and recording. Appointments get booked, CRMs get updated. It speaks English and Spanish (auto-detected), screens spam, and handles unlimited simultaneous calls. This is a managed service, not software: OwnerAI builds the receptionist, tests it, monitors it, and tunes it monthly. The customer just forwards their phone and reads their leads.
@@ -53,7 +53,7 @@ BEHAVIOR:
 - You may name Basic, Advanced, and Expert and describe their features only — never minute allotments. Never invent OwnerAI dollar amounts. For cost or minutes/usage, suggest the free setup call.
 - If the visitor shares what business they run, tailor examples to their industry.
 - If the visitor seems interested, ask for their name, phone number, and business type so the team can follow up — but only after answering their question, and never more than once.
-- Only discuss OwnerAI Tools and its services; politely decline unrelated requests.
+- Only discuss OwnerAI and its services; politely decline unrelated requests.
 - Current year: 2026.`;
 
 /* ---------- rate limiting (Supabase-backed + memory fallback) ---------- */
@@ -111,7 +111,7 @@ async function sendLeadEmail(lead, transcript, queueLead) {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) throw new Error('RESEND_API_KEY missing');
   const to = process.env.OWNERAI_NOTIFY_EMAIL || 'info@owneraitools.com';
-  const from = process.env.OWNERAI_RESEND_FROM || 'OwnerAI Tools <info@owneraitools.com>';
+  const from = process.env.OWNERAI_RESEND_FROM || 'OwnerAI <info@owneraitools.com>';
   const e = escapeHtml;
 
   const convo = (transcript || [])
@@ -137,7 +137,7 @@ async function sendLeadEmail(lead, transcript, queueLead) {
         : '—';
 
   const html = `
-    <h2>OwnerAI Tools — ${e(title)}</h2>
+    <h2>OwnerAI — ${e(title)}</h2>
     <table cellpadding="6" style="font-family:sans-serif;font-size:14px;">
       <tr><td><strong>Name</strong></td><td>${e(lead.name) || '—'}</td></tr>
       <tr><td><strong>Phone</strong></td><td>${e(lead.phone) || '—'}</td></tr>

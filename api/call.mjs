@@ -1,4 +1,4 @@
-// Call-detail page for the OwnerAI Tools demo line.
+// Call-detail page for the OwnerAI demo line.
 //
 //   GET /api/call?id=<call_id>&t=<token>          -> HTML page (summary, audio player, transcript)
 //   GET /api/call?id=<call_id>&t=<token>&audio=1  -> streams the recording from Supabase Storage
@@ -93,7 +93,7 @@ function renderPage(record, token) {
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <meta name="robots" content="noindex"/>
-<title>OwnerAI Tools — ${e(title)}</title>
+<title>OwnerAI — ${e(title)}</title>
 <style>
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 720px; margin: 0 auto; padding: 24px 16px 64px; color: #1f2937; }
   h1 { font-size: 22px; margin-bottom: 4px; }
@@ -105,7 +105,7 @@ function renderPage(record, token) {
 </style>
 </head>
 <body>
-<h1>OwnerAI Tools — ${e(title)}</h1>
+<h1>OwnerAI — ${e(title)}</h1>
 <p class="meta"><strong>${e(name)}</strong>${record.from_number ? ` · ${e(record.from_number)}` : ''}${when ? ` · ${e(when)}` : ''}</p>
 ${record.summary ? `<h2>Summary</h2><div class="summary">${e(record.summary).replace(/\n/g, '<br/>')}</div>` : ''}
 ${record.recording_path ? `<h2 id="recording">Recording</h2><audio controls preload="none" src="?id=${encodeURIComponent(record.id)}&amp;t=${e(token)}&amp;audio=1"></audio>` : ''}

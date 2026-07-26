@@ -95,7 +95,7 @@ createServer(async (req, res) => {
   res.writeHead(404, { 'Content-Type': 'text/plain' });
   res.end('Not found');
 }).listen(PORT, () => {
-  console.log(`OwnerAI Tools dev server → http://localhost:${PORT}`);
+  console.log(`OwnerAI dev server → http://localhost:${PORT}`);
   console.log(
     process.env.ANTHROPIC_API_KEY
       ? 'Chat API: live (ANTHROPIC_API_KEY found)'

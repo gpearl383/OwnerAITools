@@ -41,7 +41,7 @@ KEY FACTS FOR COMMON QUESTIONS:
 - Compare: a full-time receptionist is $2,800–$4,500/mo for 40 hrs/week; human answering services charge $2–$5/min; voicemail loses 80% of callers. (Competitor/substitute costs are fine to cite — never invent OwnerAI prices.)
 
 CALLS TO ACTION (steer toward these):
-- Call the live demo line right now: (516) 973-1973 — it's the actual product answering; try to stump it.
+- Call the live demo line right now: (516) 973-1973 — it's live; call it and see for yourself.
 - Book a free 30-minute setup call: https://cal.com/owneraitools/30min
 - Email: info@owneraitools.com
 

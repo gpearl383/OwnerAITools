@@ -26,7 +26,7 @@
   --shadow-lift: 0 22px 55px -22px rgba(20,53,94,.32);
 }
 *{margin:0;padding:0;box-sizing:border-box}
-html{scroll-behavior:smooth;scroll-padding-top:118px;overflow-x:clip}
+html{scroll-behavior:smooth;scroll-padding-top:128px;overflow-x:clip}
 body{
   background:var(--bg);
   color:var(--text);
@@ -138,15 +138,15 @@ section:has(> .halo){overflow:hidden}
 }
 .nav-inner{
   display:flex;align-items:center;justify-content:flex-end;gap:20px;
-  height:98px;
+  height:108px;
 }
 .logo{
-  font-family:var(--display);font-weight:800;font-size:1.98rem;letter-spacing:-.01em;
+  font-family:var(--display);font-weight:800;font-size:2.35rem;letter-spacing:-.02em;
   display:flex;align-items:center;gap:14px;color:var(--navy);
   margin-right:auto;
 }
 .logo-mark{
-  width:53px;height:53px;border-radius:50%;
+  width:64px;height:64px;border-radius:50%;
   display:inline-flex;align-items:center;justify-content:center;
   overflow:hidden;flex-shrink:0;background:transparent;
 }
@@ -739,7 +739,8 @@ footer .logo{color:#fff}
 @media (max-width:480px){
   .hide-sm{display:none}
   .nav .btn-sm{padding:9px 16px;font-size:.85rem}
-  .logo{font-size:1.7rem}
+  .logo{font-size:2rem}
+  .logo-mark{width:54px;height:54px}
 }
 @media (max-width:640px){
   body{font-size:16px}

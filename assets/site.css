@@ -138,18 +138,20 @@ section:has(> .halo){overflow:hidden}
 }
 .nav-inner{
   display:flex;align-items:center;justify-content:flex-end;gap:20px;
-  height:72px;
+  height:98px;
 }
 .logo{
-  font-family:var(--display);font-weight:800;font-size:1.15rem;letter-spacing:-.01em;
-  display:flex;align-items:center;gap:9px;color:var(--navy);
+  font-family:var(--display);font-weight:800;font-size:1.98rem;letter-spacing:-.01em;
+  display:flex;align-items:center;gap:14px;color:var(--navy);
   margin-right:auto;
 }
 .logo-mark{
-  width:30px;height:30px;border-radius:50%;background:var(--primary-600);
-  display:flex;align-items:center;justify-content:center;
+  width:53px;height:53px;border-radius:50%;
+  display:inline-flex;align-items:center;justify-content:center;
+  overflow:hidden;flex-shrink:0;background:transparent;
 }
-.logo-mark svg{width:15px;height:15px}
+.logo-mark img{width:100%;height:100%;object-fit:cover;display:block}
+.logo-mark--sm{width:22px;height:22px}
 .nav-links{display:flex;align-items:center;gap:32px;font-size:.93rem;font-weight:600;color:var(--muted)}
 .nav-links a{transition:color .18s ease}
 .nav-links a:hover{color:var(--navy)}
@@ -581,7 +583,6 @@ section.final-cta.dotgrid::before{
 /* ============ FOOTER ============ */
 footer{background:var(--navy);border-top:1px solid rgba(255,255,255,.12);padding:44px 0;font-size:.88rem;color:#b9c6dd}
 footer .logo{color:#fff}
-footer .logo-mark{background:var(--primary)}
 .footer-inner{display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap}
 .footer-links{display:flex;gap:26px}
 .footer-links a{transition:color .18s ease}
@@ -737,7 +738,7 @@ footer .logo-mark{background:var(--primary)}
 @media (max-width:480px){
   .hide-sm{display:none}
   .nav .btn-sm{padding:9px 16px;font-size:.85rem}
-  .logo{font-size:1.05rem}
+  .logo{font-size:1.7rem}
 }
 @media (max-width:640px){
   body{font-size:16px}

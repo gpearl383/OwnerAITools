@@ -21,7 +21,8 @@ push with the sync script, so every live prompt maps to a git commit.
 # 2. Commit (push refuses to run with uncommitted retell/ changes)
 git add retell/ && git commit -m "Describe the prompt change"
 
-# 3. Push to the live agents (RETELL_API_KEY required)
+# 3. Push to the live agents (OwnerAI demo RETELL_API_KEY in .env.local)
+#    Never use client keys (RETELL_API_KEY_LI_STRETCH etc.) — those are OwnerAI-Deployments only.
 node scripts/push-retell.mjs push            # all agents
 node scripts/push-retell.mjs push demo-voice # one agent
 

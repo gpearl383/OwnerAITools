@@ -1,7 +1,7 @@
 {
   "agent": "demo-voice",
   "llm_id": "llm_6d96c220b0b8da0889b76e16e5c5",
-  "updated_at": "2026-07-25T13:45:12.646Z",
+  "updated_at": "2026-07-29T23:57:31.956Z",
   "ids": {
     "barge-in-hello": "test_case_8e664481107f",
     "av-clarify": "test_case_db33dba08e50",
@@ -10,6 +10,9 @@
     "mid-roleplay-sample": "test_case_d2dc761cd316",
     "setup-book-yes": "test_case_ee422cc86bb2",
     "no-owner-names": "test_case_1a16e2f79327",
-    "sample-budget-then-setup": "test_case_cd2d4cc0c7fd"
+    "sample-budget-then-setup": "test_case_cd2d4cc0c7fd",
+    "reclaim-after-praise": "test_case_50e4300dbf21",
+    "roleplay-not-caller-name": "test_case_48701e4f3c8e",
+    "regulated-no-invented-balance": "test_case_e5384313f35c"
   }
 }

@@ -418,7 +418,7 @@ export async function POST(request) {
       'The sample text can only go to the phone number this person is calling from. Retry without a phone number to use the calling number automatically.'
     );
   }
-  if (!allowance.allowInvocation(call.call_id)) {
+  if (!(await allowance.allowInvocation(call.call_id))) {
     return blocked(
       'invocation limit reached',
       `The sample send budget for this call is used up (${DEMO_LIMITS.smsPerCall} sample texts and ${DEMO_LIMITS.emailPerCall} sample emails via send_demo_alert only). ${SAMPLE_BUDGET_BOOKING_NOTE} Continue toward booking the setup call with book_setup_call.`
@@ -437,7 +437,7 @@ export async function POST(request) {
     doSms = false;
     skips.push('texting is unavailable right now');
   }
-  if (doSms && !allowance.canSms(call.call_id)) {
+  if (doSms && !(await allowance.canSms(call.call_id))) {
     doSms = false;
     skips.push(
       `the sample ${DEMO_LIMITS.smsPerCall}-text budget for send_demo_alert was reached (does not block booking or confirmation texts)`
@@ -456,7 +456,7 @@ export async function POST(request) {
     doEmail = false;
     skips.push('email is unavailable right now');
   }
-  if (email && doEmail && !allowance.canEmail(call.call_id)) {
+  if (email && doEmail && !(await allowance.canEmail(call.call_id))) {
     doEmail = false;
     skips.push(
       `the sample ${DEMO_LIMITS.emailPerCall}-email budget for send_demo_alert was reached (does not block the real setup-call calendar invite)`
@@ -484,7 +484,7 @@ export async function POST(request) {
   if (doSms) {
     try {
       await sendDemoSms(to, buildDemoAlertBody(args), 'demo-lead-alert');
-      allowance.recordSms(call.call_id);
+      await allowance.recordSms(call.call_id);
       audit.push({
         ...base,
         event_type: 'demo_alert_sms_sent',
@@ -499,10 +499,11 @@ export async function POST(request) {
     }
   }
 
-  // Leg 2 — [DEMO] appointment-booked SMS (only when the role-play booked something)
-  if (doSms && args.appointment) {
+  // Leg 2 — [DEMO] appointment-booked SMS (counts toward the same sample SMS budget)
+  if (doSms && args.appointment && (await allowance.canSms(call.call_id))) {
     try {
       await sendDemoSms(to, buildDemoApptBody(args), 'demo-appt-booked');
+      await allowance.recordSms(call.call_id);
       audit.push({
         ...base,
         event_type: 'demo_appt_sms_sent',
@@ -515,6 +516,8 @@ export async function POST(request) {
       console.error('demo-alert appt SMS failed:', err.message);
       audit.push({ ...base, event_type: 'sms_failed', status: 'failed', detail: `demo appt: ${err.message.slice(0, 400)}` });
     }
+  } else if (doSms && args.appointment) {
+    skips.push('appointment text skipped — sample SMS budget already used');
   }
 
   // Leg 3 — real calendar invite (ICS) for the pretend customer's appointment
@@ -539,7 +542,7 @@ export async function POST(request) {
   if (doEmail) {
     try {
       await sendDemoEmail(email, args);
-      allowance.recordEmail(call.call_id);
+      await allowance.recordEmail(call.call_id);
       audit.push({
         ...base,
         event_type: 'demo_email_sent',
@@ -556,7 +559,7 @@ export async function POST(request) {
 
   await logAuditBatch(audit);
 
-  const left = remainingText(allowance.remaining(call.call_id));
+  const left = remainingText(await allowance.remaining(call.call_id));
   if (!sent.length) {
     return toolResult(
       `Nothing could be sent — the sends failed. Apologize briefly, tell the caller you can retry, and continue. ${left}`

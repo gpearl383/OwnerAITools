@@ -32,10 +32,13 @@ node scripts/push-retell.mjs diff
 # Re-import live state into the repo (only when adopting external changes)
 node scripts/push-retell.mjs pull
 
-# Sync / run Retell LLM simulations for demo-voice (after prompt push)
+# Sync / run Retell LLM simulations for demo-voice (after every prompt push)
 RETELL_API_KEY=... node scripts/sync-demo-sims.mjs
 RETELL_API_KEY=... node scripts/sync-demo-sims.mjs --run
 ```
+
+After changing `demo-voice.prompt.md`, sync+run sims before considering the change done.
+
 
 Demo-voice uses a single Retell LLM with **Flow: Sample send** and **Flow: Setup book**
 step sections (deterministic tool paths inside the prompt). Full Conversation Flow

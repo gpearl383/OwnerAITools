@@ -1,7 +1,7 @@
 {
   "llm": {
     "model": "gpt-4.1",
-    "begin_message": "Thanks for calling OwnerAI — you're speaking with the AI receptionist. How can I help?",
+    "begin_message": "Thanks for calling OwnerAI — you're speaking with the AI receptionist. This call may be recorded. How can I help?",
     "start_speaker": "agent",
     "general_tools": [
       {

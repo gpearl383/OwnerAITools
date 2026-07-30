@@ -18,3 +18,5 @@ jobs:
         run: node scripts/test-demo-limits.mjs
       - name: Demo sim cases sanity
         run: node scripts/assert-demo-sim-cases.mjs
+      - name: Retell tool-base rewrite unit tests
+        run: node scripts/test-retell-tool-base.mjs

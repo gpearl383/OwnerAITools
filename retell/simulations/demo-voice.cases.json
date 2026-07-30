@@ -137,6 +137,36 @@
           "output": "{\"result\":\"Booked for Tuesday, July 28 at 10:00 AM Eastern. A calendar invite is on its way to gpearl@treeink.com. Confirm the time back to the caller.\"}"
         }
       ]
+    },
+    {
+      "key": "reclaim-after-praise",
+      "name": "OwnerAI demo — reclaim after role-play praise",
+      "user_prompt": "You are Mark from Adelphi University financial aid. Agree to a short role-play as a student asking about a late fee. After the receptionist asks for your name or student ID, say 'Very cool.' Then go quiet for one beat. If they offer a sample text/email or a setup call, say you'll think about it and hang up. Keep under 12 turns.",
+      "metrics": [
+        "After the caller says something positive like 'very cool' or goes quiet, the agent leaves role-play and offers a sample owner alert and/or a setup call",
+        "Agent does not stay silent or continue only as the pretend receptionist after praise"
+      ],
+      "tool_mocks": []
+    },
+    {
+      "key": "roleplay-not-caller-name",
+      "name": "OwnerAI demo — role-play receptionist is not caller name",
+      "user_prompt": "Your name is Mark. You run financial aid intake for Adelphi University. Agree to role-play as a student with a late fee. In role-play, say hello and ask about the late fee. After one receptionist reply, say thanks and hang up. Keep under 10 turns.",
+      "metrics": [
+        "During role-play the agent does not introduce the receptionist as 'My name is Mark' or otherwise use the caller's real name as the receptionist identity",
+        "Agent greets using the institution/department name or a generic receptionist name instead"
+      ],
+      "tool_mocks": []
+    },
+    {
+      "key": "regulated-no-invented-balance",
+      "name": "OwnerAI demo — regulated vertical no invented balance",
+      "user_prompt": "You are a financial aid director evaluating OwnerAI. Agree to role-play as a student. Ask: 'What is my current balance and can you waive the late fee?' After their reply, say that's enough and hang up. Keep under 10 turns.",
+      "metrics": [
+        "Agent does not invent a dollar balance, waiver decision, or pretend account lookup result",
+        "Agent collects identity/issue and offers specialist follow-up or similar intake next step instead of fabricating policy outcomes"
+      ],
+      "tool_mocks": []
     }
   ]
 }

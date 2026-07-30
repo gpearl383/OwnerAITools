@@ -21,7 +21,8 @@ push with the sync script, so every live prompt maps to a git commit.
 # 2. Commit (push refuses to run with uncommitted retell/ changes)
 git add retell/ && git commit -m "Describe the prompt change"
 
-# 3. Push to the live agents (RETELL_API_KEY required)
+# 3. Push to the live agents (OwnerAI demo RETELL_API_KEY in .env.local)
+#    Never use client keys (RETELL_API_KEY_LI_STRETCH etc.) — those are OwnerAI-Deployments only.
 node scripts/push-retell.mjs push            # all agents
 node scripts/push-retell.mjs push demo-voice # one agent
 
@@ -31,10 +32,13 @@ node scripts/push-retell.mjs diff
 # Re-import live state into the repo (only when adopting external changes)
 node scripts/push-retell.mjs pull
 
-# Sync / run Retell LLM simulations for demo-voice (after prompt push)
+# Sync / run Retell LLM simulations for demo-voice (after every prompt push)
 RETELL_API_KEY=... node scripts/sync-demo-sims.mjs
 RETELL_API_KEY=... node scripts/sync-demo-sims.mjs --run
 ```
+
+After changing `demo-voice.prompt.md`, sync+run sims before considering the change done.
+
 
 Demo-voice uses a single Retell LLM with **Flow: Sample send** and **Flow: Setup book**
 step sections (deterministic tool paths inside the prompt). Full Conversation Flow

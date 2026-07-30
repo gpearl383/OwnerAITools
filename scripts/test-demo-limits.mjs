@@ -1,4 +1,4 @@
-// Unit checks for per-call demo send allowances.
+// Unit checks for per-call demo send allowances (memory tracker).
 import {
   createAllowanceTracker,
   remainingText,
@@ -14,39 +14,39 @@ assert(DEMO_LIMITS.smsPerCall === 2, 'sms cap is 2');
 assert(DEMO_LIMITS.emailPerCall === 2, 'email cap is 2');
 assert(DEMO_LIMITS.invocationsPerCall === 4, 'invocation cap is 4');
 
-const t = createAllowanceTracker();
+const t = createAllowanceTracker(DEMO_LIMITS, { memoryOnly: true });
 const id = 'call_test_1';
 
 // Invocation cap
-assert(t.allowInvocation(id) === true, 'invocation 1 allowed');
-assert(t.allowInvocation(id) === true, 'invocation 2 allowed');
-assert(t.allowInvocation(id) === true, 'invocation 3 allowed');
-assert(t.allowInvocation(id) === true, 'invocation 4 allowed');
-assert(t.allowInvocation(id) === false, 'invocation 5 blocked');
-assert(t.allowInvocation('call_other') === true, 'other call unaffected');
+assert((await t.allowInvocation(id)) === true, 'invocation 1 allowed');
+assert((await t.allowInvocation(id)) === true, 'invocation 2 allowed');
+assert((await t.allowInvocation(id)) === true, 'invocation 3 allowed');
+assert((await t.allowInvocation(id)) === true, 'invocation 4 allowed');
+assert((await t.allowInvocation(id)) === false, 'invocation 5 blocked');
+assert((await t.allowInvocation('call_other')) === true, 'other call unaffected');
 
 // SMS allowance: only successful sends burn the budget
-assert(t.canSms(id) === true, 'sms available initially');
-t.recordSms(id);
-assert(t.canSms(id) === true, 'sms available after 1 send');
-t.recordSms(id);
-assert(t.canSms(id) === false, 'sms blocked after 2 sends');
-assert(t.canEmail(id) === true, 'email budget independent of sms');
+assert((await t.canSms(id)) === true, 'sms available initially');
+await t.recordSms(id);
+assert((await t.canSms(id)) === true, 'sms available after 1 send');
+await t.recordSms(id);
+assert((await t.canSms(id)) === false, 'sms blocked after 2 sends');
+assert((await t.canEmail(id)) === true, 'email budget independent of sms');
 
 // Email allowance
-t.recordEmail(id);
-t.recordEmail(id);
-assert(t.canEmail(id) === false, 'email blocked after 2 sends');
+await t.recordEmail(id);
+await t.recordEmail(id);
+assert((await t.canEmail(id)) === false, 'email blocked after 2 sends');
 
 // Remaining counts
-const r0 = t.remaining('call_fresh');
+const r0 = await t.remaining('call_fresh');
 assert(r0.sms === 2 && r0.email === 2, 'fresh call has full budget');
-const r1 = t.remaining(id);
+const r1 = await t.remaining(id);
 assert(r1.sms === 0 && r1.email === 0, 'exhausted call has zero budget');
 
 // Missing call_id never blocks (defensive; Retell always sends one)
-assert(t.allowInvocation(null) === true, 'no call_id: invocation allowed');
-assert(t.canSms(null) === true, 'no call_id: sms allowed');
+assert((await t.allowInvocation(null)) === true, 'no call_id: invocation allowed');
+assert((await t.canSms(null)) === true, 'no call_id: sms allowed');
 
 // Speakable remaining text
 assert(

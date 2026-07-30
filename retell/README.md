@@ -23,8 +23,14 @@ git add retell/ && git commit -m "Describe the prompt change"
 
 # 3. Push to the live agents (OwnerAI demo RETELL_API_KEY in .env.local)
 #    Never use client keys (RETELL_API_KEY_LI_STRETCH etc.) — those are OwnerAI-Deployments only.
+#    Tool/webhook URLs are rewritten at push time from RETELL_TOOL_BASE_URL
+#    (default https://owneraitools.com). Preview site deploys do NOT change Retell
+#    tools — only an explicit push with a non-prod base does.
 node scripts/push-retell.mjs push            # all agents
 node scripts/push-retell.mjs push demo-voice # one agent
+# Staging agent (name must end in -staging) → preview API:
+# RETELL_TOOL_BASE_URL=https://<preview>.vercel.app node scripts/push-retell.mjs push demo-voice-staging
+# Never point the live +15169731973 agent at a preview URL.
 
 # Check for drift between live and repo (e.g. someone edited the dashboard)
 node scripts/push-retell.mjs diff
@@ -39,6 +45,7 @@ RETELL_API_KEY=... node scripts/sync-demo-sims.mjs --run
 # Local CI-equivalent (no Retell key)
 node scripts/test-demo-limits.mjs
 node scripts/assert-demo-sim-cases.mjs
+node scripts/test-retell-tool-base.mjs
 ```
 
 After changing `demo-voice.prompt.md`, sync+run sims before considering the change done.
@@ -48,10 +55,13 @@ After changing `demo-voice.prompt.md`, sync+run sims before considering the chan
 manual `workflow_dispatch` (`.github/workflows/demo-sims.yml`) using the repo
 secret `RETELL_API_KEY` (OwnerAI demo workspace only — never a client key).
 
+**Human QA:** [`docs/ops/demo-qa-scorecard.md`](../docs/ops/demo-qa-scorecard.md) +
+weekly paste prompt [`docs/ops/demo-agent-health-prompt.md`](../docs/ops/demo-agent-health-prompt.md).
 
 Demo-voice uses a single Retell LLM with **Flow: Sample send** and **Flow: Setup book**
-step sections (deterministic tool paths inside the prompt). Full Conversation Flow
-migration is deferred until sims show remaining skip/wrong-tool issues.
+step sections (deterministic tool paths inside the prompt). Full Retell Conversation
+Flow product migration stays deferred — Wave B sims are green (14/14 including
+failure paths); revisit only if packs start failing on tool skip / wrong tool.
 
 ## Troubleshooting history
 

@@ -8,6 +8,9 @@
 // files have uncommitted changes, so every live prompt matches a commit.
 // Requires RETELL_API_KEY (OwnerAI demo workspace only) in .env.local / environment.
 // Client keys (RETELL_API_KEY_<SLUG>) belong in OwnerAI-Deployments — never here.
+// Optional RETELL_TOOL_BASE_URL (default https://owneraitools.com) rewrites
+// general_tools[].url + webhook_url at push/diff time. Non-prod bases refuse
+// non-*-staging agents unless --allow-nonprod-base.
 //
 // Files per agent (see retell/manifest.json):
 //   retell/<name>.prompt.md   — the LLM general_prompt
@@ -17,6 +20,11 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { execSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import {
+  applyToolBaseToConfig,
+  isProductionToolBase,
+  normalizeToolBase,
+} from './lib/retell-tool-base.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const RETELL_DIR = path.join(ROOT, 'retell');
@@ -56,6 +64,7 @@ if (clientTagged.length) {
 }
 
 const KEY = process.env.RETELL_API_KEY;
+const ALLOW_NONPROD_BASE = process.argv.includes('--allow-nonprod-base');
 
 // LLM fields we manage (general_prompt lives in the .prompt.md file instead).
 const LLM_KEYS = [
@@ -175,9 +184,12 @@ async function main() {
         'Client keys (RETELL_API_KEY_LI_STRETCH, etc.) belong in OwnerAI-Deployments only.',
     );
   }
-  const [cmd, ...names] = process.argv.slice(2);
+  const [cmd, ...rest] = process.argv.slice(2);
+  const names = rest.filter((a) => !a.startsWith('--'));
   if (!['pull', 'push', 'diff'].includes(cmd)) {
-    fail('usage: node scripts/push-retell.mjs pull|push|diff [agent-name ...]');
+    fail(
+      'usage: node scripts/push-retell.mjs pull|push|diff [agent-name ...] [--allow-nonprod-base]',
+    );
   }
 
   const manifest = JSON.parse(fs.readFileSync(path.join(RETELL_DIR, 'manifest.json'), 'utf8'));
@@ -185,6 +197,24 @@ async function main() {
   if (!agents.length) fail(`no agents match: ${names.join(', ')}`);
 
   if (cmd === 'push') assertClean();
+
+  let toolBase;
+  try {
+    toolBase = normalizeToolBase(process.env.RETELL_TOOL_BASE_URL);
+  } catch (err) {
+    fail(err.message);
+  }
+  if (cmd === 'push' && !isProductionToolBase(toolBase)) {
+    const nonStaging = agents.filter((a) => !/-staging$/i.test(a.name));
+    if (nonStaging.length && !ALLOW_NONPROD_BASE) {
+      fail(
+        `RETELL_TOOL_BASE_URL=${toolBase} is not production. ` +
+          `Refusing to push non-staging agents (${nonStaging.map((a) => a.name).join(', ')}). ` +
+          `Use a *-staging agent in manifest, or pass --allow-nonprod-base only if you intend to point live tools at this base.`,
+      );
+    }
+    console.warn(`warning: pushing with non-prod RETELL_TOOL_BASE_URL=${toolBase}`);
+  }
 
   for (const a of agents) {
     const live = await fetchLive(a);
@@ -194,18 +224,25 @@ async function main() {
       continue;
     }
     const repo = readRepo(a);
-    const changes = summarizeDiff(a.name, live, repo);
+    const effective = {
+      prompt: repo.prompt,
+      config: applyToolBaseToConfig(repo.config, toolBase),
+    };
+    const changes = summarizeDiff(a.name, live, effective);
     if (cmd === 'push' && changes.length) {
       if (changes.some((c) => c.startsWith('prompt') || c.startsWith('llm.'))) {
         await api('PATCH', `/update-retell-llm/${a.llm_id}`, {
-          general_prompt: repo.prompt,
-          ...repo.config.llm,
+          general_prompt: effective.prompt,
+          ...effective.config.llm,
         });
       }
-      if (changes.some((c) => c.startsWith('agent.')) && Object.keys(repo.config.agent).length) {
-        await api('PATCH', agentEndpoints(a).update, repo.config.agent);
+      if (
+        changes.some((c) => c.startsWith('agent.')) &&
+        Object.keys(effective.config.agent || {}).length
+      ) {
+        await api('PATCH', agentEndpoints(a).update, effective.config.agent);
       }
-      console.log(`${a.name}: pushed`);
+      console.log(`${a.name}: pushed (tool base ${toolBase})`);
     }
   }
 }

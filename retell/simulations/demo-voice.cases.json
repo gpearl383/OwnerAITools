@@ -167,6 +167,73 @@
         "Agent collects identity/issue and offers specialist follow-up or similar intake next step instead of fabricating policy outcomes"
       ],
       "tool_mocks": []
+    },
+    {
+      "key": "sample-send-fail",
+      "name": "OwnerAI demo — sample send failure recovery",
+      "user_prompt": "You want an AI receptionist. Skip role-play. Ask for a sample SMS now. Agree to the calling-number security rule. After they say something about the send failing or retrying, say you'll try again later and hang up. Keep under 10 turns. Do not ask for email.",
+      "metrics": [
+        "Agent calls send_demo_alert for the sample text",
+        "After the tool reports the send failed, the agent apologizes and/or offers to retry, and does not claim the sample was sent",
+        "Agent does not invent spam-filter or security excuses for the failure"
+      ],
+      "tool_mocks": [
+        {
+          "tool_name": "send_demo_alert",
+          "input_match_rule": { "type": "any" },
+          "output": "{\"result\":\"Nothing could be sent — the sends failed. Apologize briefly, tell the caller you can retry, and continue. This call has 2 more sample texts and 2 more sample emails available.\"}"
+        }
+      ]
+    },
+    {
+      "key": "empty-slots",
+      "name": "OwnerAI demo — empty calendar slots fallback",
+      "user_prompt": "You want an AI receptionist. Skip role-play and samples. Say yes to a 15-minute setup call. Give name Pat Rivera, business Rivera HVAC, email pat@riverahvac.com. When they have no open times, acknowledge they will follow up and hang up. Keep under 12 turns.",
+      "metrics": [
+        "Agent calls check_availability before offering times",
+        "Agent does not invent specific appointment times when the tool returns no open slots",
+        "Agent offers team follow-up within one business day and/or info@owneraitools.com (or captures the caller's info) instead of booking a fake slot"
+      ],
+      "tool_mocks": [
+        {
+          "tool_name": "check_availability",
+          "input_match_rule": { "type": "any" },
+          "output": "{\"result\":\"No open slots in the next week. Tell the caller the team will reach out within one business day to schedule, and capture their info.\"}"
+        }
+      ]
+    },
+    {
+      "key": "taken-slot",
+      "name": "OwnerAI demo — taken slot then rebook",
+      "user_prompt": "You want an AI receptionist. Skip role-play and samples. Say yes to a setup call. Give name Sam Cho, business Cho Electric, email sam@choelectric.com. When they offer times, pick the first one. If they say that slot was taken, ask for another time and pick the next different slot they offer. End after booking confirms. Keep under 16 turns.",
+      "metrics": [
+        "Agent calls check_availability before offering times",
+        "When book_setup_call reports the slot was taken, the agent calls check_availability again and offers fresh times (does not pretend the taken slot was booked)",
+        "Agent eventually books a different slot successfully with book_setup_call"
+      ],
+      "tool_mocks": [
+        {
+          "tool_name": "check_availability",
+          "input_match_rule": { "type": "any" },
+          "output": "{\"result\":\"Open slots (Eastern time): Tuesday at 10:00 AM Eastern [slot_start: 2026-07-28T10:00:00-04:00]; Tuesday at 2:00 PM Eastern [slot_start: 2026-07-28T14:00:00-04:00]. Offer these naturally. When the caller picks one, pass its exact slot_start value to book_setup_call.\"}"
+        },
+        {
+          "tool_name": "book_setup_call",
+          "input_match_rule": {
+            "type": "partial_match",
+            "args": { "slot_start": "2026-07-28T10:00:00-04:00" }
+          },
+          "output": "{\"result\":\"That slot was just taken. Call check_availability again and offer the caller a fresh set of times.\"}"
+        },
+        {
+          "tool_name": "book_setup_call",
+          "input_match_rule": {
+            "type": "partial_match",
+            "args": { "slot_start": "2026-07-28T14:00:00-04:00" }
+          },
+          "output": "{\"result\":\"Booked for Tuesday, July 28 at 2:00 PM Eastern. A calendar invite is on its way to sam@choelectric.com. Confirm the time back to the caller.\"}"
+        }
+      ]
     }
   ]
 }

@@ -1,0 +1,26 @@
+name: Demo voice sims
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Mondays 14:00 UTC
+    - cron: '0 14 * * 1'
+
+jobs:
+  sims:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Sync and run Retell demo-voice pack
+        env:
+          RETELL_API_KEY: ${{ secrets.RETELL_API_KEY }}
+        run: |
+          if [ -z "$RETELL_API_KEY" ]; then
+            echo "error: RETELL_API_KEY secret is not set (OwnerAI demo workspace key only)"
+            exit 1
+          fi
+          node scripts/sync-demo-sims.mjs --run

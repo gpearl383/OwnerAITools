@@ -35,9 +35,18 @@ node scripts/push-retell.mjs pull
 # Sync / run Retell LLM simulations for demo-voice (after every prompt push)
 RETELL_API_KEY=... node scripts/sync-demo-sims.mjs
 RETELL_API_KEY=... node scripts/sync-demo-sims.mjs --run
+
+# Local CI-equivalent (no Retell key)
+node scripts/test-demo-limits.mjs
+node scripts/assert-demo-sim-cases.mjs
 ```
 
 After changing `demo-voice.prompt.md`, sync+run sims before considering the change done.
+
+**CI:** GitHub Actions runs unit + sim-case sanity on every PR/push to `main`/`dev`
+(`.github/workflows/ci.yml`). The full Retell pack runs weekly (Monday) and on
+manual `workflow_dispatch` (`.github/workflows/demo-sims.yml`) using the repo
+secret `RETELL_API_KEY` (OwnerAI demo workspace only — never a client key).
 
 
 Demo-voice uses a single Retell LLM with **Flow: Sample send** and **Flow: Setup book**

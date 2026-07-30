@@ -6,7 +6,8 @@
 //
 // The repo is the source of truth: `push` refuses to run when the retell/
 // files have uncommitted changes, so every live prompt matches a commit.
-// Requires RETELL_API_KEY in the environment.
+// Requires RETELL_API_KEY (OwnerAI demo workspace only) in .env.local / environment.
+// Client keys (RETELL_API_KEY_<SLUG>) belong in OwnerAI-Deployments — never here.
 //
 // Files per agent (see retell/manifest.json):
 //   retell/<name>.prompt.md   — the LLM general_prompt
@@ -20,6 +21,40 @@ import { fileURLToPath } from 'node:url';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const RETELL_DIR = path.join(ROOT, 'retell');
 const API = 'https://api.retellai.com';
+
+function loadEnvLocal() {
+  const p = path.join(ROOT, '.env.local');
+  if (!fs.existsSync(p)) return;
+  for (const line of fs.readFileSync(p, 'utf8').split('\n')) {
+    const t = line.trim();
+    if (!t || t.startsWith('#')) continue;
+    const i = t.indexOf('=');
+    if (i < 1) continue;
+    const k = t.slice(0, i).trim();
+    let v = t.slice(i + 1).trim();
+    if (
+      (v.startsWith('"') && v.endsWith('"')) ||
+      (v.startsWith("'") && v.endsWith("'"))
+    ) {
+      v = v.slice(1, -1);
+    }
+    if (!(k in process.env)) process.env[k] = v;
+  }
+}
+
+loadEnvLocal();
+
+const clientTagged = Object.keys(process.env).filter((k) =>
+  /^RETELL_API_KEY_[A-Z0-9_]+$/.test(k),
+);
+if (clientTagged.length) {
+  console.error(
+    `error: client Retell keys found (${clientTagged.join(', ')}). ` +
+      `OwnerAITools is demo-line only — move those to OwnerAI-Deployments/.env.local and remove them from this repo.`,
+  );
+  process.exit(1);
+}
+
 const KEY = process.env.RETELL_API_KEY;
 
 // LLM fields we manage (general_prompt lives in the .prompt.md file instead).
@@ -134,7 +169,12 @@ function assertClean() {
 }
 
 async function main() {
-  if (!KEY) fail('RETELL_API_KEY is not set');
+  if (!KEY) {
+    fail(
+      'RETELL_API_KEY is not set. Put the OwnerAI demo workspace key in OwnerAITools/.env.local. ' +
+        'Client keys (RETELL_API_KEY_LI_STRETCH, etc.) belong in OwnerAI-Deployments only.',
+    );
+  }
   const [cmd, ...names] = process.argv.slice(2);
   if (!['pull', 'push', 'diff'].includes(cmd)) {
     fail('usage: node scripts/push-retell.mjs pull|push|diff [agent-name ...]');

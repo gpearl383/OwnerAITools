@@ -1,0 +1,20 @@
+name: CI
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main, dev]
+
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Demo sample-budget unit tests
+        run: node scripts/test-demo-limits.mjs
+      - name: Demo sim cases sanity
+        run: node scripts/assert-demo-sim-cases.mjs

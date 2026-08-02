@@ -116,6 +116,11 @@ tr.detail td{background:var(--mist);font-size:13px;color:var(--muted);white-spac
 .status-failed{color:var(--bad);font-weight:700}
 .empty{color:var(--muted);text-align:center;padding:30px 0;font-size:15px}
 .foot-note{color:var(--muted);font-size:13px;margin-top:10px}
+.ledger-footer{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-top:10px}
+.ledger-footer .foot-note{margin-top:0}
+.ledger-pager{display:flex;align-items:center;gap:8px;font-family:var(--display);font-size:13px;font-weight:700;color:var(--muted)}
+.ledger-pager select{font-family:var(--display);font-size:13px;font-weight:700;color:var(--navy);border:1px solid var(--border-strong);background:var(--bg);border-radius:10px;padding:7px 12px;cursor:pointer}
+.ledger-pager select:focus{outline:2px solid var(--primary);border-color:var(--primary)}
 
 /* action queue */
 .queue-row{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;padding:14px 0;border-bottom:1px solid var(--border)}
@@ -289,7 +294,18 @@ tr.detail td{background:var(--mist);font-size:13px;color:var(--muted);white-spac
       </table>
     </div>
     <div class="empty" id="events-empty" hidden>No events in this range yet.</div>
-    <p class="foot-note">Select a row to inspect its audit details. Showing up to 2,000 most recent events.</p>
+    <div class="ledger-footer">
+      <p class="foot-note">Select a row to inspect its audit details.</p>
+      <div class="ledger-pager">
+        <label for="event-limit">Show</label>
+        <select id="event-limit">
+          <option value="25" selected>25</option>
+          <option value="50">50</option>
+          <option value="100">100</option>
+          <option value="all">All</option>
+        </select>
+      </div>
+    </div>
   </div>
 </main>
 
@@ -297,7 +313,7 @@ tr.detail td{background:var(--mist);font-size:13px;color:var(--muted);white-spac
 (function () {
   'use strict';
   var API = '/api/dashboard';
-  var state = { range: '30d', filter: '', queue: 'needs_callback', data: null };
+  var state = { range: '30d', filter: '', queue: 'needs_callback', limit: 25, data: null };
 
   var $ = function (id) { return document.getElementById(id); };
 
@@ -462,9 +478,15 @@ tr.detail td{background:var(--mist);font-size:13px;color:var(--muted);white-spac
   }
 
   function renderEvents(events) {
-    var rows = events.filter(matchesFilter);
-    $('event-count').textContent = rows.length + ' event' + (rows.length === 1 ? '' : 's');
-    $('events-empty').hidden = rows.length > 0;
+    var filtered = events.filter(matchesFilter);
+    var total = filtered.length;
+    var rows = state.limit === 'all' ? filtered : filtered.slice(0, state.limit);
+    if (rows.length < total) {
+      $('event-count').textContent = 'Showing ' + rows.length + ' of ' + total + ' events';
+    } else {
+      $('event-count').textContent = total + ' event' + (total === 1 ? '' : 's');
+    }
+    $('events-empty').hidden = total > 0;
     $('events-body').innerHTML = rows.map(function (e, i) {
       var b = BADGES[e.event_type] || [e.event_type, 'b-skip'];
       var t = new Date(e.created_at);
@@ -630,6 +652,12 @@ tr.detail td{background:var(--mist);font-size:13px;color:var(--muted);white-spac
     $('filters').querySelectorAll('.chip').forEach(function (c) { c.classList.remove('active'); });
     chip.classList.add('active');
     state.filter = chip.dataset.type;
+    if (state.data) renderEvents(state.data.events);
+  });
+
+  $('event-limit').addEventListener('change', function () {
+    var v = this.value;
+    state.limit = v === 'all' ? 'all' : Number(v);
     if (state.data) renderEvents(state.data.events);
   });
 

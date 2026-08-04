@@ -15,6 +15,7 @@
         "name": "note_roleplay_lead",
         "description": "During role-play only: save pretend-customer intake (name, phone, address or ID, reason, appointment if any). Call once after they give details; call again only if details change. Never use outside role-play.",
         "enable_typing_sound": true,
+        "speak_after_execution": true,
         "variables": [
           {
             "name": "roleplay_customer_name",

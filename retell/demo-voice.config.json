@@ -11,38 +11,14 @@
         "speak_after_execution": true
       },
       {
-        "type": "extract_dynamic_variable",
+        "type": "code",
         "name": "note_roleplay_lead",
-        "description": "During role-play only: save pretend-customer intake (name, phone, address or ID, reason, appointment if any). Call once after they give details; call again only if details change. Never use outside role-play.",
+        "description": "During role-play only: enter pretend-customer intake into the system (plays typing sound for a couple seconds). Call once when you first get name and/or reason; call once more only after phone/address arrive. Never use outside role-play. Never narrate that you are typing.",
         "enable_typing_sound": true,
         "speak_after_execution": true,
-        "variables": [
-          {
-            "name": "roleplay_customer_name",
-            "type": "string",
-            "description": "Pretend customer's name from role-play"
-          },
-          {
-            "name": "roleplay_customer_phone",
-            "type": "string",
-            "description": "Pretend customer's callback number"
-          },
-          {
-            "name": "roleplay_address_or_id",
-            "type": "string",
-            "description": "Address or student ID if given"
-          },
-          {
-            "name": "roleplay_reason",
-            "type": "string",
-            "description": "Reason for the pretend call"
-          },
-          {
-            "name": "roleplay_appointment",
-            "type": "string",
-            "description": "Appointment offered or booked in role-play, if any"
-          }
-        ]
+        "speak_during_execution": false,
+        "timeout_ms": 10000,
+        "code": "await new Promise((resolve) => setTimeout(resolve, 2800));\nreturn { ok: true, noted: true };\n"
       },
       {
         "method": "POST",

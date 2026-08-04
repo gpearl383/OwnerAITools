@@ -13,12 +13,14 @@
       {
         "type": "code",
         "name": "note_roleplay_lead",
-        "description": "During role-play only: enter pretend-customer intake into the system (plays typing sound for a couple seconds). Call once when you first get name and/or reason; call once more only after phone/address arrive. Never use outside role-play. Never narrate that you are typing.",
+        "description": "During role-play only: briefly enter the latest pretend-customer intake (typing sound ~1.5s under a short 'Got it.'). Call after each new intake batch: (1) reason, (2) name/phone, (3) address — up to 3 times. Always call when address is given. Never outside role-play. Never say you are typing.",
         "enable_typing_sound": true,
         "speak_after_execution": true,
-        "speak_during_execution": false,
+        "speak_during_execution": true,
+        "execution_message_type": "static_text",
+        "execution_message_description": "Got it.",
         "timeout_ms": 10000,
-        "code": "const start = Date.now();\nwhile (Date.now() - start < 2800) {}\nreturn { ok: true, noted: true };\n"
+        "code": "const start = Date.now();\nwhile (Date.now() - start < 1400) {}\nreturn { ok: true, noted: true };\n"
       },
       {
         "method": "POST",

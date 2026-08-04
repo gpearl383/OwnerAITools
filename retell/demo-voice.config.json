@@ -11,6 +11,39 @@
         "speak_after_execution": true
       },
       {
+        "type": "extract_dynamic_variable",
+        "name": "note_roleplay_lead",
+        "description": "During role-play only: save pretend-customer intake (name, phone, address or ID, reason, appointment if any). Call once after they give details; call again only if details change. Never use outside role-play.",
+        "enable_typing_sound": true,
+        "variables": [
+          {
+            "name": "roleplay_customer_name",
+            "type": "string",
+            "description": "Pretend customer's name from role-play"
+          },
+          {
+            "name": "roleplay_customer_phone",
+            "type": "string",
+            "description": "Pretend customer's callback number"
+          },
+          {
+            "name": "roleplay_address_or_id",
+            "type": "string",
+            "description": "Address or student ID if given"
+          },
+          {
+            "name": "roleplay_reason",
+            "type": "string",
+            "description": "Reason for the pretend call"
+          },
+          {
+            "name": "roleplay_appointment",
+            "type": "string",
+            "description": "Appointment offered or booked in role-play, if any"
+          }
+        ]
+      },
+      {
         "method": "POST",
         "execution_message_description": "Stay silent while the samples send; you will narrate the result after the tool returns.",
         "timeout_ms": 20000,

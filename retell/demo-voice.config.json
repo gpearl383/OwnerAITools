@@ -13,12 +13,14 @@
       {
         "type": "code",
         "name": "note_roleplay_lead",
-        "description": "During role-play only: briefly enter the latest pretend-customer intake (plays ~2s typing; stay silent during it). Call after each new intake batch: (1) reason, (2) name/phone, (3) address — up to 3 times. Always call when address is given. Never outside role-play. Never say you are typing or say Got it as a substitute for this tool.",
+        "description": "During role-play only: ONE time when you already have pretend-customer name plus reason (address optional). Plays a short spoken ack with typing under it, then you continue. Do not call on every answer — never more than once per role-play. Never outside role-play. Never say you are typing.",
         "enable_typing_sound": true,
         "speak_after_execution": true,
-        "speak_during_execution": false,
+        "speak_during_execution": true,
+        "execution_message_type": "prompt",
+        "execution_message_description": "In under six words, acknowledge only what they just gave you like a receptionist jotting a note (e.g. 'Okay, Jeff — heat's out.'). No question. No 'I'm typing.'",
         "timeout_ms": 10000,
-        "code": "const start = Date.now();\nwhile (Date.now() - start < 2000) {}\nreturn { ok: true, noted: true };\n"
+        "code": "const start = Date.now();\nwhile (Date.now() - start < 2200) {}\nreturn { ok: true, noted: true };\n"
       },
       {
         "method": "POST",

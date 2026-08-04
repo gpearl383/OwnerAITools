@@ -18,7 +18,7 @@
         "speak_after_execution": true,
         "speak_during_execution": false,
         "timeout_ms": 10000,
-        "code": "await new Promise((resolve) => setTimeout(resolve, 2800));\nreturn { ok: true, noted: true };\n"
+        "code": "const start = Date.now();\nwhile (Date.now() - start < 2800) {}\nreturn { ok: true, noted: true };\n"
       },
       {
         "method": "POST",

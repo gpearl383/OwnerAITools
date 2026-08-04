@@ -28,9 +28,15 @@ git add retell/ && git commit -m "Describe the prompt change"
 #    tools — only an explicit push with a non-prod base does.
 node scripts/push-retell.mjs push            # all agents
 node scripts/push-retell.mjs push demo-voice # one agent
-# Staging agent (name must end in -staging) → preview API:
+# Staging / OwnerAI Testing Line (+15169613838) — agent name must end in -staging:
+# node scripts/push-retell.mjs push demo-voice-staging
+# Optional preview API (staging only):
 # RETELL_TOOL_BASE_URL=https://<preview>.vercel.app node scripts/push-retell.mjs push demo-voice-staging
-# Never point the live +15169731973 agent at a preview URL.
+# Never point the live +15169731973 agent (demo-voice) at a preview URL.
+#
+# Lines:
+#   +15169731973  OwnerAI website demo line     → demo-voice
+#   +15169613838  OwnerAI Testing Line          → demo-voice-staging
 
 # Check for drift between live and repo (e.g. someone edited the dashboard)
 node scripts/push-retell.mjs diff

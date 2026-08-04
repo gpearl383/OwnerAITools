@@ -8,6 +8,13 @@
       "llm_id": "llm_6d96c220b0b8da0889b76e16e5c5"
     },
     {
+      "name": "demo-voice-staging",
+      "description": "OwnerAI Testing Line (+15169613838)",
+      "kind": "voice",
+      "agent_id": "agent_9bd0d2a8168a2f66ac72f74d21",
+      "llm_id": "llm_942d61301180065cbfb637934e49"
+    },
+    {
       "name": "sms-receptionist",
       "description": "OwnerAI — SMS Receptionist (chat)",
       "kind": "chat",

@@ -11,18 +11,6 @@
         "speak_after_execution": true
       },
       {
-        "type": "code",
-        "name": "note_roleplay_lead",
-        "description": "During role-play only: ONE time when you already have pretend-customer name plus reason (address optional). Says a quick Okay then ~2s of typing. Do not call on every answer — never more than once per role-play. Never outside role-play. Never say you are typing.",
-        "enable_typing_sound": true,
-        "speak_after_execution": true,
-        "speak_during_execution": true,
-        "execution_message_type": "static_text",
-        "execution_message_description": "Okay.",
-        "timeout_ms": 10000,
-        "code": "const start = Date.now();\nwhile (Date.now() - start < 3200) {}\nreturn { ok: true, noted: true };\n"
-      },
-      {
         "method": "POST",
         "execution_message_description": "Stay silent while the samples send; you will narrate the result after the tool returns.",
         "timeout_ms": 20000,

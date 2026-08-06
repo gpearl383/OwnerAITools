@@ -119,6 +119,29 @@ function files(a) {
   };
 }
 
+// Shared vertical fluency for website industries (appended on push/diff only).
+const INDUSTRY_KNOWLEDGE_FILE = path.join(RETELL_DIR, 'industry-knowledge.md');
+const INDUSTRY_MARKER = '## Industry knowledge (website verticals)';
+const AGENTS_WITH_INDUSTRY = new Set([
+  'demo-voice',
+  'demo-voice-staging',
+  'sms-receptionist',
+]);
+
+function withIndustryKnowledge(name, prompt) {
+  if (!AGENTS_WITH_INDUSTRY.has(name)) return prompt;
+  if (!fs.existsSync(INDUSTRY_KNOWLEDGE_FILE)) return prompt;
+  if (prompt.includes(INDUSTRY_MARKER)) return prompt;
+  const ik = fs.readFileSync(INDUSTRY_KNOWLEDGE_FILE, 'utf8').trim();
+  return `${prompt.trimEnd()}\n\n${ik}\n`;
+}
+
+function stripIndustryKnowledge(prompt) {
+  const i = prompt.indexOf(INDUSTRY_MARKER);
+  if (i === -1) return prompt;
+  return `${prompt.slice(0, i).trimEnd()}\n`;
+}
+
 async function fetchLive(a) {
   const llm = await api('GET', `/get-retell-llm/${a.llm_id}`);
   const agent = await api('GET', agentEndpoints(a).get);
@@ -134,14 +157,15 @@ function readRepo(a) {
     fail(`${a.name}: missing ${f.prompt} or ${f.config} — run \`pull\` first`);
   }
   return {
-    prompt: fs.readFileSync(f.prompt, 'utf8'),
+    prompt: withIndustryKnowledge(a.name, fs.readFileSync(f.prompt, 'utf8')),
     config: JSON.parse(fs.readFileSync(f.config, 'utf8')),
   };
 }
 
 function writeRepo(a, live) {
   const f = files(a);
-  fs.writeFileSync(f.prompt, live.prompt);
+  // Keep industry knowledge in industry-knowledge.md — do not bake it into per-agent prompts on pull.
+  fs.writeFileSync(f.prompt, stripIndustryKnowledge(live.prompt));
   fs.writeFileSync(f.config, JSON.stringify(live.config, null, 2) + '\n');
 }
 

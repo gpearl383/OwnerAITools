@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>OwnerAI — Advanced Sales Guide (INTERNAL)</title>
+  <style>
+    @page {
+      size: letter;
+      margin: 0.6in 0.65in;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+      color: #1a1f24;
+      font-size: 10pt;
+      line-height: 1.4;
+      margin: 0;
+    }
+    h1 {
+      font-size: 20pt;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin: 0 0 4pt;
+      color: #0f1720;
+    }
+    h2 {
+      font-size: 11.5pt;
+      font-weight: 700;
+      margin: 16pt 0 7pt;
+      padding-bottom: 3pt;
+      border-bottom: 1.5px solid #1a1f24;
+      color: #0f1720;
+      page-break-after: avoid;
+    }
+    h3 {
+      font-size: 10pt;
+      font-weight: 700;
+      margin: 10pt 0 5pt;
+      color: #0f1720;
+      page-break-after: avoid;
+    }
+    .eyebrow {
+      font-family: "Avenir Next", "Helvetica Neue", Helvetica, Arial, sans-serif;
+      font-size: 8pt;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #5a6570;
+      margin: 0 0 6pt;
+    }
+    .banner {
+      font-family: "Avenir Next", "Helvetica Neue", Helvetica, Arial, sans-serif;
+      font-size: 8pt;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      background: #1a1f24;
+      color: #fff;
+      padding: 6pt 10pt;
+      margin: 0 0 12pt;
+    }
+    .sub {
+      font-family: "Avenir Next", "Helvetica Neue", Helvetica, Arial, sans-serif;
+      font-size: 9pt;
+      color: #3d4852;
+      margin: 0 0 10pt;
+      max-width: 98%;
+    }
+    .meta {
+      font-family: "Avenir Next", "Helvetica Neue", Helvetica, Arial, sans-serif;
+      font-size: 8pt;
+      color: #5a6570;
+      margin-bottom: 12pt;
+    }
+    .stats {
+      display: flex;
+      gap: 8pt;
+      margin: 10pt 0 8pt;
+    }
+    .stat {
+      flex: 1;
+      border: 1px solid #d5dbe3;
+      padding: 8pt 9pt;
+      background: #f7f8fa;
+    }
+    .stat .v {
+      font-family: "Avenir Next", "Helvetica Neue", Helvetica, Arial, sans-serif;
+      font-size: 14pt;
+      font-weight: 700;
+      color: #0f1720;
+      line-height: 1.1;
+    }
+    .stat .l {
+      font-family: "Avenir Next", "Helvetica Neue", Helvetica, Arial, sans-serif;
+      font-size: 7pt;
+      color: #5a6570;
+      margin-top: 2pt;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    p { margin: 0 0 7pt; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: "Avenir Next", "Helvetica Neue", Helvetica, Arial, sans-serif;
+      font-size: 8pt;
+      margin: 5pt 0 9pt;
+    }
+    th {
+      text-align: left;
+      font-weight: 600;
+      color: #3d4852;
+      border-bottom: 1.5px solid #1a1f24;
+      padding: 4pt 5pt;
+    }
+    td {
+      border-bottom: 1px solid #e2e6eb;
+      padding: 4pt 5pt;
+      vertical-align: top;
+    }
+    .note {
+      font-family: "Avenir Next", "Helvetica Neue", Helvetica, Arial, sans-serif;
+      font-size: 7.5pt;
+      color: #5a6570;
+      margin: 2pt 0 8pt;
+    }
+    .callout {
+      border-left: 3px solid #1a1f24;
+      padding: 7pt 10pt;
+      background: #f7f8fa;
+      margin: 8pt 0 10pt;
+      font-family: "Avenir Next", "Helvetica Neue", Helvetica, Arial, sans-serif;
+      font-size: 8.5pt;
+    }
+    .two {
+      display: flex;
+      gap: 14pt;
+    }
+    .two > div { flex: 1; }
+    .footer {
+      margin-top: 14pt;
+      padding-top: 7pt;
+      border-top: 1px solid #d5dbe3;
+      font-family: "Avenir Next", "Helvetica Neue", Helvetica, Arial, sans-serif;
+      font-size: 7pt;
+      color: #5a6570;
+    }
+    ul, ol {
+      margin: 3pt 0 8pt 16pt;
+      padding: 0;
+    }
+    li { margin-bottom: 2.5pt; }
+    .right { text-align: right; }
+    .page-break { page-break-before: always; }
+    .cheat {
+      border: 1.5px solid #1a1f24;
+      padding: 10pt 12pt;
+      background: #f7f8fa;
+      margin-top: 8pt;
+    }
+    .cheat h2 {
+      margin-top: 0;
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="banner">Internal — sales use only · Do not publish dollar prices on the website</div>
+  <p class="eyebrow">OwnerAI · Sales Playbook</p>
+  <h1>Advanced Sales Guide</h1>
+  <p class="sub">
+    Everything a new salesperson needs to sell the core offering: the Advanced managed AI receptionist —
+    who it’s for, what’s included, what it costs, bolt-ons, and how to close without getting lost in technology.
+  </p>
+  <p class="meta">
+    August 2026 · Core close SKU: Advanced · Demo (516) 973-1973 · Setup call: cal.com/owneraitools/30min · owneraitools.com
+  </p>
+
+  <div class="stats">
+    <div class="stat">
+      <div class="v">$699</div>
+      <div class="l">Monthly Advanced</div>
+    </div>
+    <div class="stat">
+      <div class="v">$1,500</div>
+      <div class="l">Setup (discountable)</div>
+    </div>
+    <div class="stat">
+      <div class="v">500+500</div>
+      <div class="l">Min + SMS included</div>
+    </div>
+    <div class="stat">
+      <div class="v">$0.40</div>
+      <div class="l">Overage each</div>
+    </div>
+  </div>
+  <p class="note">
+    Sales caution: the public site may show different minute ladders for marketing.
+    Always quote Advanced as <strong>500 minutes + 500 SMS</strong>.
+  </p>
+
+  <h2>1. Purpose</h2>
+  <p>
+    This guide sells OwnerAI’s <strong>initial / core offering: Advanced</strong>.
+    Expert / Custom (integrations) is a later conversation — not the first pitch.
+    Keep the public website quote-led; use these numbers on sales calls and proposals.
+  </p>
+
+  <h2>2. One-sentence pitch</h2>
+  <div class="callout">
+    OwnerAI is a done-for-you 24/7 AI receptionist for phone-driven businesses —
+    we build it, tune it, and watch it; you keep your number and forward the phone when you’re ready.
+  </div>
+  <p>Emphasize <strong>managed service</strong>, not another DIY app the owner has to babysit.</p>
+
+  <h2>3. Who we sell to</h2>
+  <p>
+    <strong>Beachhead:</strong> Phone-first local businesses — owner-operated and small teams that book
+    jobs, appointments, or consults by phone. Four lanes: field &amp; home services (best-proven proof),
+    appointment practices (med spa, PT, dental, small medical), professional services (law, accounting,
+    insurance, real estate), and shop/bay (auto, salons, pet grooming). The main number often rings a cell,
+    the owner’s spouse, or a front desk that’s only there ~40 hours a week. Missed after-hours or busy-day
+    calls lose real revenue.
+  </p>
+  <p>
+    <strong>Buyer wants:</strong> Booked work and clean summaries — not another dashboard.
+    Home services remains the strongest demo story; take qualified interest across all four lanes.
+  </p>
+
+  <h2>4. Who we don’t sell</h2>
+  <table>
+    <thead>
+      <tr><th>Profile</th><th>What to do</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Cheapest DIY AI phone shoppers</td><td>Not a fit — we’re managed, not $49/mo software</td></tr>
+      <tr><td>Enterprise contact-center buyers</td><td>Refer to CSM Integrated Solutions (csmintegrated.com)</td></tr>
+      <tr><td>“Must integrate everything before go-live”</td><td>Offer Advanced first; Expert scoping separately</td></tr>
+      <tr><td>Not phone- or SMS-driven</td><td>Low ROI — pass</td></tr>
+    </tbody>
+  </table>
+
+  <h2>5. The problem (talk track)</h2>
+  <ul>
+    <li>Missed calls on a job, after hours, weekends, or when the part-timer is out</li>
+    <li>Voicemail that never gets returned; spam wasting time (and sometimes billed by answering services)</li>
+    <li>Full-time receptionist often <strong>$2,800–$4,500+/mo</strong> for ~40 hours — still not 24/7</li>
+    <li>Answering services often <strong>$2–$5/min</strong>; DIY AI puts babysitting back on the owner</li>
+  </ul>
+  <p><strong>Close line:</strong> If OwnerAI saves <strong>one good job a month</strong>, it usually pays for itself.</p>
+
+  <h2>6. What Advanced does (plain English)</h2>
+  <ol>
+    <li>Answers in seconds, 24/7/365 — even with multiple callers at once</li>
+    <li>Trained on that shop’s services, area, hours, and FAQs — English or Spanish</li>
+    <li>Takes proper intake (name, number, address, reason, urgency)</li>
+    <li>Screens spam so junk doesn’t wake the owner</li>
+    <li>Emails and/or texts the owner a clear summary (+ transcript and recording)</li>
+    <li>Books on Google, Outlook, Calendly, or Cal.com when configured</li>
+    <li>Sends SMS confirmations / reminders so jobs don’t go cold</li>
+    <li>Warm-transfers emergencies to the owner’s cell per rules</li>
+    <li>Scores / qualifies leads; handles reschedule / cancel</li>
+    <li>Monthly optimization with our team</li>
+  </ol>
+  <p><strong>Customer action:</strong> Keep their number → forward when ready → turn forwarding off anytime to roll back.</p>
+
+  <h2>7. What’s included in Advanced</h2>
+  <div class="two">
+    <div>
+      <h3>Answering &amp; intake</h3>
+      <ul>
+        <li>24/7/365; unlimited simultaneous calls</li>
+        <li>Keep existing number</li>
+        <li>EN + ES auto-detect; FAQ answers</li>
+        <li>Spam screening</li>
+        <li>Full intake; email summary + transcript + recording</li>
+        <li>SMS alerts / confirmations as configured</li>
+        <li>30-day standard retention</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Booking &amp; service</h3>
+      <ul>
+        <li>Live calendar booking</li>
+        <li>Mid-call texting (links, forms)</li>
+        <li>Emergency warm transfer</li>
+        <li>Lead qualification &amp; scoring</li>
+        <li>Reschedule &amp; cancel</li>
+        <li>Monthly optimization call</li>
+        <li>Lead / activity reporting</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2>8. Commercial terms (quote these)</h2>
+  <table>
+    <thead>
+      <tr><th>Item</th><th class="right">Amount</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Monthly (Advanced)</td><td class="right"><strong>$699</strong></td></tr>
+      <tr><td>Setup</td><td class="right"><strong>$1,500</strong> (discountable w/ founder approval)</td></tr>
+      <tr><td>Included voice minutes</td><td class="right"><strong>500 / month</strong></td></tr>
+      <tr><td>Included SMS</td><td class="right"><strong>500 / month</strong></td></tr>
+      <tr><td>Overage</td><td class="right"><strong>$0.40</strong> / min and / SMS</td></tr>
+      <tr><td>Money-back</td><td class="right"><strong>30 days</strong> on first month</td></tr>
+      <tr><td>Typical go-live</td><td class="right">About <strong>1–2 weeks</strong></td></tr>
+    </tbody>
+  </table>
+
+  <div class="page-break"></div>
+  <div class="banner">Internal — sales use only · Page 2</div>
+
+  <h2>9. Bolt-ons (priced defaults)</h2>
+  <p>Sell add-ons after the core pain is clear — don’t lead with a menu.</p>
+  <table>
+    <thead>
+      <tr><th>Add-on</th><th>Cadence</th><th class="right">Default</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Extra language (beyond EN+ES)</td><td>Monthly</td><td class="right">$75 each</td></tr>
+      <tr><td>Extra number / location</td><td>Monthly</td><td class="right">$100 each</td></tr>
+      <tr><td>Dedicated Spanish line</td><td>Monthly</td><td class="right">$150</td></tr>
+      <tr><td>Website chat + text widget</td><td>Monthly</td><td class="right">$75</td></tr>
+      <tr><td>Extra minutes (400-min block)</td><td>Monthly</td><td class="right">$140</td></tr>
+      <tr><td>Extra concurrency line</td><td>Monthly</td><td class="right">$25</td></tr>
+      <tr><td>Custom cloned voice</td><td>One-time</td><td class="right">$750</td></tr>
+      <tr><td>Voice presence pack</td><td>One-time</td><td class="right">$150</td></tr>
+      <tr><td>A2P 10DLC registration (US SMS)</td><td>One-time</td><td class="right">$199</td></tr>
+      <tr><td>HIPAA compliance pack</td><td>Monthly</td><td class="right">$199</td></tr>
+      <tr><td>Verified phone number</td><td>Monthly</td><td class="right">$25</td></tr>
+      <tr><td>Verified number setup</td><td>One-time</td><td class="right">$25</td></tr>
+      <tr><td>Branded Caller ID (US)</td><td>Per outbound</td><td class="right">$0.25</td></tr>
+      <tr><td>Extra retention (+30 days)</td><td>Monthly</td><td class="right">$15</td></tr>
+      <tr><td>Extra retention (1-year archive)</td><td>Yearly</td><td class="right">$120</td></tr>
+      <tr><td>Extra retention (7-year archive)</td><td>One-time</td><td class="right">$600</td></tr>
+      <tr><td>Post-call analysis</td><td>Monthly</td><td class="right">$99</td></tr>
+      <tr><td>Custom analytics dashboard</td><td>Monthly</td><td class="right">$99</td></tr>
+      <tr><td>Expedited alerting</td><td>Monthly</td><td class="right">$49</td></tr>
+      <tr><td>Extra optimization sprint</td><td>One-time</td><td class="right">$250</td></tr>
+      <tr><td>Priority support / named CSM</td><td>Monthly</td><td class="right">$300</td></tr>
+      <tr><td>Go-live / number port white-glove</td><td>One-time</td><td class="right">$500</td></tr>
+    </tbody>
+  </table>
+  <p class="note">
+    <strong>Quote only (do not invent a fixed price):</strong> Extra CRM/FSM integration, outbound campaign pack,
+    custom telephony / SIP, SIP header customization, train-your-voice coaching, guardrails package.
+    Soft upsells: AI-search visibility help; discounted custom website for active customers.
+  </p>
+
+  <h2>10. Expert / Custom (secondary)</h2>
+  <p>
+    Not the default close. Scoped work for CRM / field-service tools (Jobber, Housecall Pro, ServiceTitan,
+    HubSpot, Salesforce, GoHighLevel, etc.), multi-location routing, outbound programs, heavier analytics / QA.
+  </p>
+  <ul>
+    <li>Setup often <strong>$5,000+</strong> after scoping</li>
+    <li>Monthly is <strong>custom</strong> — founder quotes only</li>
+    <li>Timeline often <strong>~3–4+ weeks</strong> after scope is clear</li>
+  </ul>
+  <div class="callout">
+    “Advanced gets you answering, notes, alerts, booking, and SMS without a big integration project.
+    If you later want every call written into Jobber / ServiceTitan, that’s Expert — we price it after we see how you work today.”
+  </div>
+
+  <h2>11. Competitive positioning</h2>
+  <table>
+    <thead>
+      <tr><th>Alternative</th><th>How OwnerAI wins</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Hire a receptionist</td><td>Fraction of payroll; 24/7; simultaneous calls</td></tr>
+      <tr><td>Answering service</td><td>Richer intake, booking, owner email/SMS; spam screened</td></tr>
+      <tr><td>DIY AI apps</td><td>We build, monitor, and optimize — owner forwards the phone</td></tr>
+      <tr><td>Spouse / cell only</td><td>Owner stays on the job; still never misses a lead</td></tr>
+    </tbody>
+  </table>
+  <p><strong>Proof:</strong> Live demo at <strong>(516) 973-1973</strong> — not fake testimonials.</p>
+
+  <h2>12. Discovery questions</h2>
+  <ol>
+    <li>Who answers when you’re on a job?</li>
+    <li>What happens after 5pm / weekends / holidays?</li>
+    <li>Rough inbound calls per day / week?</li>
+    <li>Typical job value? Emergency vs estimate?</li>
+    <li>Calendar tool today?</li>
+    <li>OK with SMS confirmations to customers?</li>
+    <li>Need Spanish often?</li>
+    <li>What does “working” look like in 30 days?</li>
+    <li>Must-have software later (Jobber, etc.)? → park for Expert after Advanced</li>
+  </ol>
+
+  <h2>13. Demo + close path</h2>
+  <ol>
+    <li>Hook the pain (missed / after-hours / who’s covering)</li>
+    <li>Send them to the live demo: call or text <strong>(516) 973-1973</strong></li>
+    <li>Book free setup call: cal.com/owneraitools/30min</li>
+    <li>Close Advanced ($699 + $1,500 setup, 500+500, 30-day money-back)</li>
+    <li>Add bolt-ons only if needed</li>
+    <li>Park Expert integrations for a follow-up</li>
+  </ol>
+
+  <h2>14. Objection handling</h2>
+  <table>
+    <thead>
+      <tr><th>Objection</th><th>Response</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>“Sounds robotic”</td><td>Call the demo — that’s the product.</td></tr>
+      <tr><td>“We already have someone / my wife”</td><td>Covers the other 128 hours + when they’re with a customer; texts you the lead.</td></tr>
+      <tr><td>“Too expensive”</td><td>Vs a hire or one lost job; 24/7 for less than part-time payroll.</td></tr>
+      <tr><td>“What if it messes up?”</td><td>Monthly tuning; forwarding off anytime; 30-day money-back.</td></tr>
+      <tr><td>“Talk to Jobber?”</td><td>Not in base Advanced — Expert after they trust answering.</td></tr>
+      <tr><td>“Can we start cheaper?”</td><td>Advanced is the standard package; Expert is custom (CRM / recognition).</td></tr>
+    </tbody>
+  </table>
+
+  <h2>15. Do / Don’t</h2>
+  <div class="two">
+    <div>
+      <h3>Do</h3>
+      <ul>
+        <li>Lead with missed jobs + live demo</li>
+        <li>Close Advanced by default</li>
+        <li>Confirm volume, coverage, calendar</li>
+        <li>Use “one saved job / month”</li>
+        <li>Escalate Expert to founder</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Don’t</h3>
+      <ul>
+        <li>Publish unapproved website prices</li>
+        <li>Quote marketing minute ladders</li>
+        <li>Promise CRM write-back in Advanced</li>
+        <li>Lead with tech / vendors / models</li>
+        <li>Discount without founder approval</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="page-break"></div>
+  <div class="banner">Internal — sales use only · Quick reference</div>
+
+  <div class="cheat">
+    <h2>16. Quick reference card</h2>
+    <p><strong>Pitch:</strong> Done-for-you 24/7 AI receptionist — we manage it; you forward the phone.</p>
+    <p>
+      <strong>Close:</strong> Advanced · <strong>$699/mo</strong> · <strong>$1,500 setup</strong> ·
+      <strong>500 min + 500 SMS</strong> · overage <strong>$0.40</strong> · <strong>30-day</strong> money-back.
+    </p>
+    <p>
+      <strong>Includes:</strong> Answer, intake, email + SMS to owner, transcript/recording, EN/ES, spam screen,
+      calendar booking, confirmations, warm transfer, scoring, monthly optimization.
+    </p>
+    <p>
+      <strong>Demo:</strong> (516) 973-1973 &nbsp;·&nbsp;
+      <strong>Book:</strong> cal.com/owneraitools/30min
+    </p>
+    <p>
+      <strong>Expert:</strong> Integrations &amp; complex scope — custom, often $5,000+ setup — founder quotes only.
+    </p>
+    <p><strong>Enterprise referral:</strong> CSM Integrated Solutions — csmintegrated.com</p>
+  </div>
+
+  <div class="footer">
+    OwnerAI is a service of CSM Integrated Solutions LLC · owneraitools.com · Demo (516) 973-1973
+    · Book: cal.com/owneraitools/30min<br />
+    Prices are internal sales defaults; ops may override per client. Document date: August 2026.
+    Source of truth also maintained as ownerai-advanced-sales-guide.md in this folder.
+  </div>
+</body>
+</html>

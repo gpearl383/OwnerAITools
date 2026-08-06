@@ -11,6 +11,9 @@ push with the sync script, so every live prompt maps to a git commit.
 - `<name>.prompt.md` — the LLM system prompt (`general_prompt`)
 - `<name>.config.json` — managed fields: LLM (`model`, `begin_message`,
   `general_tools`, ...) and agent (`post_call_analysis_data`, `webhook_url`, ...)
+- `industry-knowledge.md` — shared vertical fluency for all industries on the
+  marketing site (appended on push to demo-voice / sms-receptionist / staging;
+  also loaded by the website chat assistant). Edit this file when industries change.
 - `simulations/demo-voice.cases.json` — Retell simulation scenarios (source of truth)
 - `simulations/demo-voice.ids.json` — Retell test_case_definition_ids (written by sync)
 

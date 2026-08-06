@@ -309,15 +309,18 @@ body.nav-open{overflow:hidden}
 .step p{color:var(--muted);font-size:.96rem}
 
 /* ============ OFFERING (tiers; no published dollars) ============ */
-.pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;align-items:stretch}
-.tier{display:flex;flex-direction:column;position:relative}
+#pricing .section-head{text-align:center;margin-left:auto;margin-right:auto}
+#pricing .section-head .eyebrow{justify-content:center}
+.pricing-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:28px;align-items:stretch;justify-content:center;max-width:920px;margin-left:auto;margin-right:auto}
+.tier{display:flex;flex-direction:column;align-items:center;position:relative;min-height:100%;text-align:center}
 .tier.featured{
   border-color:var(--navy);
   background:var(--navy);
   box-shadow:var(--shadow-lift);
 }
 .tier.featured h3,.tier.featured .tier-name{color:#fff}
-.tier.featured .tier-features{color:#dbe4f2}
+.tier.featured .tier-blurb,.tier.featured .tier-features{color:#dbe4f2}
+.tier.featured .tier-includes{color:#85bdec;border-color:rgba(133,189,236,.35)}
 .tier.featured .chip{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.25);color:#d9ebfa}
 .tier-badge{
   position:absolute;top:-13px;left:50%;transform:translateX(-50%);
@@ -325,9 +328,18 @@ body.nav-open{overflow:hidden}
   letter-spacing:.12em;padding:5px 14px;border-radius:999px;white-space:nowrap;
   box-shadow:0 10px 22px -6px rgba(226,90,18,.55);
 }
-.tier-name{font-family:var(--display);font-weight:800;font-size:1.25rem;color:var(--navy)}
-.tier-mins{margin:22px 0 22px}
-.tier-features{display:flex;flex-direction:column;gap:11px;font-size:.92rem;color:var(--text);flex:1;margin-bottom:26px}
+.tier-name{font-family:var(--display);font-weight:800;font-size:1.35rem;color:var(--navy);margin:0}
+.tier-blurb{
+  margin:10px 0 0;font-size:.95rem;line-height:1.45;color:var(--muted);min-height:2.9em;max-width:28ch;
+}
+.tier-mins{margin:20px 0 18px;display:flex;justify-content:center}
+.tier-includes{
+  margin:0 0 14px;padding:10px 12px;border-radius:10px;width:100%;
+  border:1px solid var(--border);background:rgba(20,53,94,.04);
+  font-size:.82rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;
+  color:var(--primary-600);line-height:1.35;
+}
+.tier-features{display:flex;flex-direction:column;gap:12px;font-size:.95rem;color:var(--text);flex:1;margin:0 0 28px;width:100%;text-align:left}
 .tier-features li{display:flex;gap:10px;line-height:1.45}
 .tier-features li::before{
   content:"";flex-shrink:0;width:17px;height:17px;margin-top:2px;
@@ -335,9 +347,7 @@ body.nav-open{overflow:hidden}
   -webkit-mask:url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>') center/contain no-repeat;
   mask:url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>') center/contain no-repeat;
 }
-.tier-features li.plus-line{color:var(--primary-600);font-weight:700;font-size:.85rem;letter-spacing:.04em}
-.tier.featured .tier-features li.plus-line{color:#85bdec}
-.tier-features li.plus-line::before{display:none}
+.tier-cta{width:100%;margin-top:auto}
 .fine-print{
   margin-top:36px;text-align:center;color:var(--muted);font-size:.9rem;
   max-width:760px;margin-left:auto;margin-right:auto;line-height:1.7;

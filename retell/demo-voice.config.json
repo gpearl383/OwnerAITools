@@ -27,7 +27,7 @@
           "properties": {
             "business_name": {
               "type": "string",
-              "description": "The prospect's business name used in the role-play, e.g. Comfort Air HVAC"
+              "description": "The prospect's business name used in the role-play, e.g. Comfort Air HVAC or Harbor Med Spa"
             },
             "prospect_email": {
               "type": "string",
@@ -150,7 +150,8 @@
         "description": "The name of the caller's business, if mentioned.",
         "type": "string",
         "examples": [
-          "Torres Plumbing"
+          "Torres Plumbing",
+          "Harbor Med Spa"
         ]
       },
       {
@@ -159,7 +160,9 @@
         "type": "string",
         "examples": [
           "plumbing",
+          "med spa",
           "dental office",
+          "law firm",
           "HVAC"
         ]
       },
@@ -178,7 +181,6 @@
         "description": "Which pricing tier the caller asked about or seemed interested in, if any.",
         "type": "string",
         "examples": [
-          "Basic",
           "Advanced",
           "Expert"
         ]

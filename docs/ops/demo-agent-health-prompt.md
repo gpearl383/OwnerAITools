@@ -19,7 +19,7 @@ Follow this Agent Delivery Loop: observe → score → gap → recommend (implem
 - Score using docs/ops/demo-qa-scorecard.md dimensions (0–2).
 
 2) AGENT DRIFT
-- Diff retell/demo-voice.prompt.md + sms-receptionist.prompt.md vs last known hard rules (identity, reclaim, regulated, anti-hallucination, sample-budget vs booking, CSM clarify).
+- Diff retell/demo-voice.prompt.md + sms-receptionist.prompt.md vs last known hard rules (identity, reclaim, regulated, anti-hallucination, sample-budget vs booking, consulting clarify / no parent-company name).
 - Compare retell/simulations/demo-voice.cases.json: every hard-rule section must have a sim; list missing cases.
 - Check scripts/push-retell.mjs diff if RETELL_API_KEY is available (live vs repo).
 

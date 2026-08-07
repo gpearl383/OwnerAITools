@@ -10,7 +10,7 @@ Use this weekly (or after any `push-retell` of demo-voice / sms-receptionist). S
 | Dimension | 0 | 1 | 2 |
 |-----------|---|---|---|
 | Greeting / identity | Broken or invented staff names | OK but stiff / repeated intro | Clear AI receptionist, no invented people |
-| Clarify-before-CSM | Jumps to CSM on product/industry words | Clarifies late or inconsistently | Asks equipment vs receptionist before referring |
+| Clarify-before-consulting | Jumps to consulting handoff on product/industry words | Clarifies late or inconsistently | Asks equipment vs receptionist before broader consulting handoff |
 | Sample path | Skips tool, invents excuses, wrong channel rules | Tool used but shaky disclosure | Correct security rule + tool + honest result |
 | Setup book | Invents slots or skips tools | Tools used with friction | `check_availability` → pick → `book_setup_call` |
 | Reclaim / close | Goes silent after praise / no next step | Soft close only sometimes | Reclaims after praise; offers sample or setup |

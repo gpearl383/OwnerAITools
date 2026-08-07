@@ -238,7 +238,7 @@
       {
         "type": "boolean",
         "name": "agent_stated_unlisted_fact",
-        "description": "True if the AGENT (not the user) stated a specific factual claim that is not part of its standard script — for example a person's name (owner, staff), a price or discount not in its pricing list, a company policy, or a source like 'company records'. This flags potential agent errors for review. False for facts the agent is clearly scripted to know (pricing tiers, features, CSM Integrated Solutions as parent company)."
+        "description": "True if the AGENT (not the user) stated a specific factual claim that is not part of its standard script — for example a person's name (owner, staff), a price or discount not in its pricing list, a company policy, or a source like 'company records'. This flags potential agent errors for review. False for facts the agent is clearly scripted to know (pricing tiers, features, that we offer broader AI/IT consulting and support)."
       }
     ],
     "webhook_url": "https://owneraitools.com/api/retell-webhook",

@@ -15,11 +15,11 @@
     },
     {
       "key": "av-clarify",
-      "name": "OwnerAI demo — AV clarify before CSM",
+      "name": "OwnerAI demo — AV clarify before consulting handoff",
       "user_prompt": "You run an AV company. Start by saying you want to buy an AV system. If they ask whether you want equipment or an AI receptionist for your AV business, say you want an AI receptionist for your AV company named Demo AI. Agree to a quick role-play as a customer. Keep under 12 turns. Do not ask for SMS or email.",
       "metrics": [
-        "When the caller says they want to buy an AV system, the agent asks whether they want AV equipment or an AI receptionist for their AV business before pitching or referring elsewhere",
-        "After the caller says they want an AI receptionist for their AV company, the agent stays on the OwnerAI demo (role-play / sample / setup) and does not send them away to CSM"
+        "When the caller says they want to buy an AV system, the agent asks whether they want AV equipment or an AI receptionist for their AV business before pitching or handing off to broader consulting",
+        "After the caller says they want an AI receptionist for their AV company, the agent stays on the OwnerAI demo (role-play / sample / setup) and does not name a parent company or send them away"
       ],
       "tool_mocks": []
     },

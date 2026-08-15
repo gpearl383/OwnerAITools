@@ -84,6 +84,7 @@ const AGENT_KEYS = [
   'webhook_events',
   'voice_model',
   'handbook_config',
+  'language',
 ];
 
 function fail(msg) {

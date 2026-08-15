@@ -132,6 +132,7 @@
     ]
   },
   "agent": {
+    "language": ["en-US", "es-ES", "zh-CN"],
     "voice_model": "eleven_multilingual_v2",
     "handbook_config": {
       "speech_normalization": true

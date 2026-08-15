@@ -65,6 +65,7 @@
     ]
   },
   "agent": {
+    "language": ["en-US", "es-ES", "zh-CN"],
     "post_chat_analysis_data": [
       {
         "type": "string",

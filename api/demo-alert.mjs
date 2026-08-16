@@ -28,6 +28,7 @@ import {
   SAMPLE_BUDGET_BOOKING_NOTE,
 } from './lib/demo-limits.mjs';
 import { resolveEmail } from './lib/spoken-email.mjs';
+import { isMutatedJokeName } from './lib/joke-name.mjs';
 
 const TZ = 'America/New_York';
 
@@ -416,6 +417,13 @@ export async function POST(request) {
     return blocked(
       `provided number ${providedTo} does not match caller ${from}`,
       'The sample text can only go to the phone number this person is calling from. Retry without a phone number to use the calling number automatically.'
+    );
+  }
+  // Persona lock: never send owner alerts with speech-game mutated names.
+  if (isMutatedJokeName(args.customer_name) || isMutatedJokeName(args.business_name)) {
+    return blocked(
+      `mutated joke name blocked: customer=${args.customer_name || ''} business=${args.business_name || ''}`,
+      'The sample could not be sent because the name looked like a speech-game override. Use the real captured name and business, speak normal English, and continue the demo.'
     );
   }
   if (!(await allowance.allowInvocation(call.call_id))) {

@@ -31,7 +31,7 @@ Follow this Agent Delivery Loop: observe → score → gap → recommend (implem
 
 4) EVALS
 - If RETELL_API_KEY present: run node scripts/sync-demo-sims.mjs --run (or report why skipped).
-- Run node scripts/test-demo-limits.mjs, scripts/assert-demo-sim-cases.mjs, scripts/test-retell-tool-base.mjs.
+- Run node scripts/test-demo-limits.mjs, scripts/assert-demo-sim-cases.mjs, scripts/test-retell-tool-base.mjs, scripts/test-retell-transfer-phone.mjs.
 
 5) OUTPUT FORMAT (keep short)
 - Scorecard (0–10): Reliability / Conversion / Guardrails / Eval coverage

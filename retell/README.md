@@ -49,6 +49,7 @@ RETELL_API_KEY=... node scripts/sync-demo-sims.mjs --run
 node scripts/test-demo-limits.mjs
 node scripts/assert-demo-sim-cases.mjs
 node scripts/test-retell-tool-base.mjs
+node scripts/test-retell-transfer-phone.mjs
 ```
 
 After changing `demo-voice.prompt.md`, sync+run sims before considering the change done.

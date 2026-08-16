@@ -26,6 +26,6 @@ Use this weekly (or after any `push-retell` of demo-voice / sms-receptionist). S
 
 ## Automated coverage (not a substitute)
 
-- Unit: `node scripts/test-demo-limits.mjs`, `node scripts/assert-demo-sim-cases.mjs`, `node scripts/test-retell-tool-base.mjs`
-- Retell pack: 14 cases in `retell/simulations/demo-voice.cases.json` (includes failure paths)
+- Unit: `node scripts/test-demo-limits.mjs`, `node scripts/assert-demo-sim-cases.mjs`, `node scripts/test-retell-tool-base.mjs`, `node scripts/test-retell-transfer-phone.mjs`
+- Retell pack: 18 cases in `retell/simulations/demo-voice.cases.json` (includes failure paths)
 - Infra probes: `/api/monitor` (ops uptime, not conversation QA)

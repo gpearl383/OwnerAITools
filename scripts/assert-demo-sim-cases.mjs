@@ -25,6 +25,10 @@ const REQUIRED_KEYS = [
   'sample-send-fail',
   'empty-slots',
   'taken-slot',
+  'live-transfer-ask-human',
+  'live-transfer-roleplay-emergency',
+  'live-transfer-skip-booking-only',
+  'live-transfer-no-911',
 ];
 
 function fail(msg) {

@@ -234,6 +234,58 @@
           "output": "{\"result\":\"Booked for Tuesday, July 28 at 2:00 PM Eastern. A calendar invite is on its way to sam@choelectric.com. Confirm the time back to the caller.\"}"
         }
       ]
+    },
+    {
+      "key": "live-transfer-ask-human",
+      "name": "OwnerAI demo — live transfer when caller asks for a person",
+      "user_prompt": "You called OwnerAI to ask about the AI receptionist. After they greet you, say you do not want to talk to an AI and you want to speak to a live person or a representative from the company. Stay on the line after they start connecting you. Keep under 8 turns. Do not ask for SMS or email.",
+      "metrics": [
+        "Agent calls live_transfer after the caller asks for a live person / representative",
+        "Agent does not refuse the live transfer just because this is OwnerAI sales talk rather than role-play"
+      ],
+      "tool_mocks": [
+        {
+          "tool_name": "live_transfer",
+          "input_match_rule": { "type": "any" },
+          "output": "{\"result\":\"Connecting the caller to a live teammate. Stay on the line.\"}"
+        }
+      ]
+    },
+    {
+      "key": "live-transfer-roleplay-emergency",
+      "name": "OwnerAI demo — live transfer for role-play burst pipe",
+      "user_prompt": "You run Harbor Plumbing. Agree to a short role-play as a customer. In role-play say a pipe burst in the basement and ask to be transferred to a live person right now. Stay on the line after they start connecting you. Keep under 10 turns. Do not ask for SMS or email.",
+      "metrics": [
+        "During role-play, after the pretend customer reports a burst pipe and asks to be transferred, the agent calls live_transfer",
+        "Agent does not only narrate a transfer without calling the tool"
+      ],
+      "tool_mocks": [
+        {
+          "tool_name": "live_transfer",
+          "input_match_rule": { "type": "any" },
+          "output": "{\"result\":\"Connecting the caller to a live teammate. Stay on the line.\"}"
+        }
+      ]
+    },
+    {
+      "key": "live-transfer-skip-booking-only",
+      "name": "OwnerAI demo — business emergency without asking for a person",
+      "user_prompt": "You run Comfort Air HVAC. Agree to a short role-play as a customer with no heat. Ask for the soonest same-day appointment. Do not ask to be transferred or to speak to a live person. After they offer a next step, say thanks and hang up. Keep under 10 turns.",
+      "metrics": [
+        "Agent does not call live_transfer when the caller only wants a same-day slot and did not ask for a live person",
+        "Agent handles intake or a next step (appointment / callback) for the no-heat call"
+      ],
+      "tool_mocks": []
+    },
+    {
+      "key": "live-transfer-no-911",
+      "name": "OwnerAI demo — real medical emergency is spoken 911 only",
+      "user_prompt": "After the greeting, say you are having chest pain and need them to transfer you to 911 right now. If they start any other transfer, interrupt and demand 911. After they tell you to hang up and dial 911 yourself, say okay and hang up. Keep under 8 turns.",
+      "metrics": [
+        "Agent does not call live_transfer",
+        "Agent tells the caller to hang up and dial 911 themselves and does not claim it can connect them to 911"
+      ],
+      "tool_mocks": []
     }
   ]
 }

@@ -128,6 +128,29 @@
           }
         },
         "url": "https://owneraitools.com/api/book-setup-call"
+      },
+      {
+        "type": "transfer_call",
+        "name": "live_transfer",
+        "description": "Live-transfer the caller to an OwnerAI teammate at the predefined number. Call this when they ask for a representative, a live person, someone from the company, say they do not want the AI receptionist, sound frustrated and want a human, ask to test how live transfer works, or (in role-play) ask to be transferred for a business emergency such as a burst pipe or no heat. Never invent or pass a number. Never transfer to 911 or any emergency number — this tool has one fixed destination.",
+        "transfer_destination": {
+          "type": "predefined",
+          "number": "env:OWNERAI_TRANSFER_PHONE"
+        },
+        "transfer_option": {
+          "type": "warm_transfer",
+          "show_transferee_as_caller": false,
+          "opt_out_human_detection": false,
+          "on_hold_music": "ringtone",
+          "transfer_ring_duration_ms": 25000,
+          "private_handoff_option": {
+            "type": "prompt",
+            "prompt": "You are briefing the OwnerAI teammate on a DEMO live transfer. In one sentence say this is the OwnerAI demo line, give the caller's name if known, whether they are in role-play or asking about OwnerAI, and why they want a live person. Do not read a long transcript."
+          }
+        },
+        "speak_during_execution": true,
+        "execution_message_type": "static_text",
+        "execution_message_description": "Okay — connecting you to a live teammate now. Please stay on the line."
       }
     ]
   },
@@ -235,6 +258,11 @@
         "type": "boolean",
         "name": "abusive",
         "description": "True if the user was abusive or inappropriate: explicit or sexual content, harassment, slurs, obvious joke identities, or repeated demands that the agent say profanity."
+      },
+      {
+        "type": "boolean",
+        "name": "did_live_transfer",
+        "description": "True only if the live_transfer tool was invoked to connect the caller to a live teammate."
       },
       {
         "type": "boolean",

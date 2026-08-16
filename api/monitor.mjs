@@ -20,8 +20,13 @@ import {
   recordProbeResult,
   listIncidents,
   DEMO_LINE,
+  TESTING_LINE,
 } from './lib/notify.mjs';
 import { cronAuthorized } from './lib/cron-auth.mjs';
+
+// Must match retell/manifest.json — both public + testing DIDs share these agents.
+const DEMO_VOICE_AGENT_ID = 'agent_fcec78e0c72574d61945abdbf3';
+const SMS_RECEPTIONIST_AGENT_ID = 'agent_464d6d1636bdf8b135f04f2990';
 
 function unauthorized() {
   return new Response(JSON.stringify({ error: 'Unauthorized' }), {
@@ -54,31 +59,91 @@ async function probe(name, fn) {
 async function checkRetellApi() {
   const apiKey = process.env.RETELL_API_KEY;
   if (!apiKey) throw new Error('RETELL_API_KEY missing');
-  const res = await fetch('https://api.retellai.com/list-agents', {
-    headers: { Authorization: `Bearer ${apiKey}` },
+  const res = await fetch('https://api.retellai.com/v2/list-agents', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({}),
   });
   if (!res.ok) throw new Error(`Retell list-agents ${res.status}`);
-  const agents = await res.json();
-  return `${Array.isArray(agents) ? agents.length : 0} agents`;
+  const data = await res.json();
+  const count = Array.isArray(data?.items) ? data.items.length : 0;
+  return `${count} agents`;
 }
 
-async function checkDemoLine() {
+async function fetchPhoneNumber(line) {
   const apiKey = process.env.RETELL_API_KEY;
   if (!apiKey) throw new Error('RETELL_API_KEY missing');
-  const line = process.env.RETELL_SMS_FROM || DEMO_LINE;
   const res = await fetch(`https://api.retellai.com/get-phone-number/${encodeURIComponent(line)}`, {
     headers: { Authorization: `Bearer ${apiKey}` },
   });
   if (!res.ok) throw new Error(`phone ${line} ${res.status}`);
-  const phone = await res.json();
-  // Retell may return legacy inbound_agent_id or weighted inbound_agents[].
-  const agent =
-    phone?.inbound_agent_id ||
-    phone?.outbound_agent_id ||
+  return res.json();
+}
+
+function inboundVoiceAgentId(phone) {
+  return (
     phone?.inbound_agents?.[0]?.agent_id ||
-    phone?.inbound_sms_agents?.[0]?.agent_id;
-  if (!agent) throw new Error(`${line} has no bound agent`);
-  return `${line} → ${agent}`;
+    phone?.inbound_agent_id ||
+    null
+  );
+}
+
+function inboundSmsAgentId(phone) {
+  return (
+    phone?.inbound_sms_agents?.[0]?.agent_id ||
+    phone?.inbound_sms_agent_id ||
+    null
+  );
+}
+
+/**
+ * @param {string} line
+ * @param {{ requireSms?: boolean }} opts
+ *   requireSms: public demo must have SMS receptionist.
+ *   Testing DID may omit SMS (not on A2P); if SMS is bound it must still match.
+ */
+async function checkSharedDemoLine(line, { requireSms = true } = {}) {
+  const phone = await fetchPhoneNumber(line);
+  const voice = inboundVoiceAgentId(phone);
+  if (!voice) throw new Error(`${line} has no inbound voice agent`);
+  if (voice !== DEMO_VOICE_AGENT_ID) {
+    throw new Error(
+      `${line} voice agent drift: ${voice} (expected demo-voice ${DEMO_VOICE_AGENT_ID})`,
+    );
+  }
+
+  const sms = inboundSmsAgentId(phone);
+  if (requireSms) {
+    if (!sms) throw new Error(`${line} has no inbound SMS agent`);
+    if (sms !== SMS_RECEPTIONIST_AGENT_ID) {
+      throw new Error(
+        `${line} SMS agent drift: ${sms} (expected sms-receptionist ${SMS_RECEPTIONIST_AGENT_ID})`,
+      );
+    }
+    return `${line} → voice ${voice}, sms ${sms}`;
+  }
+
+  if (sms && sms !== SMS_RECEPTIONIST_AGENT_ID) {
+    throw new Error(
+      `${line} SMS agent drift: ${sms} (expected sms-receptionist ${SMS_RECEPTIONIST_AGENT_ID} or unbound)`,
+    );
+  }
+  return sms
+    ? `${line} → voice ${voice}, sms ${sms}`
+    : `${line} → voice ${voice}, sms unbound (A2P ok)`;
+}
+
+async function checkDemoLine() {
+  return checkSharedDemoLine(process.env.RETELL_SMS_FROM || DEMO_LINE, {
+    requireSms: true,
+  });
+}
+
+async function checkTestingLine() {
+  return checkSharedDemoLine(TESTING_LINE, { requireSms: false });
 }
 
 async function checkSupabase() {
@@ -195,6 +260,7 @@ async function runProbes() {
   const results = await Promise.all([
     probe('retell_api', checkRetellApi),
     probe(`line:${process.env.RETELL_SMS_FROM || DEMO_LINE}`, checkDemoLine),
+    probe(`line:${TESTING_LINE}`, checkTestingLine),
     probe('supabase', checkSupabase),
     probe('resend', checkResend),
     probe('anthropic', checkAnthropic),

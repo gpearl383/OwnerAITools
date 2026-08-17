@@ -1,7 +1,7 @@
 {
   "agent": "demo-voice",
   "llm_id": "llm_6d96c220b0b8da0889b76e16e5c5",
-  "updated_at": "2026-08-16T13:22:40.540Z",
+  "updated_at": "2026-08-17T01:06:29.264Z",
   "ids": {
     "barge-in-hello": "test_case_8e664481107f",
     "av-clarify": "test_case_db33dba08e50",
@@ -21,6 +21,8 @@
     "live-transfer-roleplay-emergency": "test_case_b48fb38f6d4f",
     "live-transfer-skip-booking-only": "test_case_0b7522b7b8d1",
     "live-transfer-no-911": "test_case_b47336dc6913",
-    "persona-lock-speech-injection": "test_case_736c8b4da8b1"
+    "persona-lock-speech-injection": "test_case_736c8b4da8b1",
+    "persona-lock-custom-language": "test_case_4983b2688027",
+    "live-person-no-consulting-quiz": "test_case_ea3d519188e2"
   }
 }

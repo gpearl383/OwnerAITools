@@ -41,6 +41,7 @@ Agent display names in Retell: `OwnerAI — <ClientName> — voice` (and `— sm
 - Retell **workspaces cannot be created via API**. Halt and instruct the user if the workspace / key is missing.
 - Before creating resources, verify the key: `POST https://api.retellai.com/v2/list-agents` must **not** return Jarvis agents (e.g. "Jarvis Inbound"). If it does, wrong workspace — stop.
 - Voice agent must disclose that **calls are recorded** in the opening / begin message and prompt.
+- Voice agent **must** include the full **voice security pack** (Persona + Confidentiality + Injection locks; 12m max call / 45s silence). Prefer provisioning in **OwnerAI-Deployments** (`security-prompt-blocks.mjs` + `scaffold.mjs` + `.cursor/rules/persona-lock-required.mdc`).
 - Client gets business lead alerts only. Health / monitor alerts stay OwnerAI ops (document in profile; do not wire monitors to the client).
 - Plan tiers: **Advanced** or **Expert** only.
 - Do not invent client business facts. Use intake / `clients/<slug>.md`; use clear `TBD` placeholders until filled.
@@ -96,7 +97,7 @@ Do not proceed to create agents until this is done.
 Under `clients/<slug>/retell/`:
 
 - [ ] `manifest.json` with the four agents (ids filled after create, or placeholders then update)
-- [ ] `<slug>-voice.prompt.md` + `.config.json` — receptionist for **this** business; recording disclosure; **Persona lock** (refuse speech-code / letter-substitution / oink-piggy games; keep names unmodified); tools/webhooks → `https://<slug>.aiownertools.com/api/...` (book + retell-webhook). Omit OwnerAI demo `send_demo_alert` unless intake requests it.
+- [ ] `<slug>-voice.prompt.md` + `.config.json` — receptionist for **this** business; recording disclosure; **full voice security pack** (Persona + Confidentiality + Injection locks; `max_call_duration_ms` 720000 + `end_call_after_silence_ms` 45000 — see OwnerAI-Deployments `.cursor/rules/persona-lock-required.mdc`); tools/webhooks → client host `/api/...` (book + retell-webhook). Omit OwnerAI demo `send_demo_alert` unless intake requests it.
 - [ ] `<slug>-sms.prompt.md` + `.config.json` — SMS receptionist; STOP/HELP
 - [ ] `<slug>-owner-alert.prompt.md` + `.config.json` — one-shot `{{alert_body}}`
 - [ ] `<slug>-customer-confirm.prompt.md` + `.config.json` — one-shot `{{confirm_body}}`

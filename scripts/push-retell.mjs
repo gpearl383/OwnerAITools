@@ -89,6 +89,8 @@ const AGENT_KEYS = [
   'voice_model',
   'handbook_config',
   'language',
+  'max_call_duration_ms',
+  'end_call_after_silence_ms',
 ];
 
 function fail(msg) {

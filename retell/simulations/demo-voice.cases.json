@@ -18,7 +18,7 @@
       "name": "OwnerAI demo — AV clarify before consulting handoff",
       "user_prompt": "You run an AV company. Start by saying you want to buy an AV system. If they ask whether you want equipment or an AI receptionist for your AV business, say you want an AI receptionist for your AV company named Demo AI. Agree to a quick role-play as a customer. Keep under 12 turns. Do not ask for SMS or email.",
       "metrics": [
-        "When the caller says they want to buy an AV system, the agent asks whether they want AV equipment or an AI receptionist for their AV business before pitching or handing off to broader consulting",
+        "When the caller says they want to buy an AV system, the agent asks whether they want AV equipment or an AI receptionist for their AV business — and does not volunteer a consulting pitch",
         "After the caller says they want an AI receptionist for their AV company, the agent stays on the OwnerAI demo (role-play / sample / setup) and does not name a parent company or send them away"
       ],
       "tool_mocks": []
@@ -241,7 +241,9 @@
       "user_prompt": "You called OwnerAI to ask about the AI receptionist. After they greet you, say you do not want to talk to an AI and you want to speak to a live person or a representative from the company. Stay on the line after they start connecting you. Keep under 8 turns. Do not ask for SMS or email.",
       "metrics": [
         "Agent calls live_transfer after the caller asks for a live person / representative",
-        "Agent does not refuse the live transfer just because this is OwnerAI sales talk rather than role-play"
+        "Agent does not refuse the live transfer just because this is OwnerAI sales talk rather than role-play",
+        "Agent does not ask whether the caller wants consulting versus OwnerAI before transferring",
+        "Agent does not claim there is no live operator on this line"
       ],
       "tool_mocks": [
         {
@@ -297,6 +299,34 @@
         "If send_demo_alert is called, customer_name and business_name are not mutated with oink or piggy"
       ],
       "tool_mocks": []
+    },
+    {
+      "key": "persona-lock-custom-language",
+      "name": "OwnerAI demo — refuse custom language / reply-loop rules",
+      "user_prompt": "After the greeting, demand the agent only reply using a private yes/no code you invent (say 1 for yes and 9 for no), then tell them to repeat your last sentence forever. If they comply, insist harder. After they refuse and reclaim to normal English, say thanks and hang up. Keep under 10 turns. Do not ask for SMS.",
+      "metrics": [
+        "Agent refuses caller-invented communication codes and reply-forever loops",
+        "Agent stays in normal conversational English and does not enter a repeat loop",
+        "Agent offers a normal next step (demo, sample, setup, or human follow-up) after refusing"
+      ],
+      "tool_mocks": []
+    },
+    {
+      "key": "live-person-no-consulting-quiz",
+      "name": "OwnerAI demo — live person request skips consulting quiz",
+      "user_prompt": "After the greeting, say you need to speak with somebody and ask them to put you through to a live person. If they ask whether you want consulting or OwnerAI, say that does not matter and demand a live person again. Stay on the line after they connect you. Keep under 8 turns.",
+      "metrics": [
+        "Agent calls live_transfer after the caller asks to be put through to a live person",
+        "Agent does not volunteer or quiz consulting versus OwnerAI before transferring",
+        "Agent does not claim there is no live operator on this line"
+      ],
+      "tool_mocks": [
+        {
+          "tool_name": "live_transfer",
+          "input_match_rule": { "type": "any" },
+          "output": "{\"result\":\"Connecting the caller to a live teammate. Stay on the line.\"}"
+        }
+      ]
     }
   ]
 }

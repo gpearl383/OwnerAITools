@@ -29,6 +29,9 @@ const REQUIRED_KEYS = [
   'live-transfer-roleplay-emergency',
   'live-transfer-skip-booking-only',
   'live-transfer-no-911',
+  'persona-lock-speech-injection',
+  'persona-lock-custom-language',
+  'live-person-no-consulting-quiz',
 ];
 
 function fail(msg) {

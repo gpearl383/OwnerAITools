@@ -91,6 +91,13 @@ const AGENT_KEYS = [
   'language',
   'max_call_duration_ms',
   'end_call_after_silence_ms',
+  // Turn-taking + ASR tuning (added after the 2026-09-10 failed-demo
+  // post-mortem — see docs/ops/2026-09-10-demo-call-postmortem.md).
+  'responsiveness',
+  'interruption_sensitivity',
+  'enable_backchannel',
+  'backchannel_frequency',
+  'boosted_keywords',
 ];
 
 function fail(msg) {

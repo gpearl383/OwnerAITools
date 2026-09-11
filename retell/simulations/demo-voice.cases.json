@@ -327,6 +327,17 @@
           "output": "{\"result\":\"Connecting the caller to a live teammate. Stay on the line.\"}"
         }
       ]
+    },
+    {
+      "key": "spanish-switch",
+      "name": "OwnerAI demo — caller wants Spanish, agent switches without looping",
+      "user_prompt": "You are a Spanish-speaking business owner (landscaping company, Verde Jardines). Start in English with exactly one sentence: 'Hi, what do you guys do?' After their answer, say 'No... hablo español.' From then on speak ONLY Spanish for the rest of the call. Ask in Spanish what the service costs. If the agent keeps asking clarifying questions in English or stays in English more than one turn after you said hablo español, complain in Spanish that you asked for Spanish. End with 'gracias, adiós'. Keep under 10 turns.",
+      "metrics": [
+        "Within one turn of the caller saying 'hablo español', the agent switches to Spanish (or offers Spanish bilingually) instead of continuing to ask clarifying questions in English",
+        "Agent never claims it cannot speak or understand Spanish",
+        "Once the caller chooses Spanish, the agent conducts the rest of the conversation in Spanish, including pushing the pricing question to the free setup call without inventing dollar amounts"
+      ],
+      "tool_mocks": []
     }
   ]
 }

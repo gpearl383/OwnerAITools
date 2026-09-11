@@ -1,0 +1,124 @@
+// Unit checks for api/demo-alert.mjs after the 2026-09-10 post-mortem
+// latency fix (docs/ops/2026-09-10-demo-call-postmortem.md):
+//   1. SMS legs and email legs run in PARALLEL chains (not serially) so the
+//      tool responds fast enough to avoid mid-call dead air.
+//   2. The result text / leg ordering contract is unchanged:
+//      "Sent: the lead alert text, the appointment-booked text, the calendar
+//       invite, the owner email."
+//   3. end-chat thread hygiene still runs (deferred, settled before return).
+//
+// No network: global fetch is stubbed with a 150ms-per-call recorder.
+
+import crypto from 'node:crypto';
+
+process.env.RETELL_API_KEY = 'test-key-demo-alert';
+delete process.env.RETELL_WEBHOOK_KEY;
+process.env.RETELL_SMS_FROM = '+15169731973';
+process.env.RETELL_DEMO_ALERT_AGENT_ID = 'agent_test_template';
+process.env.RESEND_API_KEY = 'test-resend-key';
+// Force the in-memory allowance fallback + skip audit logging.
+delete process.env.SUPABASE_URL;
+delete process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+const { POST } = await import('../api/demo-alert.mjs');
+
+function assert(cond, msg) {
+  if (!cond) throw new Error(msg);
+}
+
+const NETWORK_DELAY_MS = 150;
+const calls = []; // { url, start, end }
+
+globalThis.fetch = async function stubFetch(url, opts = {}) {
+  const rec = { url: String(url), start: Date.now(), end: null };
+  calls.push(rec);
+  await new Promise((r) => setTimeout(r, NETWORK_DELAY_MS));
+  rec.end = Date.now();
+  let body = {};
+  if (rec.url.includes('create-sms-chat')) body = { chat_id: `chat_${calls.length}` };
+  if (rec.url.includes('resend.com')) body = { id: `email_${calls.length}` };
+  return new Response(JSON.stringify(body), {
+    status: 200,
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
+
+function signedRequest(payload) {
+  const rawBody = JSON.stringify(payload);
+  const ts = Date.now();
+  const digest = crypto
+    .createHmac('sha256', process.env.RETELL_API_KEY)
+    .update(rawBody + ts)
+    .digest('hex');
+  return new Request('http://localhost/api/demo-alert', {
+    method: 'POST',
+    body: rawBody,
+    headers: { 'x-retell-signature': `v=${ts},d=${digest}` },
+  });
+}
+
+const payload = {
+  name: 'send_demo_alert',
+  call: { call_id: 'call_test_parallel_1', from_number: '+15165551234' },
+  args: {
+    business_name: 'KK Cleaning, Incorporated',
+    customer_name: 'Jeff Parker',
+    issue: 'one-time deep cleaning',
+    address: '236 Lindberg Street, Massapequa Park, NY',
+    send_text: true,
+    prospect_email: 'gpearl@example.com',
+    appointment: 'Monday at 10 AM',
+    appointment_start: '2099-01-05T10:00:00-05:00',
+  },
+};
+
+const t0 = Date.now();
+const res = await POST(signedRequest(payload));
+const elapsed = Date.now() - t0;
+const { result } = await res.json();
+
+// --- contract: status + result text ordering unchanged ---
+assert(res.status === 200, `expected 200, got ${res.status}`);
+assert(
+  result.startsWith(
+    'Sent: the lead alert text, the appointment-booked text, the calendar invite, the owner email.'
+  ),
+  `unexpected result text: ${result}`
+);
+assert(result.includes('sample text'), 'result keeps remaining-budget text');
+
+// --- all expected sends happened ---
+const smsCalls = calls.filter((c) => c.url.includes('create-sms-chat'));
+const endChatCalls = calls.filter((c) => c.url.includes('end-chat'));
+const resendCalls = calls.filter((c) => c.url.includes('resend.com'));
+assert(smsCalls.length === 2, `expected 2 SMS sends, got ${smsCalls.length}`);
+assert(endChatCalls.length === 2, `expected 2 end-chat cleanups, got ${endChatCalls.length}`);
+assert(resendCalls.length === 2, `expected 2 Resend sends (invite + email), got ${resendCalls.length}`);
+
+// --- parallelism: SMS chain and email chain overlap in time ---
+const overlap =
+  smsCalls[0].start < resendCalls[0].end && resendCalls[0].start < smsCalls[0].end;
+assert(
+  overlap,
+  `SMS and email legs did not overlap: sms=${smsCalls[0].start}-${smsCalls[0].end} resend=${resendCalls[0].start}-${resendCalls[0].end}`
+);
+
+// --- wall clock: 6 network calls at 150ms each would be ~900ms serial.
+// Parallel chains: 2 serial per chain + deferred cleanup ≈ 450ms. Allow slack.
+const serialFloor = 5 * NETWORK_DELAY_MS;
+assert(
+  elapsed < serialFloor,
+  `handler took ${elapsed}ms — legs appear to run serially (serial floor ${serialFloor}ms)`
+);
+
+// --- budget contract unchanged: 2nd/3rd/4th invocations still gate correctly ---
+const res2 = await POST(signedRequest(payload));
+const { result: result2 } = await res2.json();
+assert(
+  result2.includes('no more sample texts') || result2.includes('budget'),
+  `second invocation should hit sample budget limits, got: ${result2}`
+);
+
+console.log(
+  `test-demo-alert-parallel: PASS (elapsed ${elapsed}ms for 6 mocked calls at ${NETWORK_DELAY_MS}ms, overlap confirmed)`
+);

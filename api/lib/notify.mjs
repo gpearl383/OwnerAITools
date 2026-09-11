@@ -4,6 +4,7 @@
 
 const COOLDOWN_MS = 30 * 60 * 1000;
 const DEMO_LINE = '+15169731973';
+const TESTING_LINE = '+15169613838';
 
 function normalizePhone(v) {
   const digits = String(v ?? '').replace(/[^\d+]/g, '');
@@ -11,6 +12,10 @@ function normalizePhone(v) {
   if (/^1\d{10}$/.test(digits)) return `+${digits}`;
   if (/^\d{10}$/.test(digits)) return `+1${digits}`;
   return null;
+}
+
+function isTestingLine(v) {
+  return normalizePhone(v) === TESTING_LINE;
 }
 
 async function sbHeaders() {
@@ -246,4 +251,4 @@ export async function listIncidents() {
   return res.json();
 }
 
-export { DEMO_LINE, COOLDOWN_MS };
+export { DEMO_LINE, TESTING_LINE, isTestingLine, normalizePhone, COOLDOWN_MS };

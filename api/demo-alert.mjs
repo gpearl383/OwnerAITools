@@ -28,6 +28,7 @@ import {
   SAMPLE_BUDGET_BOOKING_NOTE,
 } from './lib/demo-limits.mjs';
 import { resolveEmail } from './lib/spoken-email.mjs';
+import { isMutatedJokeName } from './lib/joke-name.mjs';
 
 const TZ = 'America/New_York';
 
@@ -163,7 +164,7 @@ function buildDemoEmailHtml(args) {
 
 /* ---------- senders ---------- */
 
-async function sendDemoSms(to, body, source) {
+async function sendDemoSms(to, body, source, deferred) {
   const res = await fetch('https://api.retellai.com/create-sms-chat', {
     method: 'POST',
     headers: {
@@ -180,18 +181,20 @@ async function sendDemoSms(to, body, source) {
   });
   if (!res.ok) throw new Error(`Retell SMS ${res.status}: ${await res.text()}`);
   const chat = await res.json();
-  // Thread hygiene: end the one-shot template chat immediately so a later
-  // reply from the prospect starts a fresh thread with the SMS receptionist
-  // instead of hitting this stale template bot.
+  // Thread hygiene: end the one-shot template chat so a later reply from the
+  // prospect starts a fresh thread with the SMS receptionist instead of
+  // hitting this stale template bot. Deferred (not awaited inline) so it does
+  // not add a serial round trip to the tool response — the caller settles all
+  // deferred promises before returning (no waitUntil in this runtime).
   if (chat?.chat_id) {
-    try {
-      await fetch(`https://api.retellai.com/end-chat/${chat.chat_id}`, {
+    deferred.push(
+      fetch(`https://api.retellai.com/end-chat/${chat.chat_id}`, {
         method: 'PATCH',
         headers: { Authorization: `Bearer ${process.env.RETELL_API_KEY}` },
-      });
-    } catch (err) {
-      console.warn('end-chat failed (non-fatal):', err.message);
-    }
+      }).catch((err) => {
+        console.warn('end-chat failed (non-fatal):', err.message);
+      })
+    );
   }
   return chat;
 }
@@ -418,6 +421,13 @@ export async function POST(request) {
       'The sample text can only go to the phone number this person is calling from. Retry without a phone number to use the calling number automatically.'
     );
   }
+  // Persona lock: never send owner alerts with speech-game mutated names.
+  if (isMutatedJokeName(args.customer_name) || isMutatedJokeName(args.business_name)) {
+    return blocked(
+      `mutated joke name blocked: customer=${args.customer_name || ''} business=${args.business_name || ''}`,
+      'The sample could not be sent because the name looked like a speech-game override. Use the real captured name and business, speak normal English, and continue the demo.'
+    );
+  }
   if (!(await allowance.allowInvocation(call.call_id))) {
     return blocked(
       'invocation limit reached',
@@ -477,89 +487,110 @@ export async function POST(request) {
     );
   }
 
-  const audit = [];
-  const sent = [];
+  // The legs used to run serially (5-7 network round trips, ~11s observed
+  // live while the agent stayed silent — the 2026-09-10 post-mortem dead-air
+  // bug). They now run as two parallel chains: SMS legs stay ordered relative
+  // to each other (shared budget + delivery order), email legs likewise, but
+  // the two channels no longer wait on each other.
+  const deferred = [];
 
-  // Leg 1 — [DEMO] lead-alert SMS
-  if (doSms) {
-    try {
-      await sendDemoSms(to, buildDemoAlertBody(args), 'demo-lead-alert');
-      await allowance.recordSms(call.call_id);
-      audit.push({
-        ...base,
-        event_type: 'demo_alert_sms_sent',
-        status: 'ok',
-        detail: `sample alert for ${args.business_name || 'unknown business'}`,
-        payload: rolePlay,
-      });
-      sent.push('the lead alert text');
-    } catch (err) {
-      console.error('demo-alert lead SMS failed:', err.message);
-      audit.push({ ...base, event_type: 'sms_failed', status: 'failed', detail: `demo alert: ${err.message.slice(0, 400)}` });
+  // Legs 1+2 — [DEMO] lead-alert SMS, then appointment-booked SMS
+  async function runSmsLegs() {
+    const audit = [];
+    const sent = [];
+    if (doSms) {
+      try {
+        await sendDemoSms(to, buildDemoAlertBody(args), 'demo-lead-alert', deferred);
+        await allowance.recordSms(call.call_id);
+        audit.push({
+          ...base,
+          event_type: 'demo_alert_sms_sent',
+          status: 'ok',
+          detail: `sample alert for ${args.business_name || 'unknown business'}`,
+          payload: rolePlay,
+        });
+        sent.push('the lead alert text');
+      } catch (err) {
+        console.error('demo-alert lead SMS failed:', err.message);
+        audit.push({ ...base, event_type: 'sms_failed', status: 'failed', detail: `demo alert: ${err.message.slice(0, 400)}` });
+      }
     }
+    // Appointment SMS counts toward the same sample SMS budget.
+    if (doSms && args.appointment && (await allowance.canSms(call.call_id))) {
+      try {
+        await sendDemoSms(to, buildDemoApptBody(args), 'demo-appt-booked', deferred);
+        await allowance.recordSms(call.call_id);
+        audit.push({
+          ...base,
+          event_type: 'demo_appt_sms_sent',
+          status: 'ok',
+          detail: `appointment notification: ${String(args.appointment).slice(0, 200)}`,
+          payload: rolePlay,
+        });
+        sent.push('the appointment-booked text');
+      } catch (err) {
+        console.error('demo-alert appt SMS failed:', err.message);
+        audit.push({ ...base, event_type: 'sms_failed', status: 'failed', detail: `demo appt: ${err.message.slice(0, 400)}` });
+      }
+    } else if (doSms && args.appointment) {
+      skips.push('appointment text skipped — sample SMS budget already used');
+    }
+    return { audit, sent };
   }
 
-  // Leg 2 — [DEMO] appointment-booked SMS (counts toward the same sample SMS budget)
-  if (doSms && args.appointment && (await allowance.canSms(call.call_id))) {
-    try {
-      await sendDemoSms(to, buildDemoApptBody(args), 'demo-appt-booked');
-      await allowance.recordSms(call.call_id);
-      audit.push({
-        ...base,
-        event_type: 'demo_appt_sms_sent',
-        status: 'ok',
-        detail: `appointment notification: ${String(args.appointment).slice(0, 200)}`,
-        payload: rolePlay,
-      });
-      sent.push('the appointment-booked text');
-    } catch (err) {
-      console.error('demo-alert appt SMS failed:', err.message);
-      audit.push({ ...base, event_type: 'sms_failed', status: 'failed', detail: `demo appt: ${err.message.slice(0, 400)}` });
+  // Legs 3+4 — real calendar invite (ICS), then [DEMO] sample owner lead email
+  async function runEmailLegs() {
+    const audit = [];
+    const sent = [];
+    if (doEmail && apptStart) {
+      try {
+        await sendDemoInvite(email, args, apptStart);
+        audit.push({
+          ...base,
+          event_type: 'demo_invite_sent',
+          status: 'ok',
+          detail: `${speakableTime(apptStart)} — invite to ${email}`,
+          payload: { ...rolePlay, slot_start: apptStart },
+        });
+        sent.push('the calendar invite');
+      } catch (err) {
+        console.error('demo-alert invite failed:', err.message);
+        audit.push({ ...base, event_type: 'demo_invite_failed', status: 'failed', detail: err.message.slice(0, 400) });
+      }
     }
-  } else if (doSms && args.appointment) {
-    skips.push('appointment text skipped — sample SMS budget already used');
+    if (doEmail) {
+      try {
+        await sendDemoEmail(email, args);
+        await allowance.recordEmail(call.call_id);
+        audit.push({
+          ...base,
+          event_type: 'demo_email_sent',
+          status: 'ok',
+          detail: `sample owner email to ${email}`,
+          payload: rolePlay,
+        });
+        sent.push('the owner email');
+      } catch (err) {
+        console.error('demo-alert email failed:', err.message);
+        audit.push({ ...base, event_type: 'demo_email_failed', status: 'failed', detail: err.message.slice(0, 400) });
+      }
+    }
+    return { audit, sent };
   }
 
-  // Leg 3 — real calendar invite (ICS) for the pretend customer's appointment
-  if (doEmail && apptStart) {
-    try {
-      await sendDemoInvite(email, args, apptStart);
-      audit.push({
-        ...base,
-        event_type: 'demo_invite_sent',
-        status: 'ok',
-        detail: `${speakableTime(apptStart)} — invite to ${email}`,
-        payload: { ...rolePlay, slot_start: apptStart },
-      });
-      sent.push('the calendar invite');
-    } catch (err) {
-      console.error('demo-alert invite failed:', err.message);
-      audit.push({ ...base, event_type: 'demo_invite_failed', status: 'failed', detail: err.message.slice(0, 400) });
-    }
-  }
+  const [smsRes, emailRes] = await Promise.all([runSmsLegs(), runEmailLegs()]);
+  const audit = [...smsRes.audit, ...emailRes.audit];
+  const sent = [...smsRes.sent, ...emailRes.sent];
 
-  // Leg 4 — [DEMO] sample owner lead email
-  if (doEmail) {
-    try {
-      await sendDemoEmail(email, args);
-      await allowance.recordEmail(call.call_id);
-      audit.push({
-        ...base,
-        event_type: 'demo_email_sent',
-        status: 'ok',
-        detail: `sample owner email to ${email}`,
-        payload: rolePlay,
-      });
-      sent.push('the owner email');
-    } catch (err) {
-      console.error('demo-alert email failed:', err.message);
-      audit.push({ ...base, event_type: 'demo_email_failed', status: 'failed', detail: err.message.slice(0, 400) });
-    }
-  }
-
-  await logAuditBatch(audit);
-
-  const left = remainingText(await allowance.remaining(call.call_id));
+  // Overlap the audit write, the remaining-budget lookup, and any deferred
+  // end-chat cleanups — all must settle before returning (serverless runtime
+  // may kill work left running after the response), but none needs to run
+  // serially. logAuditBatch never throws.
+  const [, left] = await Promise.all([
+    logAuditBatch(audit),
+    allowance.remaining(call.call_id).then(remainingText),
+    Promise.allSettled(deferred),
+  ]);
   if (!sent.length) {
     return toolResult(
       `Nothing could be sent — the sends failed. Apologize briefly, tell the caller you can retry, and continue. ${left}`

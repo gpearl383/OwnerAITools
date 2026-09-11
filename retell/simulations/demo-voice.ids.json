@@ -1,7 +1,7 @@
 {
   "agent": "demo-voice",
   "llm_id": "llm_6d96c220b0b8da0889b76e16e5c5",
-  "updated_at": "2026-07-30T00:34:07.001Z",
+  "updated_at": "2026-09-11T01:09:55.056Z",
   "ids": {
     "barge-in-hello": "test_case_8e664481107f",
     "av-clarify": "test_case_db33dba08e50",
@@ -16,6 +16,14 @@
     "regulated-no-invented-balance": "test_case_e5384313f35c",
     "sample-send-fail": "test_case_5710f390c967",
     "empty-slots": "test_case_66304a8f18db",
-    "taken-slot": "test_case_a475cb52d544"
+    "taken-slot": "test_case_a475cb52d544",
+    "live-transfer-ask-human": "test_case_b0f827cb6c94",
+    "live-transfer-roleplay-emergency": "test_case_b48fb38f6d4f",
+    "live-transfer-skip-booking-only": "test_case_0b7522b7b8d1",
+    "live-transfer-no-911": "test_case_b47336dc6913",
+    "persona-lock-speech-injection": "test_case_736c8b4da8b1",
+    "persona-lock-custom-language": "test_case_4983b2688027",
+    "live-person-no-consulting-quiz": "test_case_ea3d519188e2",
+    "spanish-switch": "test_case_d114c5c1c4ee"
   }
 }

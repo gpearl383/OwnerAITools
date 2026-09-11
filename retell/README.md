@@ -5,6 +5,21 @@ template bots) are configured from this folder. **Never edit prompts in the
 Retell dashboard or via ad-hoc API calls** — edit the files here, commit, and
 push with the sync script, so every live prompt maps to a git commit.
 
+## Phone numbers (shared agents)
+
+Both OwnerAI inbound DIDs run the **same** production agents. There is no
+separate test-agent clone.
+
+| Number | Role | Voice | SMS |
+|---|---|---|---|
+| `+15169731973` | Public demo (website) | `demo-voice` | `sms-receptionist` |
+| `+15169613838` | Testing line (internal) | `demo-voice` (same) | unbound until A2P — do not bind a different agent |
+
+`node scripts/push-retell.mjs push demo-voice` (or `push` for all) updates the
+shared agents. Both numbers pick it up on the next call. Do **not** rebind the
+testing DID to a one-off agent in the dashboard — `/api/monitor` will fail on
+voice drift. Do **not** use either DID as a live-transfer destination (loop).
+
 ## Files
 
 - `manifest.json` — which agents/LLMs we manage and where their files live
@@ -30,10 +45,10 @@ git add retell/ && git commit -m "Describe the prompt change"
 #    (default https://owneraitools.com). Preview site deploys do NOT change Retell
 #    tools — only an explicit push with a non-prod base does.
 node scripts/push-retell.mjs push            # all agents
-node scripts/push-retell.mjs push demo-voice # one agent
+node scripts/push-retell.mjs push demo-voice # one agent — updates BOTH DIDs
 # Staging agent (name must end in -staging) → preview API:
 # RETELL_TOOL_BASE_URL=https://<preview>.vercel.app node scripts/push-retell.mjs push demo-voice-staging
-# Never point the live +15169731973 agent at a preview URL.
+# Never point the live +15169731973 / +15169613838 agents at a preview URL.
 
 # Check for drift between live and repo (e.g. someone edited the dashboard)
 node scripts/push-retell.mjs diff
@@ -49,6 +64,8 @@ RETELL_API_KEY=... node scripts/sync-demo-sims.mjs --run
 node scripts/test-demo-limits.mjs
 node scripts/assert-demo-sim-cases.mjs
 node scripts/test-retell-tool-base.mjs
+node scripts/test-retell-transfer-phone.mjs
+node scripts/test-testing-line.mjs
 ```
 
 After changing `demo-voice.prompt.md`, sync+run sims before considering the change done.
@@ -61,10 +78,11 @@ secret `RETELL_API_KEY` (OwnerAI demo workspace only — never a client key).
 **Human QA:** [`docs/ops/demo-qa-scorecard.md`](../docs/ops/demo-qa-scorecard.md) +
 weekly paste prompt [`docs/ops/demo-agent-health-prompt.md`](../docs/ops/demo-agent-health-prompt.md).
 
-Demo-voice uses a single Retell LLM with **Flow: Sample send** and **Flow: Setup book**
-step sections (deterministic tool paths inside the prompt). Full Retell Conversation
-Flow product migration stays deferred — Wave B sims are green (14/14 including
-failure paths); revisit only if packs start failing on tool skip / wrong tool.
+Demo-voice uses a single Retell LLM with **Flow: Sample send**, **Flow: Setup book**,
+and **Flow: Live transfer** step sections (deterministic tool paths inside the
+prompt). Full Retell Conversation Flow product migration stays deferred — Wave B
+sims are green (includes failure paths); revisit only if packs start failing on
+tool skip / wrong tool.
 
 ## Troubleshooting history
 

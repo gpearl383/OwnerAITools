@@ -25,6 +25,10 @@ import {
   isProductionToolBase,
   normalizeToolBase,
 } from './lib/retell-tool-base.mjs';
+import {
+  applyTransferPhoneToConfig,
+  redactTransferPhone,
+} from './lib/retell-transfer-phone.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const RETELL_DIR = path.join(ROOT, 'retell');
@@ -84,6 +88,16 @@ const AGENT_KEYS = [
   'webhook_events',
   'voice_model',
   'handbook_config',
+  'language',
+  'max_call_duration_ms',
+  'end_call_after_silence_ms',
+  // Turn-taking + ASR tuning (added after the 2026-09-10 failed-demo
+  // post-mortem — see docs/ops/2026-09-10-demo-call-postmortem.md).
+  'responsiveness',
+  'interruption_sensitivity',
+  'enable_backchannel',
+  'backchannel_frequency',
+  'boosted_keywords',
 ];
 
 function fail(msg) {
@@ -243,14 +257,25 @@ async function main() {
   for (const a of agents) {
     const live = await fetchLive(a);
     if (cmd === 'pull') {
-      writeRepo(a, live);
+      writeRepo(a, {
+        prompt: live.prompt,
+        config: redactTransferPhone(live.config),
+      });
       console.log(`${a.name}: pulled (prompt ${live.prompt.length} chars)`);
       continue;
     }
     const repo = readRepo(a);
+    let config;
+    try {
+      config = applyTransferPhoneToConfig(
+        applyToolBaseToConfig(repo.config, toolBase),
+      );
+    } catch (err) {
+      fail(`${a.name}: ${err.message}`);
+    }
     const effective = {
       prompt: repo.prompt,
-      config: applyToolBaseToConfig(repo.config, toolBase),
+      config,
     };
     const changes = summarizeDiff(a.name, live, effective);
     if (cmd === 'push' && changes.length) {

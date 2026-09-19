@@ -1,115 +1,190 @@
-# Mystery-shop script — OwnerAI demo line accuracy bar
+# Demo line — regression test script (post Double V / accuracy audit)
 
-**Number:** `+1 (516) 961-3838` (testing DID — same production agents as the public demo)  
-**Do not use** `+1 (516) 973-1973` for this QA call if you can avoid it (keeps public line free).  
-**Pass bar (from Sep-10 postmortem):** (a) Spanish switch works, (b) zero silent stretches >3s, (c) no agent sentence fragments from talk-over, (d) clean one-ask setup close. Plus Sep-18: landline → email without SMS.
+**Call:** `+1 (516) 961-3838` (testing DID — same agents as public `973-1973`)  
+**Avoid** the public website number for QA when possible.  
+**Goal:** Confirm today’s fixes work and nothing critical regressed.  
+**Pass rule:** Every required row in the scorecard is Pass before any real prospect demo.
 
-After the call, send the Call ID (from Retell dashboard or your phone log time) to the agent so they can pull `transcript_object` and run `api/lib/call-quality.mjs`.
+After the call, paste the **Retell Call ID** (dashboard → Calls) into chat so the agent can score `transcript_object` with `call-quality.mjs`.
 
----
-
-## Before you dial
-
-1. Have a **cell** and a way to receive SMS (for later segments if you flip channels).
-2. Have an email you can open (Gmail is fine).
-3. Be ready to speak Spanish briefly (Segment A).
-4. Be ready to interrupt mid-sentence twice (Segment B).
+**Rollback** (if this test fails badly): see [`demo-rollback-pre-double-v.md`](./demo-rollback-pre-double-v.md) — restores to commit `b0f1bb3` (before today’s Robert Viola / Double V reliability + accuracy work).
 
 ---
 
-## Segment A — Spanish switch (~30–45s)
+## Setup (2 min)
 
-1. Let the greeting finish (or say “Hello?” once if you barge in).
-2. Ask in English: **“Hi, what do you guys do?”**
-3. After their answer, say clearly: **“No… hablo español.”**
-4. Continue **only in Spanish** for 1–2 turns (e.g. ask what it costs: “¿Cuánto cuesta?”).
-5. Then say: **“Can we switch back to English?”**
+- [ ] Phone that can receive SMS (cell) **or** plan to stay on the landline path only
+- [ ] Email inbox open (Gmail fine)
+- [ ] Quiet room; plan to interrupt mid-sentence twice
+- [ ] Optional: second device to watch for SMS while on the call
 
-**Pass:** Agent offers/switches to Spanish within one turn of “hablo español”; never claims it cannot speak Spanish; pricing stays “setup call” with no invented dollars.
+**What “good” feels like**
 
-**Fail:** English clarifying loop; “I’ve let you guys”-style confusion; stays English after Spanish request.
-
----
-
-## Segment B — Interruption / no fragments (~30s)
-
-1. Ask them to explain Advanced features.
-2. **Interrupt mid-sentence twice** with short phrases (“wait—” / “actually—”).
-3. Let them finish one clean sentence.
-
-**Pass:** No stranded fragments (“Of”, “If you”); agent recovers without restarting the whole pitch.
-
-**Fail:** Repeated talk-over fragments; agent piles pitches on top of you.
+- Agent responds in ~1–2s, not 3–4s dead air
+- Speaks a short filler while samples send (“One sec — sending…”)
+- Never invents junk/spam excuses for missing **SMS**
+- Never texts a number that isn’t the one you’re calling from
 
 ---
 
-## Segment C — Landline SMS → email (~45s)
+## Call script (say roughly this)
 
-1. Say you want a **sample owner alert text**.
-2. When they ask if you’re calling from a cell: **“No — this is my office landline / desk phone.”**
-3. Agree to **email** instead when offered.
+### 1. Greeting (~15s) — required
 
-**Pass:** No SMS send attempt after landline; switches to email offer.
+- Let them finish, **or** barge in once with: **“Hello?”**
+- Then: **“Hi — what do you guys do?”**
 
-**Fail:** Tries to text anyway; invents another cell to text.
-
----
-
-## Segment D — Email sample + mandatory read-back (~60s)
-
-1. Spell an email slowly (use a real inbox), e.g. letter-by-letter local part.
-2. Wait for them to **read it back** with spaced letters and ask you to confirm.
-3. Say **yes**, then wait for send.
-
-**Pass:** Read-back happens **before** send; you hear a short filler while sending (“One sec — sending…”); confirmation is honest (Sent / still sending — not silent >3s).
-
-**Fail:** Sends without read-back; ~15s dead air; says Sent when nothing arrived.
+| Check | Pass / Fail |
+|-------|-------------|
+| Clean AI receptionist intro (no invented owner/staff names) | |
+| No broken mid-word greeting fragments | |
 
 ---
 
-## Segment E — One-ask close (~20s)
+### 2. Spanish switch (~45s) — required
 
-1. After send confirmation, **pause** — let them ask about a setup call once.
-2. Say: **“Let me think about it.”**
-3. If they restart the full pitch, interrupt: **“I already heard that.”**
+- After their pitch: **“No… hablo español.”**
+- Then only Spanish: **“¿Cuánto cuesta el servicio?”**
+- Then: **“Can we switch back to English?”**
 
-**Pass:** Exactly one setup ask; stops when you interrupt; no pitch restart.
-
-**Fail:** Double pitch within seconds; talks over your reaction.
-
----
-
-## Segment F — Setup book (optional if time; do at least once this week)
-
-1. Say yes to a 15-minute setup.
-2. Give name + business.
-3. Pick the **first** slot they offer from the tool (not invented times).
-4. Confirm email spelling; complete booking.
-5. Check inbox for Cal.com invite.
-
-**Pass:** `check_availability` then `book_setup_call`; invite arrives; no invented slots.
+| Check | Pass / Fail |
+|-------|-------------|
+| Switches (or offers Spanish) within **one** turn of “hablo español” | |
+| Never says it can’t speak Spanish | |
+| No price invented — pushes to free setup call | |
+| Switches back to English cleanly | |
 
 ---
 
-## After the call — score checklist
+### 3. Interruption feel (~30s) — required
 
-| Check | Pass? |
-|---|---|
-| Spanish switch ≤1 turn | |
-| No silent stretch >3s (esp. during send) | |
-| No talk-over fragments | |
-| Landline → email (no SMS) | |
-| Email read-back before send | |
-| One setup ask; no restart | |
-| (Optional) Setup booked + invite | |
+- **“Tell me what’s in the Advanced plan.”**
+- Interrupt twice mid-sentence: **“wait—”** then **“actually—”**
+- Let them finish one clean sentence
 
-Paste Call ID here: `____________________________`
+| Check | Pass / Fail |
+|-------|-------------|
+| No stranded fragments (“Of”, “If you”, “Glad you’re”) | |
+| Doesn’t restart the whole pitch after each interrupt | |
+| Feels responsive, not sluggish (no multi-second freezes) | |
 
-Agent will run:
+---
+
+### 4. Double V landline path (~60s) — required  
+*(this is the Robert Viola failure mode)*
+
+- **“I want a sample of the owner alert text.”**
+- When they ask if the calling number is a cell:  
+  **“No — this is my office landline / desk phone.”**
+- Agree to email when offered
+
+| Check | Pass / Fail |
+|-------|-------------|
+| Does **not** send SMS after landline | |
+| Offers email instead (no “different cell”) | |
+| Does not go silent >3s waiting on a tool | |
+
+---
+
+### 5. Email sample + read-back (~90s) — required
+
+- Spell a real email slowly (letter by letter for the part before `@`)
+- Wait for read-back
+- Confirm **“Yes”**
+- Stay quiet and listen during send
+
+| Check | Pass / Fail |
+|-------|-------------|
+| Reads email back (spaced letters) **before** sending | |
+| Speaks a filler while sending (not dead air) | |
+| Honest result (“Sent” / “still sending — can take a minute”) | |
+| Email actually arrives (check inbox / junk once if needed) | |
+| Silent stretch during send **≤ 3 seconds** | |
+
+---
+
+### 6. One-ask close (~20s) — required
+
+- After send confirm, **pause** — let them ask about setup once
+- Say: **“Let me think about it.”**
+- If they re-pitch: **“I already heard that.”**
+
+| Check | Pass / Fail |
+|-------|-------------|
+| Setup ask happens **once** | |
+| Stops when interrupted — no pitch restart | |
+
+---
+
+### 7. Happy-path SMS sample (optional if you have a cell) (~60s)
+
+Do this on a **second short call** if the first call already burned the landline path.
+
+- Call again from a **cell**
+- Ask for sample text → confirm calling number is a cell → yes
+- After “Sent,” wait up to ~60s for SMS
+- If missing: say **“I didn’t get the text.”**
+
+| Check | Pass / Fail |
+|-------|-------------|
+| Discloses “only the number you’re calling from” before send | |
+| SMS arrives (or agent says it can take up to a minute — **no** junk/carrier excuses) | |
+| Offers email backup once if text missing | |
+
+---
+
+### 8. Setup book (optional weekly) (~2 min)
+
+- **“Actually yes — let’s book a 15-minute setup.”**
+- Give name + business
+- Pick **first** real slot they offer
+- Confirm email spelling → book → check Cal.com invite
+
+| Check | Pass / Fail |
+|-------|-------------|
+| Uses live calendar (no invented times) | |
+| Invite arrives at the confirmed email | |
+
+---
+
+## Final scorecard (all required rows must Pass)
+
+| # | Required check | Pass? |
+|---|----------------|-------|
+| 1 | Greeting / identity | |
+| 2 | Spanish ≤1 turn | |
+| 3 | Interruptions / no fragments | |
+| 4 | Landline → email (no SMS) | |
+| 5 | Email read-back + ≤3s send silence | |
+| 6 | One setup ask / no restart | |
+
+**Call ID:** `________________________________`
+
+**Verdict:** ☐ PASS — ok for prospect demos ☐ FAIL — do not demo; roll back or fix
+
+---
+
+## Local checks (no phone) — run anytime
+
+From repo root:
 
 ```bash
-# After fetching the call JSON from Retell:
-node -e "import { computeCallQuality } from './api/lib/call-quality.mjs'; ..."
+node scripts/assert-demo-sim-cases.mjs
+node scripts/test-call-quality.mjs
+node scripts/test-demo-alert-disclosure.mjs
+node scripts/test-demo-alert-compose-wait.mjs
+node scripts/test-demo-alert-normalize.mjs
+node scripts/test-demo-alert-parallel.mjs
+node scripts/test-webhook-consent-gates.mjs
+node scripts/push-retell.mjs diff demo-voice
 ```
 
-**Do not demo to a real prospect until this scorecard is all Pass.**
+`diff` must say `demo-voice: in sync` (live matches repo).
+
+---
+
+## If the call fails
+
+1. **Do not** put a prospect on the line.
+2. Open [`demo-rollback-pre-double-v.md`](./demo-rollback-pre-double-v.md) and restore to `b0f1bb3`.
+3. Re-run segments 4–6 at minimum (Double V path + email send).

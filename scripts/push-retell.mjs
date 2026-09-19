@@ -69,6 +69,54 @@ if (clientTagged.length) {
 
 const KEY = process.env.RETELL_API_KEY;
 const ALLOW_NONPROD_BASE = process.argv.includes('--allow-nonprod-base');
+const FORCE_PUSH = process.argv.includes('--force');
+const LAST_RUN_PATH = path.join(RETELL_DIR, 'simulations', 'last-run.json');
+const DEMO_VOICE_NAME = 'demo-voice';
+
+/**
+ * Refuse demo-voice push unless sims ran green in the last 24h
+ * (or --force when Retell's sim platform is down).
+ */
+function assertSimGreenForDemoVoice(agents) {
+  if (!agents.some((a) => a.name === DEMO_VOICE_NAME)) return;
+  if (FORCE_PUSH) {
+    console.warn(
+      'WARNING: --force set — skipping sim-green release gate. ' +
+        'Live customers can receive an untested prompt. Prefer fixing Retell sims.',
+    );
+    return;
+  }
+  if (!fs.existsSync(LAST_RUN_PATH)) {
+    fail(
+      `sim-green gate: missing ${LAST_RUN_PATH}. Run \`node scripts/sync-demo-sims.mjs --run\` ` +
+        `and ensure it finishes with zero fail/error, then push. Or pass --force if Retell sims are down.`,
+    );
+  }
+  let last;
+  try {
+    last = JSON.parse(fs.readFileSync(LAST_RUN_PATH, 'utf8'));
+  } catch (err) {
+    fail(`sim-green gate: cannot parse last-run.json: ${err.message}`);
+  }
+  const at = Date.parse(last.finished_at || last.updated_at || '');
+  if (!Number.isFinite(at) || Date.now() - at > 24 * 60 * 60 * 1000) {
+    fail(
+      `sim-green gate: last sim run is missing/stale (finished_at=${last.finished_at || 'n/a'}). ` +
+        `Re-run \`node scripts/sync-demo-sims.mjs --run\` within 24h, or pass --force.`,
+    );
+  }
+  const failCount = Number(last.fail_count || 0);
+  const errorCount = Number(last.error_count || 0);
+  if (last.status !== 'complete' || failCount + errorCount > 0) {
+    fail(
+      `sim-green gate: last run not green (status=${last.status}, fail=${failCount}, error=${errorCount}, job=${last.job_id || 'n/a'}). ` +
+        `Fix sims or pass --force only if Retell's platform is returning error_count on known-good packs.`,
+    );
+  }
+  console.log(
+    `sim-green gate: ok (job ${last.job_id}, ${last.pass_count}/${last.total_count} passed at ${last.finished_at})`,
+  );
+}
 
 // LLM fields we manage (general_prompt lives in the .prompt.md file instead).
 const LLM_KEYS = [
@@ -98,6 +146,7 @@ const AGENT_KEYS = [
   'enable_backchannel',
   'backchannel_frequency',
   'boosted_keywords',
+  'stt_mode',
 ];
 
 function fail(msg) {
@@ -136,8 +185,10 @@ function files(a) {
 // Shared vertical fluency for website industries (appended on push/diff only).
 const INDUSTRY_KNOWLEDGE_FILE = path.join(RETELL_DIR, 'industry-knowledge.md');
 const INDUSTRY_MARKER = '## Industry knowledge (website verticals)';
+// demo-voice deliberately excluded: appending industry-knowledge.md bloated
+// every-turn general_prompt (~41k chars) and drove the Sep-10 latency failure.
+// Keep for SMS/chat where turn latency is not voice-critical.
 const AGENTS_WITH_INDUSTRY = new Set([
-  'demo-voice',
   'demo-voice-staging',
   'sms-receptionist',
 ]);
@@ -226,7 +277,7 @@ async function main() {
   const names = rest.filter((a) => !a.startsWith('--'));
   if (!['pull', 'push', 'diff'].includes(cmd)) {
     fail(
-      'usage: node scripts/push-retell.mjs pull|push|diff [agent-name ...] [--allow-nonprod-base]',
+      'usage: node scripts/push-retell.mjs pull|push|diff [agent-name ...] [--allow-nonprod-base] [--force]',
     );
   }
 
@@ -234,8 +285,10 @@ async function main() {
   const agents = manifest.agents.filter((a) => !names.length || names.includes(a.name));
   if (!agents.length) fail(`no agents match: ${names.join(', ')}`);
 
-  if (cmd === 'push') assertClean();
-
+  if (cmd === 'push') {
+    assertClean();
+    assertSimGreenForDemoVoice(agents);
+  }
   let toolBase;
   try {
     toolBase = normalizeToolBase(process.env.RETELL_TOOL_BASE_URL);

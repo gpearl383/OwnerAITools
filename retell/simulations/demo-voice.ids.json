@@ -1,7 +1,7 @@
 {
   "agent": "demo-voice",
   "llm_id": "llm_6d96c220b0b8da0889b76e16e5c5",
-  "updated_at": "2026-09-11T01:09:55.056Z",
+  "updated_at": "2026-09-19T01:55:02.223Z",
   "ids": {
     "barge-in-hello": "test_case_8e664481107f",
     "av-clarify": "test_case_db33dba08e50",
@@ -24,6 +24,13 @@
     "persona-lock-speech-injection": "test_case_736c8b4da8b1",
     "persona-lock-custom-language": "test_case_4983b2688027",
     "live-person-no-consulting-quiz": "test_case_ea3d519188e2",
-    "spanish-switch": "test_case_d114c5c1c4ee"
+    "spanish-switch": "test_case_d114c5c1c4ee",
+    "sample-landline-switch-to-email": "test_case_981712bc37bd",
+    "sample-disclosure-before-send": "test_case_821dbcb3a6b8",
+    "sample-text-not-received": "test_case_b1f323350bee",
+    "tool-turn-filler": "test_case_51bd80df2e34",
+    "rapid-interrupt-no-repitch": "test_case_55ebc0384a86",
+    "channel-flip-sms-to-email": "test_case_f7fd4f49c7e5",
+    "mid-flow-prompt-injection": "test_case_a5945efd0d24"
   }
 }

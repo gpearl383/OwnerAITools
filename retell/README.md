@@ -26,9 +26,10 @@ voice drift. Do **not** use either DID as a live-transfer destination (loop).
 - `<name>.prompt.md` — the LLM system prompt (`general_prompt`)
 - `<name>.config.json` — managed fields: LLM (`model`, `begin_message`,
   `general_tools`, ...) and agent (`post_call_analysis_data`, `webhook_url`, ...)
-- `industry-knowledge.md` — shared vertical fluency for all industries on the
-  marketing site (appended on push to demo-voice / sms-receptionist / staging;
-  also loaded by the website chat assistant). Edit this file when industries change.
+- `industry-knowledge.md` — shared vertical fluency for website industries.
+  Appended on push to **sms-receptionist** (and staging) only — **not** demo-voice
+  (voice latency: Sep-10 postmortem). Website chat loads it separately. Edit when
+  industries change.
 - `simulations/demo-voice.cases.json` — Retell simulation scenarios (source of truth)
 - `simulations/demo-voice.ids.json` — Retell test_case_definition_ids (written by sync)
 
@@ -44,8 +45,11 @@ git add retell/ && git commit -m "Describe the prompt change"
 #    Tool/webhook URLs are rewritten at push time from RETELL_TOOL_BASE_URL
 #    (default https://owneraitools.com). Preview site deploys do NOT change Retell
 #    tools — only an explicit push with a non-prod base does.
+#    demo-voice push requires a green sim run in the last 24h
+#    (retell/simulations/last-run.json). If Retell's sim platform is down, use --force.
 node scripts/push-retell.mjs push            # all agents
 node scripts/push-retell.mjs push demo-voice # one agent — updates BOTH DIDs
+node scripts/push-retell.mjs push demo-voice --force  # escape hatch only
 # Staging agent (name must end in -staging) → preview API:
 # RETELL_TOOL_BASE_URL=https://<preview>.vercel.app node scripts/push-retell.mjs push demo-voice-staging
 # Never point the live +15169731973 / +15169613838 agents at a preview URL.
@@ -76,7 +80,8 @@ manual `workflow_dispatch` (`.github/workflows/demo-sims.yml`) using the repo
 secret `RETELL_API_KEY` (OwnerAI demo workspace only — never a client key).
 
 **Human QA:** [`docs/ops/demo-qa-scorecard.md`](../docs/ops/demo-qa-scorecard.md) +
-weekly paste prompt [`docs/ops/demo-agent-health-prompt.md`](../docs/ops/demo-agent-health-prompt.md).
+weekly paste prompt [`docs/ops/demo-agent-health-prompt.md`](../docs/ops/demo-agent-health-prompt.md) +
+live mystery-shop script [`docs/ops/demo-mystery-shop-script.md`](../docs/ops/demo-mystery-shop-script.md).
 
 Demo-voice uses a single Retell LLM with **Flow: Sample send**, **Flow: Setup book**,
 and **Flow: Live transfer** step sections (deterministic tool paths inside the

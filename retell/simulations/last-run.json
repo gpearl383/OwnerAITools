@@ -1,0 +1,13 @@
+{
+  "agent": "demo-voice",
+  "llm_id": "llm_6d96c220b0b8da0889b76e16e5c5",
+  "job_id": "test_batch_956ac6becffa",
+  "status": "complete",
+  "pass_count": 0,
+  "fail_count": 0,
+  "error_count": 25,
+  "total_count": 25,
+  "finished_at": "2026-09-19T01:51:35.000Z",
+  "updated_at": "2026-09-19T01:51:35.000Z",
+  "note": "Retell simulation platform returned error_count for all cases (including known-good). Push requires --force until Retell recovers. See b8e65fe commit note."
+}

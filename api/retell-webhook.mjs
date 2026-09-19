@@ -42,6 +42,7 @@ import { evaluateRescueSignals } from './lib/rescue-signals.mjs';
 import { bookingConfirmConsent, hangupNurtureConsent } from './lib/sms-consent.mjs';
 import { sendAdminMonitorEmail } from './lib/admin-monitor.mjs';
 import { recordingContentType } from './lib/recording-content-type.mjs';
+import { computeCallQuality, qualityShouldAlert } from './lib/call-quality.mjs';
 
 /** Best-effort owner alert for any failed audit rows in a batch. */
 async function alertFailedAudit(audit, context = {}) {
@@ -1307,6 +1308,62 @@ export async function POST(request) {
         detail: err.message.slice(0, 400),
       });
     }
+  }
+
+  // Mechanical call-quality gate (gap / overlap / tool silence / read-back).
+  // Independent of Retell call_successful / user_sentiment (Sep-10 Failure 7).
+  try {
+    const toolCalls =
+      call.tool_calls ||
+      call.retell_llm_dynamic_variables?.tool_calls ||
+      [];
+    // Retell also embeds tool invocations inside transcript_with_tool_calls.
+    const fromTranscript = Array.isArray(call.transcript_with_tool_calls)
+      ? call.transcript_with_tool_calls
+          .filter((t) => t && (t.role === 'tool_call_invocation' || t.tool_call_id))
+          .map((t) => ({
+            name: t.name || t.tool_name,
+            start: t.start || t.time_sec,
+            end: t.end,
+            arguments: t.arguments || t.args,
+          }))
+      : [];
+    const quality = computeCallQuality({
+      transcript_object: call.transcript_object || [],
+      tool_calls: toolCalls.length ? toolCalls : fromTranscript,
+    });
+    audit.push({
+      ...base,
+      event_type: 'call_quality',
+      status: quality.failed ? 'failed' : 'ok',
+      detail: quality.flags.length
+        ? quality.flags.join('; ').slice(0, 400)
+        : 'within thresholds',
+      quality_metrics: quality,
+      payload: quality,
+    });
+    if (qualityShouldAlert(quality)) {
+      await notifyOwner({
+        key: `quality:${call.call_id}`,
+        subject: `QA FAIL: demo call ${call.call_id || ''} — ${quality.flags[0]}`,
+        sms: `QA FAIL ${data.name || call.from_number || 'caller'}: ${quality.flags.join('; ')}`.slice(0, 320),
+        detail: JSON.stringify({
+          call_id: call.call_id,
+          quality,
+          from: call.from_number,
+          duration_sec: duration,
+        }),
+        force: true,
+      });
+    }
+  } catch (err) {
+    console.error('retell-webhook call-quality failed:', err.message);
+    audit.push({
+      ...base,
+      event_type: 'call_quality',
+      status: 'failed',
+      detail: `quality compute error: ${err.message.slice(0, 300)}`,
+    });
   }
 
   await logAuditEvents(audit);

@@ -22,10 +22,11 @@ Use this weekly (or after any `push-retell` of demo-voice / sms-receptionist). S
 
 1. **Weekly** — paste the prompt in [`demo-agent-health-prompt.md`](demo-agent-health-prompt.md) into a Cursor chat on OwnerAITools.
 2. **After prompt push** — run `node scripts/sync-demo-sims.mjs --run` (or wait for Monday CI `demo-sims`).
-3. **Monthly** — one live mystery-shop call + one SMS thread.
+3. **Monthly** — one live mystery-shop call ([script](demo-mystery-shop-script.md)) + one SMS thread.
 
 ## Automated coverage (not a substitute)
 
-- Unit: `node scripts/test-demo-limits.mjs`, `node scripts/assert-demo-sim-cases.mjs`, `node scripts/test-retell-tool-base.mjs`, `node scripts/test-retell-transfer-phone.mjs`
-- Retell pack: 18 cases in `retell/simulations/demo-voice.cases.json` (includes failure paths)
+- Unit: `node scripts/test-demo-limits.mjs`, `node scripts/assert-demo-sim-cases.mjs`, `node scripts/test-retell-tool-base.mjs`, `node scripts/test-retell-transfer-phone.mjs`, `node scripts/test-call-quality.mjs`
+- Retell pack: cases in `retell/simulations/demo-voice.cases.json` (includes failure paths + Spanish/landline/quality cases)
 - Infra probes: `/api/monitor` (ops uptime, not conversation QA)
+- Live mystery-shop: [`demo-mystery-shop-script.md`](demo-mystery-shop-script.md)

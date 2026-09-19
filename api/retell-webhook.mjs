@@ -38,7 +38,10 @@ import {
   buildHangupNurtureSms,
 } from './lib/alerts.mjs';
 import { notifyOwner } from './lib/notify.mjs';
+import { evaluateRescueSignals } from './lib/rescue-signals.mjs';
+import { bookingConfirmConsent, hangupNurtureConsent } from './lib/sms-consent.mjs';
 import { sendAdminMonitorEmail } from './lib/admin-monitor.mjs';
+import { recordingContentType } from './lib/recording-content-type.mjs';
 
 /** Best-effort owner alert for any failed audit rows in a batch. */
 async function alertFailedAudit(audit, context = {}) {
@@ -380,9 +383,7 @@ async function persistCallRecord({ id, kind, callerName, fromNumber, summary, tr
         // Storage rejects Content-Type params (e.g. "; codecs=...") and needs
         // both apikey + Authorization — missing apikey surfaces as
         // "Invalid Compact JWS".
-        const contentType = (audio.headers.get('content-type') || 'audio/wav')
-          .split(';')[0]
-          .trim() || 'audio/wav';
+        const contentType = recordingContentType(audio.headers.get('content-type'));
         const path = `${id}.wav`;
         const up = await fetch(
           `${url}/storage/v1/object/call-recordings/${encodeURIComponent(path)}?upsert=true`,
@@ -1137,10 +1138,13 @@ export async function POST(request) {
 
   // Hangup nurture: text the prospect when they dropped early but looked real.
   // Skipped for non-hangups (those may get customer confirmation instead).
+  // ANI-match required: never auto-SMS a role-play callback that differs from
+  // the number that actually placed the call (compliance + Sep-18 failure mode).
   if (hungUp && !nurtureAlready) {
     const nurtureTo = normalizePhone(data.callback_phone || call.from_number);
     const ownerNorm = normalizePhone(alertPhone);
     const fromNorm = normalizePhone(process.env.RETELL_SMS_FROM);
+    const callerNorm = normalizePhone(call.from_number);
     try {
       if (!shouldSendHangupNurture({
         durationSec: duration,
@@ -1169,6 +1173,13 @@ export async function POST(request) {
           event_type: 'hangup_nurture_sms_skipped',
           status: 'skipped',
           detail: 'refusing to nurture owner or our own number',
+        });
+      } else if (!hangupNurtureConsent({ nurtureTo, fromNumber: call.from_number, normalizePhone }).ok) {
+        audit.push({
+          ...base,
+          event_type: 'hangup_nurture_sms_skipped',
+          status: 'skipped',
+          detail: `nurture target ${nurtureTo} != caller ${callerNorm} — ANI match required`,
         });
       } else if (alreadyNurtured(call.call_id)) {
         audit.push({
@@ -1213,23 +1224,31 @@ export async function POST(request) {
   }
 
   // Customer confirmation: only when the caller explicitly said yes to a
-  // text during the call (A2P consent) and left a usable number.
-  // Hangups never reach this path with a real booking confirmation in practice,
-  // but we still gate so nurture and confirm never both fire on a hung-up call.
+  // booking-confirmation text during the call (A2P consent) and left a usable
+  // number. "Yes" to a demo sample (send_demo_alert) must NOT trigger this.
+  // ANI match OR a real setup booking is required — role-play callbacks alone
+  // never get a booking-link SMS (Sep-18 Double V Contracting failure).
   if (!hungUp && !confirmAlready && data.wants_sms_confirmation && data.callback_phone) {
-    // The analysis sometimes extracts our own line as the callback number
-    // (e.g. the caller role-played "the number I'm calling from"); texting
-    // ourselves fails with "from and to cannot be the same".
-    const confirmTo = normalizePhone(data.callback_phone);
-    const ourNumbers = [process.env.RETELL_SMS_FROM, call.to_number]
-      .map(normalizePhone)
-      .filter(Boolean);
-    if (confirmTo && ourNumbers.includes(confirmTo)) {
+    const consent = bookingConfirmConsent({
+      callbackPhone: data.callback_phone,
+      fromNumber: call.from_number,
+      setupCallBookedTime: data.setup_call_booked_time,
+      ourNumbers: [process.env.RETELL_SMS_FROM, call.to_number],
+      normalizePhone,
+    });
+    if (consent.reason === 'own_line') {
       audit.push({
         ...base,
         event_type: 'customer_sms_skipped',
         status: 'skipped',
-        detail: `callback number ${confirmTo} is our own line — bad extraction`,
+        detail: `callback number ${consent.confirmTo} is our own line — bad extraction`,
+      });
+    } else if (!consent.ok) {
+      audit.push({
+        ...base,
+        event_type: 'customer_sms_skipped',
+        status: 'skipped',
+        detail: `callback ${consent.confirmTo} != caller ${normalizePhone(call.from_number)} and no booking — refusing booking-link SMS without ANI-match or booking`,
       });
     } else {
       try {
@@ -1244,6 +1263,49 @@ export async function POST(request) {
         console.error('retell-webhook customer SMS failed:', err.message);
         audit.push({ ...base, event_type: 'sms_failed', status: 'failed', detail: `customer confirmation: ${err.message.slice(0, 400)}` });
       }
+    }
+  }
+
+  // Rescue alert: fire when a demo shows failure signals so the founder can
+  // call back within the hour with lead context (always-on public line).
+  const rescueSignals = evaluateRescueSignals({
+    call,
+    data,
+    hungUp,
+    transcript: call.transcript || '',
+    audit,
+  });
+  if (rescueSignals.length) {
+    try {
+      await notifyOwner({
+        key: `rescue:${call.call_id}`,
+        subject: `RESCUE: ${data.name || call.from_number || 'caller'} — ${rescueSignals[0]}`,
+        sms: `RESCUE: ${data.name || 'caller'} (${call.from_number || '?'}) — ${rescueSignals.join('; ')}. Callback: ${data.callback_phone || call.from_number || '?'}. ${data.business || ''}`.slice(0, 320),
+        detail: JSON.stringify({
+          signals: rescueSignals,
+          call_id: call.call_id,
+          name: data.name,
+          business: data.business,
+          from: call.from_number,
+          callback: data.callback_phone,
+          lead_quality: data.lead_quality,
+        }),
+        force: true,
+      });
+      audit.push({
+        ...base,
+        event_type: 'rescue_alert_sent',
+        status: 'ok',
+        detail: rescueSignals.join('; ').slice(0, 400),
+      });
+    } catch (err) {
+      console.error('retell-webhook rescue alert failed:', err.message);
+      audit.push({
+        ...base,
+        event_type: 'rescue_alert_failed',
+        status: 'failed',
+        detail: err.message.slice(0, 400),
+      });
     }
   }
 

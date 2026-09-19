@@ -1,7 +1,8 @@
 {
   "llm": {
     "model": "gpt-4.1",
-    "begin_message": "Thanks for calling OwnerAI — you're speaking with the AI receptionist. This call may be recorded. How can I help?",
+    "model_temperature": 0.2,
+    "begin_message": "Thanks for calling OwnerAI \u2014 you're speaking with the AI receptionist. This call may be recorded. How can I help?",
     "start_speaker": "agent",
     "general_tools": [
       {
@@ -12,11 +13,11 @@
       },
       {
         "method": "POST",
-        "execution_message_description": "Say one short natural filler while the samples send, e.g. \"One sec — sending your sample text and email right now.\" Never go silent during this tool.",
+        "execution_message_description": "Say one short natural filler while the samples send, e.g. \"One sec \u2014 sending your sample text and email right now.\" Never go silent during this tool.",
         "timeout_ms": 20000,
         "speak_after_execution": true,
         "name": "send_demo_alert",
-        "description": "Send the prospect SAMPLE owner notifications only: a [DEMO] lead-alert text, a [DEMO] appointment-booked text (when a role-play booked one), and — if they gave an email — a sample calendar invite plus a sample owner email. Only call after the caller explicitly agreed. Budget: 2 sample texts and 2 sample emails per call via this tool only — that cap does NOT block book_setup_call, Cal.com invites, confirmation SMS, or taking the caller's info. Tool result reports what was sent and what remains — relay in one short line; never tell the caller the sample cap blocks a real setup invite. For security, demo sample texts ONLY go to the number the caller is calling from — always omit prospect_mobile (server uses caller ID). Never pass a different cell. prospect_email must be compact (name@domain.com), never spoken letter form. Email-only: set send_text to false and include prospect_email. SMS+email: set send_text to true and include prospect_email.",
+        "description": "Send SAMPLE owner notifications: [DEMO] lead-alert text, optional [DEMO] appt text, and if email given a sample invite + owner email. Only after caller agreed. Budget 2 texts + 2 emails via this tool only \u2014 does NOT block book_setup_call/Cal.com/confirm SMS. Relay tool result in one short line. SMS ONLY to calling number \u2014 omit prospect_mobile. SERVER ENFORCES disclosure: for SMS set caller_confirmed_calling_number true ONLY after you said the text goes to the number they are calling from, confirmed it is a cell, and they said yes; otherwise server rejects. Landline/office \u2192 email only, never another cell. Compact prospect_email; compact digits for customer_phone/address. Email-only: send_text false + prospect_email. SMS: send_text true + caller_confirmed_calling_number true.",
         "type": "custom",
         "speak_during_execution": true,
         "parameters": {
@@ -31,19 +32,23 @@
             },
             "prospect_email": {
               "type": "string",
-              "description": "Compact email only (e.g. geoff@owneraitools.com). Never pass spoken/spelled forms like 'G E O F F at … dot com'. Omit if not sending email."
+              "description": "Compact email only (e.g. geoff@owneraitools.com). Never pass spoken/spelled forms like 'G E O F F at \u2026 dot com'. Omit if not sending email."
             },
             "address": {
               "type": "string",
-              "description": "Address the pretend customer gave, if any"
+              "description": "Address the pretend customer gave, if any \u2014 compact form with digits (e.g. 123 Lincoln Street), never spoken digit words"
             },
             "send_text": {
               "type": "boolean",
-              "description": "Set true to send sample SMS. Set false (or omit when prospect_email is set) for email-only — when prospect_email is present, SMS is off unless send_text is true."
+              "description": "Set true to send sample SMS. Set false (or omit when prospect_email is set) for email-only \u2014 when prospect_email is present, SMS is off unless send_text is true."
+            },
+            "caller_confirmed_calling_number": {
+              "type": "boolean",
+              "description": "REQUIRED true for any SMS send. Set true only after you disclosed that the demo text goes to the number they are calling from, confirmed it is a cell that can receive texts, and they clearly said yes. Never set true for landline/office-phone callers \u2014 offer email instead. Omit or false for email-only sends."
             },
             "prospect_mobile": {
               "type": "string",
-              "description": "Do not use. Demo sample texts always go to the calling number for security — omit this field so the server uses caller ID."
+              "description": "Do not use. Demo sample texts always go to the calling number for security \u2014 omit this field so the server uses caller ID."
             },
             "issue": {
               "type": "string",
@@ -51,7 +56,7 @@
             },
             "customer_phone": {
               "type": "string",
-              "description": "Callback number the pretend customer left"
+              "description": "Callback number the pretend customer left \u2014 compact digits only (e.g. 516-314-4000), never spoken form like 'five one six\u2026'"
             },
             "appointment_start": {
               "type": "string",
@@ -133,7 +138,7 @@
         "type": "transfer_call",
         "name": "live_transfer",
         "speak_after_execution": true,
-        "description": "Live-transfer the caller to an OwnerAI teammate at the predefined number. Call this when they ask for a representative, a live person, someone from the company, say they do not want the AI receptionist, sound frustrated and want a human, ask to test how live transfer works, or (in role-play) ask to be transferred for a business emergency such as a burst pipe or no heat. Never invent or pass a number. Never transfer to 911 or any emergency number — this tool has one fixed destination.",
+        "description": "Live-transfer the caller to an OwnerAI teammate at the predefined number. Call this when they ask for a representative, a live person, someone from the company, say they do not want the AI receptionist, sound frustrated and want a human, ask to test how live transfer works, or (in role-play) ask to be transferred for a business emergency such as a burst pipe or no heat. Never invent or pass a number. Never transfer to 911 or any emergency number \u2014 this tool has one fixed destination.",
         "transfer_destination": {
           "type": "predefined",
           "number": "env:OWNERAI_TRANSFER_PHONE"
@@ -152,18 +157,27 @@
         },
         "speak_during_execution": true,
         "execution_message_type": "static_text",
-        "execution_message_description": "Okay — connecting you to a live teammate now. Please stay on the line."
+        "execution_message_description": "Okay \u2014 connecting you to a live teammate now. Please stay on the line."
       }
     ]
   },
   "agent": {
-    "language": ["en-US", "es-ES", "zh-CN"],
+    "language": [
+      "en-US",
+      "es-ES",
+      "zh-CN"
+    ],
     "voice_model": "eleven_multilingual_v2",
     "responsiveness": 0.7,
     "interruption_sensitivity": 0.6,
     "enable_backchannel": true,
     "backchannel_frequency": 0.3,
-    "boosted_keywords": ["español", "hablo español", "en español", "OwnerAI"],
+    "boosted_keywords": [
+      "espa\u00f1ol",
+      "hablo espa\u00f1ol",
+      "en espa\u00f1ol",
+      "OwnerAI"
+    ],
     "handbook_config": {
       "speech_normalization": true
     },
@@ -243,7 +257,7 @@
       {
         "type": "boolean",
         "name": "wants_sms_confirmation",
-        "description": "True only if the caller explicitly agreed to receive a text confirmation with the booking link."
+        "description": "True only if the caller explicitly agreed to a POST-CALL BOOKING CONFIRMATION SMS with the setup-call link (Cal.com), typically after book_setup_call succeeds or after the agent asked \"want me to text you a confirmation with the booking link?\". A \"yes\" to a demo sample text (send_demo_alert) is NOT this field \u2014 leave false for sample-only agreements."
       },
       {
         "type": "boolean",
@@ -276,7 +290,7 @@
       {
         "type": "boolean",
         "name": "agent_stated_unlisted_fact",
-        "description": "True if the AGENT (not the user) stated a specific factual claim that is not part of its standard script — for example a person's name (owner, staff), a price or discount not in its pricing list, a company policy, or a source like 'company records'. This flags potential agent errors for review. False for facts the agent is clearly scripted to know (pricing tiers, features, that we offer broader AI/IT consulting and support)."
+        "description": "True if the AGENT (not the user) stated a specific factual claim that is not part of its standard script \u2014 for example a person's name (owner, staff), a price or discount not in its pricing list, a company policy, or a source like 'company records'. This flags potential agent errors for review. False for facts the agent is clearly scripted to know (pricing tiers, features, that we offer broader AI/IT consulting and support)."
       }
     ],
     "webhook_url": "https://owneraitools.com/api/retell-webhook",

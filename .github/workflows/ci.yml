@@ -18,6 +18,14 @@ jobs:
         run: node scripts/test-demo-limits.mjs
       - name: Demo sim cases sanity
         run: node scripts/assert-demo-sim-cases.mjs
+      - name: Demo alert disclosure / compose / normalize / parallel
+        run: |
+          node scripts/test-demo-alert-disclosure.mjs
+          node scripts/test-demo-alert-compose-wait.mjs
+          node scripts/test-demo-alert-normalize.mjs
+          node scripts/test-demo-alert-parallel.mjs
+      - name: Webhook consent gates + rescue signals
+        run: node scripts/test-webhook-consent-gates.mjs
       - name: Retell tool-base rewrite unit tests
         run: node scripts/test-retell-tool-base.mjs
       - name: Retell live-transfer destination unit tests

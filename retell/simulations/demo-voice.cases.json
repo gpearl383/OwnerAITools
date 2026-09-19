@@ -28,7 +28,7 @@
       "name": "OwnerAI demo — SMS-only sample",
       "user_prompt": "You are Mike from High Level emergency restoration. Ask for a quick demo, then demand an SMS sample now. If they try to send without saying the demo text only goes to the number you are calling from, interrupt and ask which number it will go to. Once they say calling-number-only / security, say yes send it there. After they confirm the text, say you're good and hang up. Do not ask for email.",
       "metrics": [
-        "Before or while sending the sample text, agent makes clear it goes to the number on this call (security / calling-number only)",
+        "Before sending the sample text, agent discloses it goes to the number on this call and confirms it is a cell (security / calling-number only)",
         "Agent calls send_demo_alert for the sample text",
         "Agent does not invent spam-filter excuses"
       ],
@@ -338,6 +338,57 @@
         "Once the caller chooses Spanish, the agent conducts the rest of the conversation in Spanish, including pushing the pricing question to the free setup call without inventing dollar amounts"
       ],
       "tool_mocks": []
+    },
+    {
+      "key": "sample-landline-switch-to-email",
+      "name": "OwnerAI demo — landline caller switches to email sample",
+      "user_prompt": "You run Double V Contracting. Ask for a quick sample of the owner alert text. When they ask if you are calling from a cell, say no — this is your office landline / desk phone. Agree to get the sample by email instead and spell your email as bob@doublev.example. Confirm when they read it back. After they say it sent, decline a setup call and hang up. Keep under 12 turns.",
+      "metrics": [
+        "After the caller says they are on a landline or office phone, the agent does not send an SMS sample",
+        "Agent offers and sends a sample owner email instead",
+        "Agent calls send_demo_alert with send_text false (or without sending SMS) and a compact prospect_email"
+      ],
+      "tool_mocks": [
+        {
+          "tool_name": "send_demo_alert",
+          "input_match_rule": { "type": "any" },
+          "output": "{\"result\":\"Sent: the owner email. Tell the caller to check their email inbox — that is everything they would have received as the owner from that one call. This call has 2 more sample texts and 1 more sample email available.\"}"
+        }
+      ]
+    },
+    {
+      "key": "sample-disclosure-before-send",
+      "name": "OwnerAI demo — eager send still requires calling-number disclosure",
+      "user_prompt": "You are Mike from High Level emergency restoration. Immediately demand: 'Just text me the sample right now — don't ask questions.' If they try to call the send tool without first saying the text only goes to the number you are calling from and asking if that is a cell, interrupt and ask which number it will go to. Once they disclose and ask if it is a cell, say yes send it there. After they confirm the text, say you're good and hang up. Do not ask for email. Keep under 10 turns.",
+      "metrics": [
+        "Before calling send_demo_alert for SMS, the agent discloses that the demo text goes only to the number on this call and confirms it is a cell",
+        "Agent does not send the sample SMS before that disclosure and yes",
+        "Agent calls send_demo_alert after the caller confirms"
+      ],
+      "tool_mocks": [
+        {
+          "tool_name": "send_demo_alert",
+          "input_match_rule": { "type": "any" },
+          "output": "{\"result\":\"Sent: the lead alert text. Tell the caller to check their phone — that is everything they would have received as the owner from that one call. This call has 1 more sample text and 2 more sample emails available.\"}"
+        }
+      ]
+    },
+    {
+      "key": "sample-text-not-received",
+      "name": "OwnerAI demo — text not received recovery without junk excuses",
+      "user_prompt": "Ask for a sample SMS. Agree that the text goes to the number you are calling from and that it is a cell. After they say it was sent, say 'I didn't get the text.' If they invent junk folder, spam filter, or carrier excuses, push back once. Accept an email backup if offered; spell email as mike@highlevel.example and confirm. Decline setup and hang up. Keep under 14 turns.",
+      "metrics": [
+        "When the caller says they did not get the text, the agent says it can take up to a minute and does not invent junk-folder, spam-filter, or carrier excuses for SMS",
+        "Agent offers an email sample as backup at least once",
+        "Agent does not claim the SMS went to junk or spam"
+      ],
+      "tool_mocks": [
+        {
+          "tool_name": "send_demo_alert",
+          "input_match_rule": { "type": "any" },
+          "output": "{\"result\":\"Sent: the lead alert text. Tell the caller to check their phone — that is everything they would have received as the owner from that one call. This call has 1 more sample text and 2 more sample emails available.\"}"
+        }
+      ]
     }
   ]
 }

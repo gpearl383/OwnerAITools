@@ -29,6 +29,7 @@ import {
 } from './lib/demo-limits.mjs';
 import { resolveEmail } from './lib/spoken-email.mjs';
 import { isMutatedJokeName } from './lib/joke-name.mjs';
+import { normalizeDemoAlertArgs } from './lib/spoken-form.mjs';
 
 const TZ = 'America/New_York';
 
@@ -164,6 +165,37 @@ function buildDemoEmailHtml(args) {
 
 /* ---------- senders ---------- */
 
+const COMPOSE_POLL_BUDGET_MS = 6000;
+const COMPOSE_POLL_INTERVAL_MS = 500;
+
+/**
+ * Poll get-chat until an agent message appears or the budget expires.
+ * create-sms-chat returns before the template bot composes — reporting
+ * "Sent" at create time caused the Sep-18 landline demo failure (~27s gap).
+ */
+export async function waitForComposedMessage(chatId, budgetMs = COMPOSE_POLL_BUDGET_MS) {
+  if (!chatId) return false;
+  const started = Date.now();
+  while (Date.now() - started < budgetMs) {
+    try {
+      const r = await fetch(`https://api.retellai.com/get-chat/${chatId}`, {
+        headers: { Authorization: `Bearer ${process.env.RETELL_API_KEY}` },
+      });
+      if (r.ok) {
+        const c = await r.json();
+        const msgs = c.message_with_tool_calls || c.messages || [];
+        if (msgs.some((m) => m.role === 'agent' && String(m.content || '').length > 0)) {
+          return true;
+        }
+      }
+    } catch {
+      /* transient */
+    }
+    await new Promise((r) => setTimeout(r, COMPOSE_POLL_INTERVAL_MS));
+  }
+  return false;
+}
+
 async function sendDemoSms(to, body, source, deferred) {
   const res = await fetch('https://api.retellai.com/create-sms-chat', {
     method: 'POST',
@@ -181,6 +213,9 @@ async function sendDemoSms(to, body, source, deferred) {
   });
   if (!res.ok) throw new Error(`Retell SMS ${res.status}: ${await res.text()}`);
   const chat = await res.json();
+  // Wait briefly for the template message to actually exist before we tell
+  // the agent (and thus the caller) that it was "Sent".
+  const composed = await waitForComposedMessage(chat?.chat_id);
   // Thread hygiene: end the one-shot template chat so a later reply from the
   // prospect starts a fresh thread with the SMS receptionist instead of
   // hitting this stale template bot. Deferred (not awaited inline) so it does
@@ -196,7 +231,7 @@ async function sendDemoSms(to, body, source, deferred) {
       })
     );
   }
-  return chat;
+  return { chat, composed };
 }
 
 // ICS timestamp: 20260722T130000Z
@@ -360,7 +395,9 @@ export async function POST(request) {
   }
 
   // Retell custom-function body: { name, call, args }. Tolerate args-only too.
-  const args = payload.args || payload;
+  const rawArgs = payload.args || payload;
+  // Normalize spoken-form digits in phone/address/appointment before body build.
+  const args = normalizeDemoAlertArgs(rawArgs);
   const call = payload.call || {};
   const providedTo = normalizePhone(args.prospect_mobile);
   const from = normalizePhone(call.from_number);
@@ -426,6 +463,18 @@ export async function POST(request) {
     return blocked(
       `mutated joke name blocked: customer=${args.customer_name || ''} business=${args.business_name || ''}`,
       'The sample could not be sent because the name looked like a speech-game override. Use the real captured name and business, speak normal English, and continue the demo.'
+    );
+  }
+  // Hard gate: SMS requires prior calling-number disclosure (server-enforced —
+  // prompt-only disclosure was skipped on the Sep-18 Double V Contracting call).
+  // Email-only sends do not need this flag.
+  if (doSmsPreferred && args.caller_confirmed_calling_number !== true) {
+    return blocked(
+      'sms attempted without calling-number disclosure',
+      "Do not call this tool for SMS yet. First tell the caller in one short sentence: " +
+        "'For the demo, the text can only go to the number you're calling from — is that a cell that can get texts?' " +
+        'Then wait for a clear yes. If they say it is a landline or an office phone, DO NOT retry the text — offer the sample email instead. ' +
+        'Only retry send_demo_alert with caller_confirmed_calling_number: true after they confirm the calling number is a cell.'
     );
   }
   if (!(await allowance.allowInvocation(call.call_id))) {
@@ -498,18 +547,20 @@ export async function POST(request) {
   async function runSmsLegs() {
     const audit = [];
     const sent = [];
+    const queued = [];
     if (doSms) {
       try {
-        await sendDemoSms(to, buildDemoAlertBody(args), 'demo-lead-alert', deferred);
+        const { composed } = await sendDemoSms(to, buildDemoAlertBody(args), 'demo-lead-alert', deferred);
         await allowance.recordSms(call.call_id);
         audit.push({
           ...base,
           event_type: 'demo_alert_sms_sent',
           status: 'ok',
-          detail: `sample alert for ${args.business_name || 'unknown business'}`,
+          detail: `sample alert for ${args.business_name || 'unknown business'}${composed ? '' : ' (queued)'}`,
           payload: rolePlay,
         });
-        sent.push('the lead alert text');
+        if (composed) sent.push('the lead alert text');
+        else queued.push('the lead alert text');
       } catch (err) {
         console.error('demo-alert lead SMS failed:', err.message);
         audit.push({ ...base, event_type: 'sms_failed', status: 'failed', detail: `demo alert: ${err.message.slice(0, 400)}` });
@@ -518,16 +569,17 @@ export async function POST(request) {
     // Appointment SMS counts toward the same sample SMS budget.
     if (doSms && args.appointment && (await allowance.canSms(call.call_id))) {
       try {
-        await sendDemoSms(to, buildDemoApptBody(args), 'demo-appt-booked', deferred);
+        const { composed } = await sendDemoSms(to, buildDemoApptBody(args), 'demo-appt-booked', deferred);
         await allowance.recordSms(call.call_id);
         audit.push({
           ...base,
           event_type: 'demo_appt_sms_sent',
           status: 'ok',
-          detail: `appointment notification: ${String(args.appointment).slice(0, 200)}`,
+          detail: `appointment notification: ${String(args.appointment).slice(0, 200)}${composed ? '' : ' (queued)'}`,
           payload: rolePlay,
         });
-        sent.push('the appointment-booked text');
+        if (composed) sent.push('the appointment-booked text');
+        else queued.push('the appointment-booked text');
       } catch (err) {
         console.error('demo-alert appt SMS failed:', err.message);
         audit.push({ ...base, event_type: 'sms_failed', status: 'failed', detail: `demo appt: ${err.message.slice(0, 400)}` });
@@ -535,7 +587,7 @@ export async function POST(request) {
     } else if (doSms && args.appointment) {
       skips.push('appointment text skipped — sample SMS budget already used');
     }
-    return { audit, sent };
+    return { audit, sent, queued };
   }
 
   // Legs 3+4 — real calendar invite (ICS), then [DEMO] sample owner lead email
@@ -581,6 +633,7 @@ export async function POST(request) {
   const [smsRes, emailRes] = await Promise.all([runSmsLegs(), runEmailLegs()]);
   const audit = [...smsRes.audit, ...emailRes.audit];
   const sent = [...smsRes.sent, ...emailRes.sent];
+  const queued = smsRes.queued || [];
 
   // Overlap the audit write, the remaining-budget lookup, and any deferred
   // end-chat cleanups — all must settle before returning (serverless runtime
@@ -591,15 +644,33 @@ export async function POST(request) {
     allowance.remaining(call.call_id).then(remainingText),
     Promise.allSettled(deferred),
   ]);
-  if (!sent.length) {
+  if (!sent.length && !queued.length) {
     return toolResult(
       `Nothing could be sent — the sends failed. Apologize briefly, tell the caller you can retry, and continue. ${left}`
     );
   }
   const skipped = skips.length ? ` Not sent: ${skips.join('; ')}.` : '';
+  // Junk/Spam hint is email-only — never invent carrier/junk excuses for SMS.
   const inboxHint = doEmail
-    ? ' and their email inbox (if they do not see it, they can check Junk or Spam — only mention that after a successful send)'
+    ? ' and their email inbox (if they do not see the email, they can check Junk or Spam — only mention that after a successful email send)'
     : '';
+
+  if (queued.length && !sent.length) {
+    // SMS accepted but not yet composed — be honest so the agent does not
+    // tell the caller to check an empty phone.
+    const emailBit = emailRes.sent.length ? ` Email sent: ${emailRes.sent.join(', ')}.` : '';
+    return toolResult(
+      `Sending now: ${queued.join(', ')} — texts can take up to a minute to arrive. ` +
+        `Tell the caller it's on the way; if they don't see it in a minute, offer to send a sample email instead. ` +
+        `Never invent junk-folder, spam-filter, or carrier excuses for SMS.${emailBit}${skipped} ${left}`
+    );
+  }
+  if (queued.length) {
+    return toolResult(
+      `Sent: ${sent.join(', ')}. Still sending: ${queued.join(', ')} — that text can take up to a minute. ` +
+        `Tell the caller to check their phone${inboxHint}. If the text has not arrived after a minute, offer email as backup — never invent junk/spam/carrier excuses for SMS.${skipped} ${left}`
+    );
+  }
   return toolResult(
     `Sent: ${sent.join(', ')}. Tell the caller to check their phone${inboxHint} — that is everything they would have received as the owner from that one call.${skipped} ${left}`
   );

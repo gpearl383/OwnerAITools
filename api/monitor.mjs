@@ -1,7 +1,8 @@
 // OwnerAI agent health monitor.
 //
 //   GET|POST /api/monitor              — probes + failed-row sweep (CRON_SECRET)
-//   GET|POST /api/monitor?mode=digest   — same as /api/monitor-digest
+//   GET|POST /api/monitor?mode=digest   — same as /api/monitor-digest (+ send-path probe)
+//   GET|POST /api/monitor?mode=send-probe — synthetic demo SMS compose check only
 //   GET|POST /api/monitor?mode=test-alert — forced owner SMS+email
 //
 // Vercel Cron: every 5 minutes → /api/monitor; daily → /api/monitor-digest.
@@ -14,6 +15,7 @@
 //   ANTHROPIC_API_KEY
 //   CAL_API_KEY + CAL_EVENT_TYPE_ID
 //   OWNERAI_ALERT_PHONE / OWNERAI_NOTIFY_EMAIL (via notify.mjs)
+//   RETELL_DEMO_ALERT_AGENT_ID (for send-path probe)
 
 import {
   notifyOwner,
@@ -256,8 +258,62 @@ async function fetchDayStats() {
   };
 }
 
-async function runProbes() {
-  const results = await Promise.all([
+async function checkDemoSendPath() {
+  const apiKey = process.env.RETELL_API_KEY;
+  const from = process.env.RETELL_SMS_FROM;
+  const agent = process.env.RETELL_DEMO_ALERT_AGENT_ID;
+  const to = process.env.OWNERAI_ALERT_PHONE;
+  if (!apiKey || !from || !agent || !to) throw new Error('demo send env missing');
+
+  const res = await fetch('https://api.retellai.com/create-sms-chat', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      from_number: from,
+      to_number: to,
+      override_agent_id: agent,
+      metadata: { source: 'monitor-send-probe' },
+      retell_llm_dynamic_variables: {
+        demo_alert_body: `MONITOR PROBE ${new Date().toISOString().slice(11, 19)}Z — ignore.`,
+      },
+    }),
+  });
+  if (!res.ok) throw new Error(`create-sms-chat ${res.status}: ${(await res.text()).slice(0, 200)}`);
+  const chat = await res.json();
+
+  const started = Date.now();
+  let composed = false;
+  while (Date.now() - started < 10000) {
+    const r = await fetch(`https://api.retellai.com/get-chat/${chat.chat_id}`, {
+      headers: { Authorization: `Bearer ${apiKey}` },
+    });
+    if (r.ok) {
+      const c = await r.json();
+      const msgs = c.message_with_tool_calls || c.messages || [];
+      if (msgs.some((m) => m.role === 'agent' && String(m.content || '').length > 0)) {
+        composed = true;
+        break;
+      }
+    }
+    await new Promise((resolve) => setTimeout(resolve, 500));
+  }
+  try {
+    await fetch(`https://api.retellai.com/end-chat/${chat.chat_id}`, {
+      method: 'PATCH',
+      headers: { Authorization: `Bearer ${apiKey}` },
+    });
+  } catch {
+    /* non-fatal */
+  }
+  if (!composed) throw new Error('no agent message in 10s');
+  return `composed in ${Date.now() - started}ms`;
+}
+
+async function runProbes({ includeSendPath = false } = {}) {
+  const jobs = [
     probe('retell_api', checkRetellApi),
     probe(`line:${process.env.RETELL_SMS_FROM || DEMO_LINE}`, checkDemoLine),
     probe(`line:${TESTING_LINE}`, checkTestingLine),
@@ -271,7 +327,14 @@ async function runProbes() {
       await checkSupabase();
       return 'anthropic+supabase ok';
     }),
-  ]);
+  ];
+  // Send-path probe texts OWNERAI_ALERT_PHONE — run only on digest / send-probe
+  // modes (not every 5 min) to avoid spamming the founder's phone.
+  if (includeSendPath) {
+    jobs.push(probe('demo_send_path', checkDemoSendPath));
+  }
+
+  const results = await Promise.all(jobs);
 
   const outcomes = [];
   for (const r of results) {
@@ -364,7 +427,9 @@ export async function runMonitor(request, opts = {}) {
       ? 'digest'
       : requested === 'test-alert'
         ? 'test-alert'
-        : 'probe');
+        : requested === 'send-probe'
+          ? 'send-probe'
+          : 'probe');
 
   try {
     if (mode === 'test-alert') {
@@ -378,7 +443,19 @@ export async function runMonitor(request, opts = {}) {
       return json(200, { ok: true, mode, at: new Date().toISOString(), result });
     }
 
-    const probes = await runProbes();
+    if (mode === 'send-probe') {
+      const r = await probe('demo_send_path', checkDemoSendPath);
+      const incident = await recordProbeResult(r.name, r.ok, r.detail);
+      return json(200, {
+        ok: r.ok,
+        mode,
+        at: new Date().toISOString(),
+        probe: { ...r, incident },
+      });
+    }
+
+    const includeSendPath = mode === 'digest';
+    const probes = await runProbes({ includeSendPath });
     const sweep = await sweepFailedRows();
     const incidents = await listIncidents();
     let digest = null;

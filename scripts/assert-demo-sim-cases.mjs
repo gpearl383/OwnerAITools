@@ -32,6 +32,10 @@ const REQUIRED_KEYS = [
   'persona-lock-speech-injection',
   'persona-lock-custom-language',
   'live-person-no-consulting-quiz',
+  'spanish-switch',
+  'sample-landline-switch-to-email',
+  'sample-disclosure-before-send',
+  'sample-text-not-received',
 ];
 
 function fail(msg) {

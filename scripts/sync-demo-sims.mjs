@@ -13,11 +13,33 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const API = 'https://api.retellai.com';
-const KEY = process.env.RETELL_API_KEY;
 const CASES_PATH = path.join(ROOT, 'retell/simulations/demo-voice.cases.json');
 const IDS_PATH = path.join(ROOT, 'retell/simulations/demo-voice.ids.json');
+const LAST_RUN_PATH = path.join(ROOT, 'retell/simulations/last-run.json');
 const MANIFEST = path.join(ROOT, 'retell/manifest.json');
 
+function loadEnvLocal() {
+  const p = path.join(ROOT, '.env.local');
+  if (!fs.existsSync(p)) return;
+  for (const line of fs.readFileSync(p, 'utf8').split('\n')) {
+    const t = line.trim();
+    if (!t || t.startsWith('#')) continue;
+    const i = t.indexOf('=');
+    if (i < 1) continue;
+    const k = t.slice(0, i).trim();
+    let v = t.slice(i + 1).trim();
+    if (
+      (v.startsWith('"') && v.endsWith('"')) ||
+      (v.startsWith("'") && v.endsWith("'"))
+    ) {
+      v = v.slice(1, -1);
+    }
+    if (!(k in process.env)) process.env[k] = v;
+  }
+}
+
+loadEnvLocal();
+const KEY = process.env.RETELL_API_KEY;
 function fail(msg) {
   console.error(`error: ${msg}`);
   process.exit(1);
@@ -132,6 +154,23 @@ async function main() {
   const jobId = batch.test_case_batch_job_id;
   console.log(`batch job started: ${jobId}`);
 
+  function writeLastRun(status) {
+    const record = {
+      agent: pack.agent,
+      llm_id: llmId,
+      job_id: jobId,
+      status: status.status,
+      pass_count: status.pass_count || 0,
+      fail_count: status.fail_count || 0,
+      error_count: status.error_count || 0,
+      total_count: status.total_count || definitionIds.length,
+      finished_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+    fs.writeFileSync(LAST_RUN_PATH, JSON.stringify(record, null, 2) + '\n');
+    console.log(`wrote ${LAST_RUN_PATH}`);
+  }
+
   for (let i = 0; i < 60; i++) {
     await new Promise((r) => setTimeout(r, 5000));
     const status = await api('GET', `/get-batch-test/${jobId}`);
@@ -139,6 +178,7 @@ async function main() {
       `status=${status.status} pass=${status.pass_count} fail=${status.fail_count} error=${status.error_count} total=${status.total_count}`,
     );
     if (status.status === 'complete') {
+      writeLastRun(status);
       if ((status.fail_count || 0) + (status.error_count || 0) > 0) {
         fail(`batch finished with failures — inspect in Retell dashboard (job ${jobId})`);
       }
@@ -146,6 +186,13 @@ async function main() {
       return;
     }
   }
+  writeLastRun({
+    status: 'timeout',
+    pass_count: 0,
+    fail_count: 0,
+    error_count: definitionIds.length,
+    total_count: definitionIds.length,
+  });
   fail(`batch still in progress after timeout — job ${jobId}`);
 }
 

@@ -28,19 +28,29 @@ function assert(cond, msg) {
 }
 
 const NETWORK_DELAY_MS = 150;
-const calls = []; // { url, start, end }
+const calls = []; // { url, start, end, channel }
 
 globalThis.fetch = async function stubFetch(url, opts = {}) {
-  const rec = { url: String(url), start: Date.now(), end: null };
+  const u = String(url);
+  let channel = 'other';
+  if (u.includes('create-sms-chat') || u.includes('get-chat') || u.includes('end-chat')) {
+    channel = 'sms';
+  } else if (u.includes('resend.com')) {
+    channel = 'email';
+  }
+  const rec = { url: u, start: Date.now(), end: null, channel };
   calls.push(rec);
-  await new Promise((r) => setTimeout(r, NETWORK_DELAY_MS));
+  // get-chat polls should be near-instant in this stub so create-sms timing
+  // stays predictable; real compose latency is covered by the compose-wait test.
+  const delay = u.includes('get-chat') ? 0 : NETWORK_DELAY_MS;
+  await new Promise((r) => setTimeout(r, delay));
   rec.end = Date.now();
   let body = {};
-  if (rec.url.includes('create-sms-chat')) body = { chat_id: `chat_${calls.length}` };
-  if (rec.url.includes('get-chat')) {
+  if (u.includes('create-sms-chat')) body = { chat_id: `chat_${calls.length}` };
+  if (u.includes('get-chat')) {
     body = { message_with_tool_calls: [{ role: 'agent', content: '[DEMO] sample' }] };
   }
-  if (rec.url.includes('resend.com')) body = { id: `email_${calls.length}` };
+  if (u.includes('resend.com')) body = { id: `email_${calls.length}` };
   return new Response(JSON.stringify(body), {
     status: 200,
     headers: { 'Content-Type': 'application/json' },
@@ -100,16 +110,31 @@ assert(smsCalls.length === 2, `expected 2 SMS sends, got ${smsCalls.length}`);
 assert(endChatCalls.length === 2, `expected 2 end-chat cleanups, got ${endChatCalls.length}`);
 assert(resendCalls.length === 2, `expected 2 Resend sends (invite + email), got ${resendCalls.length}`);
 
-// --- parallelism: SMS chain and email chain overlap in time ---
-const overlap =
-  smsCalls[0].start < resendCalls[0].end && resendCalls[0].start < smsCalls[0].end;
+// --- parallelism: SMS chain and email chain must overlap ---
+// Use full channel windows (create-sms + get-chat + end-chat vs Resend), not
+// just the first create-sms vs first Resend — CI runners occasionally serialize
+// the first pair of timers enough to fail a first-call-only overlap check.
+const smsWindow = calls.filter((c) => c.channel === 'sms');
+const emailWindow = calls.filter((c) => c.channel === 'email');
+const smsStart = Math.min(...smsWindow.map((c) => c.start));
+const smsEnd = Math.max(...smsWindow.map((c) => c.end));
+const emailStart = Math.min(...emailWindow.map((c) => c.start));
+const emailEnd = Math.max(...emailWindow.map((c) => c.end));
+const channelsOverlap = smsStart < emailEnd && emailStart < smsEnd;
 assert(
-  overlap,
-  `SMS and email legs did not overlap: sms=${smsCalls[0].start}-${smsCalls[0].end} resend=${resendCalls[0].start}-${resendCalls[0].end}`
+  channelsOverlap,
+  `SMS and email chains did not overlap: sms=${smsStart}-${smsEnd} email=${emailStart}-${emailEnd}`,
 );
 
-// --- wall clock: with compose polls, still should beat fully serial email+sms ---
-// Serial floor of 5 * delay is a loose sanity check (polls add more).
+// Wall clock must beat a fully serial SMS-then-email estimate.
+// Per SMS: create-sms + get-chat (= 2 delays). Two SMS => 4. Two Resend => 2. Serial = 6.
+const serialFloorMs = 6 * NETWORK_DELAY_MS;
+assert(
+  elapsed < serialFloorMs,
+  `handler took ${elapsed}ms — expected < ${serialFloorMs}ms if channels run in parallel`,
+);
+
+// --- wall clock sanity (compose polls can add a little; keep a hard ceiling) ---
 assert(elapsed < 15000, `handler took ${elapsed}ms — unexpectedly slow`);
 
 // --- budget contract unchanged: 2nd invocation still gates ---

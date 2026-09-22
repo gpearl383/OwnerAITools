@@ -164,9 +164,9 @@
   "agent": {
     "language": [
       "en-US",
-      "es-ES",
-      "zh-CN"
+      "es-ES"
     ],
+    "stt_mode": "accurate",
     "voice_model": "eleven_multilingual_v2",
     "responsiveness": 0.7,
     "interruption_sensitivity": 0.6,

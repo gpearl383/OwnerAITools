@@ -36,6 +36,10 @@ const REQUIRED_KEYS = [
   'sample-landline-switch-to-email',
   'sample-disclosure-before-send',
   'sample-text-not-received',
+  'tool-turn-filler',
+  'rapid-interrupt-no-repitch',
+  'channel-flip-sms-to-email',
+  'mid-flow-prompt-injection',
 ];
 
 function fail(msg) {

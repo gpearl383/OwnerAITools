@@ -104,29 +104,80 @@
     loadMeta();
   }
 
-  /* ---------- Conversion events ---------- */
+  /* ---------- Conversion / engagement events ---------- */
 
   function track(eventName, params, metaEvent) {
     if (hasGoogle) gtag('event', eventName, params || {});
     if (metaLoaded && window.fbq) window.fbq('track', metaEvent || 'Lead');
   }
 
+  // Other scripts can fire events without importing gtag directly.
+  window.oatTrack = track;
+
   function wireEvents() {
+    var chatOpened = false;
+    var calculatorEngaged = false;
+
     document.addEventListener('click', function (e) {
-      var a = e.target && e.target.closest && e.target.closest('a[href]');
+      var t = e.target;
+      if (!t || !t.closest) return;
+
+      // Chat open (launch button or teaser)
+      if (!chatOpened && (t.closest('.cw-launch') || t.closest('#oat-chat .cw-teaser'))) {
+        chatOpened = true;
+        track('chat_open', { engagement_source: 'widget' });
+      }
+
+      // Chat lead form ("Request a callback")
+      var leadBtn = t.closest('.cw-lead button');
+      if (leadBtn) {
+        var box = leadBtn.closest('.cw-lead');
+        var inputs = box ? box.querySelectorAll('input') : [];
+        var name = inputs[0] && inputs[0].value.trim();
+        var phone = inputs[1] && inputs[1].value.trim();
+        if (name && phone) {
+          track(
+            'generate_lead',
+            { form_id: 'chat_lead', lead_source: 'chat' },
+            'Lead'
+          );
+        }
+      }
+
+      var a = t.closest('a[href]');
       if (!a) return;
       var href = a.getAttribute('href') || '';
       if (href.indexOf('tel:') === 0) {
         track('phone_call_click', { link_url: href }, 'Contact');
       } else if (href.indexOf('cal.com') !== -1) {
         track('booking_click', { link_url: href }, 'Schedule');
+      } else if (href.indexOf('mailto:') === 0) {
+        track('email_click', { link_url: href }, 'Contact');
       }
     });
+
+    // Missed-call calculator: first real interaction
+    var mcc = document.getElementById('mcc');
+    if (mcc) {
+      function onCalcEngage() {
+        if (calculatorEngaged) return;
+        calculatorEngaged = true;
+        track('calculator_engage', { form_id: 'missed_call_calculator' });
+        mcc.removeEventListener('input', onCalcEngage, true);
+        mcc.removeEventListener('click', onCalcEngage, true);
+      }
+      mcc.addEventListener('input', onCalcEngage, true);
+      mcc.addEventListener('click', onCalcEngage, true);
+    }
 
     var form = document.getElementById('fallbackForm');
     if (form) {
       form.addEventListener('submit', function () {
-        track('generate_lead', { form_id: 'fallbackForm' }, 'Lead');
+        track(
+          'generate_lead',
+          { form_id: 'fallbackForm', lead_source: 'home_fallback' },
+          'Lead'
+        );
       });
     }
   }

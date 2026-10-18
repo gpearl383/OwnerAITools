@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>OwnerAI — Sales Demo Console</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='16' fill='%2314355e'/%3E%3Cpath d='M23.5 20.4v2.1a1.4 1.4 0 0 1-1.53 1.4 13.85 13.85 0 0 1-6.04-2.15 13.65 13.65 0 0 1-4.2-4.2A13.85 13.85 0 0 1 9.58 11.5 1.4 1.4 0 0 1 10.98 10h2.1a1.4 1.4 0 0 1 1.4 1.2c.09.67.25 1.33.49 1.97a1.4 1.4 0 0 1-.32 1.48l-.89.89a11.2 11.2 0 0 0 4.2 4.2l.89-.89a1.4 1.4 0 0 1 1.48-.31c.63.23 1.3.4 1.97.48a1.4 1.4 0 0 1 1.2 1.42z' fill='%23ff9046'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#14355e; --navy-deep:#0d2748; --navy-soft:#1d4879; --primary:#2680cf; --primary-600:#1a66b0;
+  --primary-50:#eef6fd; --accent:#f97125; --accent-600:#e25a12;
+  --mist:#f2f7fc; --bg:#ffffff; --border:rgba(20,53,94,.10); --border-strong:rgba(20,53,94,.18);
+  --text:#24384f; --muted:#5a6b81; --display:"Nunito",ui-sans-serif,system-ui,sans-serif;
+  --body:"Source Sans 3",ui-sans-serif,system-ui,sans-serif; --radius:18px;
+  --shadow-card:0 16px 42px -22px rgba(20,53,94,.28); --ok:#1a8a4f; --warn:#b45309; --bad:#c0392b;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important}
+body{font-family:var(--body);background:linear-gradient(135deg,#eef6fd 0%,var(--mist) 48%,#f8fbfe 100%);color:var(--text);min-height:100vh}
+h1,h2,h3{font-family:var(--display);color:var(--navy)}
+.topbar{background:linear-gradient(110deg,var(--navy-deep),var(--navy) 62%,var(--navy-soft));color:#fff;padding:15px 24px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.topbar .brand{font-family:var(--display);font-weight:800;font-size:18px;color:#fff;text-decoration:none}
+.topbar .brand span{color:var(--accent)}
+.topbar .actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.btn{font-family:var(--display);font-weight:700;border:none;border-radius:999px;cursor:pointer;padding:9px 20px;font-size:14px}
+.btn-orange{background:var(--accent);color:#fff}
+.btn-orange:hover{background:var(--accent-600)}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-primary:hover{background:var(--primary-600)}
+.btn-ghost{background:transparent;color:#cfe0f2;border:1px solid rgba(255,255,255,.35)}
+.btn-ghost:hover{color:#fff;border-color:#fff}
+.btn-danger{background:#fff;color:var(--bad);border:1px solid rgba(192,57,43,.35)}
+.btn:disabled{opacity:.55;cursor:not-allowed}
+.wrap{max-width:920px;margin:0 auto;padding:32px 20px 68px}
+.login-card{max-width:400px;margin:10vh auto 0;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-card);padding:36px 32px;text-align:center}
+.login-card h1{font-size:24px;margin-bottom:6px}
+.login-card p{color:var(--muted);font-size:15px;margin-bottom:22px}
+.login-card input{width:100%;padding:13px 16px;font-size:16px;font-family:var(--body);border:1px solid var(--border-strong);border-radius:10px;margin-bottom:14px}
+.login-card input:focus{outline:2px solid var(--primary);border-color:var(--primary)}
+.login-card .btn{width:100%;padding:13px}
+.login-err{color:var(--bad);font-size:14px;margin-top:12px;min-height:18px}
+.eyebrow{color:var(--primary-600);font-family:var(--display);font-weight:900;font-size:11px;letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+.subhead{color:var(--muted);font-size:15px;margin-top:4px}
+.panel{background:rgba(255,255,255,.94);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-card);padding:22px;margin-bottom:20px}
+.panel h2{font-size:17px;margin-bottom:4px}
+.panel-note{font-size:13px;color:var(--muted);margin-bottom:16px}
+.status-hero{text-align:center;padding:28px 20px}
+.status-pill{display:inline-flex;align-items:center;gap:8px;font-family:var(--display);font-weight:800;font-size:13px;padding:8px 14px;border-radius:999px;background:var(--primary-50);color:var(--navy);margin-bottom:14px}
+.status-pill.active{background:#e8f8ef;color:var(--ok)}
+.status-pill.expired{background:#fff7ed;color:var(--warn)}
+.status-pill.idle{background:var(--primary-50);color:var(--primary-600)}
+.e164{font-family:var(--display);font-weight:900;font-size:34px;letter-spacing:-.03em;color:var(--navy);line-height:1.1}
+.e164.missing{font-size:20px;color:var(--muted);font-weight:700}
+.meta{margin-top:10px;color:var(--muted);font-size:14px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.form-grid .full{grid-column:1 / -1}
+label{display:block;font-family:var(--display);font-weight:700;font-size:13px;color:var(--navy);margin-bottom:6px}
+input,select,textarea{width:100%;padding:11px 13px;font-size:15px;font-family:var(--body);border:1px solid var(--border-strong);border-radius:10px;background:#fff}
+textarea{min-height:72px;resize:vertical}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--primary);border-color:var(--primary)}
+.actions-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+.msg{margin-top:14px;font-size:14px;min-height:20px}
+.msg.ok{color:var(--ok)}.msg.err{color:var(--bad)}.msg.warn{color:var(--warn)}
+.hint{font-size:13px;color:var(--muted);margin-top:8px;line-height:1.45}
+@media (max-width:700px){.form-grid{grid-template-columns:1fr}.e164{font-size:26px}}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="/sales">Owner<span>AI</span> Sales</a>
+  <div class="actions">
+    <a class="btn btn-ghost" id="portal-link" href="/portal" hidden style="text-decoration:none">Client view</a>
+    <button class="btn btn-ghost" id="logout-btn" hidden>Sign out</button>
+  </div>
+</header>
+
+<div id="login-view">
+  <div class="login-card">
+    <h1>Sales sign-in</h1>
+    <p>Demo console for live trials — not the ops dashboard.</p>
+    <form id="login-form">
+      <input type="email" id="email" placeholder="Email" autocomplete="username" required>
+      <input type="password" id="pw" placeholder="Password" autocomplete="current-password" required>
+      <button class="btn btn-orange" type="submit">Sign in</button>
+    </form>
+    <div class="login-err" id="login-err"></div>
+  </div>
+</div>
+
+<main class="wrap" id="console-view" hidden>
+  <div style="margin-bottom:22px">
+    <p class="eyebrow">Sales demo</p>
+    <h1>Demo Slot 1</h1>
+    <p class="subhead">Paint one trial line, call/text it live, then open the client view.</p>
+  </div>
+
+  <div class="panel status-hero">
+    <div class="status-pill idle" id="status-pill">Idle</div>
+    <div class="e164 missing" id="e164-display">No trial number assigned</div>
+    <div class="meta" id="status-meta">Assign a dedicated Retell number (not 516-973-1973), then start a 14-day trial.</div>
+  </div>
+
+  <div class="panel" id="number-panel">
+    <h2>Trial number</h2>
+    <p class="panel-note">Geoff assigns a new Retell number. Never use the website demo line.</p>
+    <div class="form-grid">
+      <div class="full">
+        <label for="trial-e164">E.164 number</label>
+        <input id="trial-e164" placeholder="+15165551212" autocomplete="off">
+      </div>
+    </div>
+    <div class="actions-row">
+      <button class="btn btn-primary" id="save-number-btn" type="button">Save number</button>
+    </div>
+    <p class="hint">You can change the number only while the slot is idle or expired.</p>
+    <div class="msg" id="number-msg"></div>
+  </div>
+
+  <div class="panel">
+    <h2>Start trial</h2>
+    <p class="panel-note">Basic training only — company, greeting, voice, language, owner alerts.</p>
+    <form id="trial-form">
+      <div class="form-grid">
+        <div class="full">
+          <label for="company">Company name *</label>
+          <input id="company" required placeholder="Jerry's Pizza">
+        </div>
+        <div class="full">
+          <label for="greeting">Greeting</label>
+          <textarea id="greeting" placeholder="Thanks for calling Jerry's Pizza. This is the AI receptionist — how can I help?"></textarea>
+        </div>
+        <div>
+          <label for="voice">Voice</label>
+          <select id="voice">
+            <option value="female">Female</option>
+            <option value="male">Male</option>
+          </select>
+        </div>
+        <div>
+          <label for="language">Language</label>
+          <select id="language">
+            <option value="en">English</option>
+            <option value="es">Spanish</option>
+          </select>
+        </div>
+        <div class="full">
+          <label for="website">Website (optional)</label>
+          <input id="website" placeholder="https://example.com">
+        </div>
+        <div>
+          <label for="owner-name">Owner name</label>
+          <input id="owner-name" placeholder="Jerry">
+        </div>
+        <div>
+          <label for="trial-days">Trial days</label>
+          <input id="trial-days" type="number" min="1" max="90" value="14">
+        </div>
+        <div>
+          <label for="owner-phone">Owner mobile *</label>
+          <input id="owner-phone" placeholder="+15165551212">
+        </div>
+        <div>
+          <label for="owner-email">Owner email *</label>
+          <input id="owner-email" type="email" placeholder="jerry@example.com">
+        </div>
+      </div>
+      <p class="hint">Need mobile or email (both preferred) so trial alerts go to the prospect — not the OwnerAI ops phone.</p>
+      <div class="actions-row">
+        <button class="btn btn-orange" id="start-btn" type="submit">Start trial</button>
+        <button class="btn btn-danger" id="reset-btn" type="button">Reset slot</button>
+        <a class="btn btn-primary" href="/portal" style="text-decoration:none">Open client view</a>
+      </div>
+      <div class="msg" id="trial-msg"></div>
+    </form>
+  </div>
+</main>
+
+<script>
+const $ = (id) => document.getElementById(id);
+
+function formatE164(e164) {
+  if (!e164) return null;
+  const d = String(e164).replace(/\D/g, '');
+  if (d.length === 11 && d.startsWith('1')) {
+    return `(${d.slice(1,4)}) ${d.slice(4,7)}-${d.slice(7)}`;
+  }
+  return e164;
+}
+
+function renderSlot(slot) {
+  const pill = $('status-pill');
+  const e164El = $('e164-display');
+  const meta = $('status-meta');
+  const status = slot?.status || 'idle';
+  pill.className = 'status-pill ' + status;
+  pill.textContent = status === 'active'
+    ? `Active · ${slot.daysLeft ?? '—'} days left`
+    : status.charAt(0).toUpperCase() + status.slice(1);
+
+  if (slot?.e164) {
+    e164El.className = 'e164';
+    e164El.textContent = formatE164(slot.e164);
+  } else {
+    e164El.className = 'e164 missing';
+    e164El.textContent = 'No trial number assigned';
+  }
+
+  if (status === 'active') {
+    meta.textContent = `${slot.companyName || 'Trial'} · ends ${slot.trialEndsAt ? new Date(slot.trialEndsAt).toLocaleDateString() : '—'}`;
+    $('company').value = slot.companyName || '';
+    $('greeting').value = slot.greeting || '';
+    $('voice').value = slot.voice || 'female';
+    $('language').value = slot.language || 'en';
+    $('website').value = slot.website || '';
+    $('owner-name').value = slot.ownerName || '';
+    $('owner-phone').value = slot.ownerPhone || '';
+    $('owner-email').value = slot.ownerEmail || '';
+    $('trial-days').value = slot.trialDays || 14;
+    $('start-btn').disabled = true;
+    $('save-number-btn').disabled = true;
+  } else {
+    meta.textContent = status === 'expired'
+      ? 'Trial expired — reset to free the license, then start a new one.'
+      : 'Assign a dedicated Retell number (not 516-973-1973), then start a 14-day trial.';
+    $('start-btn').disabled = false;
+    $('save-number-btn').disabled = false;
+  }
+  if (slot?.e164) $('trial-e164').value = slot.e164;
+}
+
+async function api(method, body, query = '') {
+  const res = await fetch('/api/sales' + query, {
+    method,
+    headers: body ? { 'Content-Type': 'application/json' } : undefined,
+    body: body ? JSON.stringify(body) : undefined,
+    credentials: 'same-origin',
+  });
+  const data = await res.json().catch(() => ({}));
+  return { res, data };
+}
+
+async function loadConsole() {
+  const { res, data } = await api('GET');
+  if (!res.ok) {
+    $('login-view').hidden = false;
+    $('console-view').hidden = true;
+    $('logout-btn').hidden = true;
+    $('portal-link').hidden = true;
+    return;
+  }
+  $('login-view').hidden = true;
+  $('console-view').hidden = false;
+  $('logout-btn').hidden = false;
+  $('portal-link').hidden = false;
+  renderSlot(data.slot);
+}
+
+$('login-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  $('login-err').textContent = '';
+  const { res, data } = await api('POST', {
+    email: $('email').value,
+    password: $('pw').value,
+  });
+  if (!res.ok) {
+    $('login-err').textContent = data.error || 'Sign-in failed';
+    return;
+  }
+  await loadConsole();
+});
+
+$('logout-btn').addEventListener('click', async () => {
+  await api('POST', { logout: true });
+  location.reload();
+});
+
+$('save-number-btn').addEventListener('click', async () => {
+  $('number-msg').textContent = '';
+  $('number-msg').className = 'msg';
+  const { res, data } = await api('POST', {
+    action: 'set_e164',
+    e164: $('trial-e164').value,
+  });
+  if (!res.ok) {
+    $('number-msg').className = 'msg err';
+    $('number-msg').textContent = data.error || 'Could not save number';
+    return;
+  }
+  $('number-msg').className = 'msg ok';
+  $('number-msg').textContent = 'Number saved.';
+  renderSlot(data.slot);
+});
+
+$('trial-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  $('trial-msg').textContent = '';
+  $('trial-msg').className = 'msg';
+  const { res, data } = await api('POST', {
+    action: 'start_trial',
+    companyName: $('company').value,
+    greeting: $('greeting').value,
+    voice: $('voice').value,
+    language: $('language').value,
+    website: $('website').value,
+    ownerName: $('owner-name').value,
+    ownerPhone: $('owner-phone').value,
+    ownerEmail: $('owner-email').value,
+    trialDays: Number($('trial-days').value) || 14,
+    e164: $('trial-e164').value || undefined,
+  });
+  if (!res.ok) {
+    $('trial-msg').className = 'msg err';
+    $('trial-msg').textContent = data.error || 'Could not start trial';
+    if (data.slot) renderSlot(data.slot);
+    return;
+  }
+  $('trial-msg').className = data.warning ? 'msg warn' : 'msg ok';
+  $('trial-msg').textContent = data.warning || 'Trial active. Give the prospect this number and open Client view.';
+  renderSlot(data.slot);
+});
+
+$('reset-btn').addEventListener('click', async () => {
+  if (!confirm('Reset Demo Slot 1? The line will go idle and alerts will stop.')) return;
+  $('trial-msg').textContent = '';
+  const { res, data } = await api('POST', { action: 'reset_slot' });
+  if (!res.ok) {
+    $('trial-msg').className = 'msg err';
+    $('trial-msg').textContent = data.error || 'Reset failed';
+    return;
+  }
+  $('trial-msg').className = data.warning ? 'msg warn' : 'msg ok';
+  $('trial-msg').textContent = data.warning || 'Slot reset — ready for the next prospect.';
+  renderSlot(data.slot);
+});
+
+loadConsole();
+</script>
+</body>
+</html>

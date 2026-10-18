@@ -183,6 +183,7 @@ export async function upsertLead(fields) {
     if (fields.bookedLabel) patch.setup_call_booked_label = String(fields.bookedLabel).slice(0, 300);
     if (fields.bookedAt) patch.setup_call_booked_at = fields.bookedAt;
     else if (booked && !existing?.setup_call_booked_at) patch.setup_call_booked_at = now;
+    if (fields.slotId) patch.slot_id = fields.slotId;
 
     if (existing) {
       // Preserve stronger identity fields if new event lacks them.
@@ -263,7 +264,7 @@ export async function setLeadStatus(leadId, status, via) {
   return rows[0] || null;
 }
 
-export async function fetchLeads({ includeDone = false } = {}) {
+export async function fetchLeads({ includeDone = false, slotId = null } = {}) {
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!url || !key) throw new Error('Supabase env vars missing');
@@ -274,6 +275,7 @@ export async function fetchLeads({ includeDone = false } = {}) {
     limit: '500',
   });
   if (!includeDone) qs.set('status', 'neq.done');
+  if (slotId) qs.set('slot_id', `eq.${slotId}`);
 
   const res = await fetch(`${url}/rest/v1/leads?${qs}`, {
     headers: { apikey: key, Authorization: `Bearer ${key}` },

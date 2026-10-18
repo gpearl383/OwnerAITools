@@ -8,6 +8,13 @@
       "llm_id": "llm_6d96c220b0b8da0889b76e16e5c5"
     },
     {
+      "name": "demo-voice-staging",
+      "description": "OwnerAI Testing Line (+15169613838)",
+      "kind": "voice",
+      "agent_id": "agent_9bd0d2a8168a2f66ac72f74d21",
+      "llm_id": "llm_942d61301180065cbfb637934e49"
+    },
+    {
       "name": "sms-receptionist",
       "description": "OwnerAI — SMS Receptionist (chat)",
       "kind": "chat",
@@ -34,6 +41,21 @@
       "kind": "chat",
       "agent_id": "agent_a3aff59a2b7b0bbf4171da5234",
       "llm_id": "llm_1c52a3e1df38969f6d9c42b8540d"
+    },
+    {
+      "name": "trial-voice",
+      "description": "OwnerAI — Sales Trial Slot 1 (voice) in Retell workspace ownerai-demo. Live on +15164755855. Never +15169731973. Push with TRIAL_RETELL_API_KEY (not website RETELL_API_KEY).",
+      "kind": "voice",
+      "agent_id": "agent_47dc64ae3a12423f391d3e78b8",
+      "llm_id": "llm_8993dfcb658f37c0cb86b3ed8cc7",
+      "workspace": "ownerai-demo"
+    },
+    {
+      "name": "trial-sms",
+      "description": "OwnerAI — Sales Trial Slot 1 (SMS). Not bound yet (no A2P on +15164755855). IDs below are legacy website-org copies; do not delete; do not push as live until SMS is registered in ownerai-demo.",
+      "kind": "chat",
+      "agent_id": "agent_2b3dea31a9aadbf2858ebad232",
+      "llm_id": "llm_3cca93c44392938528dbba27f46a"
     }
   ]
 }

@@ -90,6 +90,40 @@ createServer(async (req, res) => {
     return;
   }
 
+  if (url.pathname === '/api/sales') {
+    try {
+      const mod = await import('../api/sales.mjs');
+      let body;
+      if (req.method === 'POST' || req.method === 'PATCH') {
+        body = '';
+        for await (const chunk of req) body += chunk;
+      }
+      const headers = { ...req.headers };
+      if (headers['content-type'] == null && body != null) {
+        headers['content-type'] = 'application/json';
+      }
+      const request = new Request(`http://localhost:${PORT}${url.pathname}${url.search}`, {
+        method: req.method,
+        headers,
+        ...(body !== undefined ? { body } : {}),
+      });
+      const handler = mod[req.method];
+      if (!handler) {
+        res.writeHead(405, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Method not allowed' }));
+        return;
+      }
+      const response = await handler(request);
+      res.writeHead(response.status, Object.fromEntries(response.headers));
+      res.end(await response.text());
+    } catch (err) {
+      console.error('api/sales error:', err.message);
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Internal error' }));
+    }
+    return;
+  }
+
   if (await serveStatic(url.pathname, res)) return;
 
   res.writeHead(404, { 'Content-Type': 'text/plain' });

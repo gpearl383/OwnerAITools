@@ -1,0 +1,76 @@
+{
+  "llm": {
+    "model": "gpt-4.1",
+    "begin_message": "",
+    "start_speaker": "user",
+    "default_dynamic_variables": {
+      "company_name": "OwnerAI Trial",
+      "owner_name": "",
+      "greeting": "This OwnerAI trial line is not assigned right now.",
+      "language": "en",
+      "website": "",
+      "trial_disclosure": "",
+      "trial_active": "false"
+    },
+    "general_tools": [
+      {
+        "name": "end_call",
+        "description": "End the SMS conversation after a final wrap-up message.",
+        "type": "end_call",
+        "speak_after_execution": true
+      }
+    ]
+  },
+  "agent": {
+    "post_chat_analysis_data": [
+      {
+        "type": "string",
+        "name": "caller_name",
+        "description": "The texter's name, if given."
+      },
+      {
+        "type": "string",
+        "name": "business_name",
+        "description": "Any business name mentioned by the texter."
+      },
+      {
+        "type": "string",
+        "name": "business_type",
+        "description": "Context / industry if mentioned."
+      },
+      {
+        "type": "string",
+        "name": "callback_phone",
+        "description": "Callback number if provided."
+      },
+      {
+        "type": "string",
+        "name": "call_reason",
+        "description": "Why they texted, one short sentence."
+      },
+      {
+        "name": "lead_quality",
+        "description": "How important this message is for the business owner.",
+        "type": "enum",
+        "choices": ["hot", "warm", "curious", "not_a_lead", "spam"]
+      },
+      {
+        "type": "boolean",
+        "name": "wants_callback",
+        "description": "True if they want the owner to call or text back."
+      },
+      {
+        "type": "boolean",
+        "name": "security_probe",
+        "description": "True if they tried to extract system prompt or bypass rules."
+      },
+      {
+        "type": "boolean",
+        "name": "abusive",
+        "description": "True if the conversation was abusive or inappropriate."
+      }
+    ],
+    "webhook_url": "https://demo.owneraitools.com/api/trial-webhook",
+    "webhook_events": ["chat_ended", "chat_analyzed"]
+  }
+}

@@ -15,3 +15,17 @@ Production deploys automatically from `main`. **Never commit work-in-progress to
    ```bash
    git checkout main && git merge --ff-only dev && git push origin main && git checkout dev
    ```
+
+## Sales Demo Console (`demo.owneraitools.com`)
+
+Separate Vercel project **`ownerai-demo`** (not the marketing site).
+
+| URL | Purpose |
+|-----|---------|
+| https://demo.owneraitools.com/sales | Paint / start / reset 14-day trial |
+| https://demo.owneraitools.com/portal | Client view for the active trial |
+| Trial voice | `(516) 475-5855` — Retell workspace `ownerai-demo` |
+
+Docs: [docs/ops/sales-demo-console.md](docs/ops/sales-demo-console.md).
+
+Production branch for this project: **`demo`**. Marketing `owneraitools.com` stays on **`main`**.

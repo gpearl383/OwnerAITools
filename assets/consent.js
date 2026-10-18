@@ -15,9 +15,19 @@
 (function () {
   'use strict';
 
-  var GA4_ID = '';        // e.g. 'G-XXXXXXXXXX'  (Google Analytics 4)
+  var GA4_ID = 'G-EY7QE8XTFS'; // Google Analytics 4 — OwnerAI web stream
   var ADS_ID = '';        // e.g. 'AW-XXXXXXXXXX' (Google Ads)
   var META_PIXEL_ID = ''; // e.g. '1234567890123456' (Meta/Facebook Pixel)
+
+  // Collect only on the live marketing host. Localhost and Vercel preview
+  // deploys stay silent so they do not pollute OwnerAI reports.
+  var host = (location.hostname || '').toLowerCase();
+  var isLiveSite = host === 'owneraitools.com' || host === 'www.owneraitools.com';
+  if (!isLiveSite) {
+    GA4_ID = '';
+    ADS_ID = '';
+    META_PIXEL_ID = '';
+  }
 
   var COOKIE = 'oat_consent';
   var hasGoogle = !!(GA4_ID || ADS_ID);

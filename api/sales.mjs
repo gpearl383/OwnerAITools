@@ -43,20 +43,31 @@ function json(status, body, extraHeaders = {}) {
 
 const RANGES = { '7d': 7, '30d': 30, '90d': 90, all: 3650 };
 
-async function fetchSlotEvents(slotId, rangeDays) {
+const MS_DAY = 24 * 60 * 60 * 1000;
+
+/** Events for a slot in [now - offsetDays - rangeDays, now - offsetDays). */
+async function fetchSlotEvents(slotId, rangeDays, { offsetDays = 0 } = {}) {
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!url || !key) throw new Error('Supabase env vars missing');
 
-  const since = new Date(Date.now() - rangeDays * 24 * 60 * 60 * 1000).toISOString();
-  // Filter by payload->>slot_id via PostgREST.
+  const untilMs = Date.now() - offsetDays * MS_DAY;
+  const sinceMs = untilMs - rangeDays * MS_DAY;
+  const since = new Date(sinceMs).toISOString();
+  const until = new Date(untilMs).toISOString();
+
+  // Filter by payload->>slot_id via PostgREST. Window: [since, until).
   const qs = new URLSearchParams({
     select: '*',
     order: 'created_at.desc',
     limit: '2000',
-    created_at: `gte.${since}`,
     'payload->>slot_id': `eq.${slotId}`,
   });
+  if (offsetDays > 0) {
+    qs.set('and', `(created_at.gte.${since},created_at.lt.${until})`);
+  } else {
+    qs.set('created_at', `gte.${since}`);
+  }
   const res = await fetch(`${url}/rest/v1/audit_events?${qs}`, {
     headers: { apikey: key, Authorization: `Bearer ${key}` },
   });
@@ -64,7 +75,27 @@ async function fetchSlotEvents(slotId, rangeDays) {
   return res.json();
 }
 
-function computePortalStats(events, rangeDays) {
+function pctDelta(current, previous) {
+  if (previous == null || previous === 0) return null;
+  return Math.round(((current - previous) / previous) * 100);
+}
+
+function hoursFromDurations(secList) {
+  const sum = secList.reduce((a, b) => a + b, 0);
+  return Math.round((sum / 3600) * 10) / 10;
+}
+
+function leadsInWindow(leads, rangeDays, { offsetDays = 0 } = {}) {
+  const untilMs = Date.now() - offsetDays * MS_DAY;
+  const sinceMs = untilMs - rangeDays * MS_DAY;
+  return (leads || []).filter((l) => {
+    const t = new Date(l.last_event_at || l.created_at || 0).getTime();
+    if (!t) return false;
+    return t >= sinceMs && t < untilMs;
+  });
+}
+
+function computePortalStats(events, rangeDays, { leads = [], prevEvents = null, prevLeads = null } = {}) {
   const calls = events.filter((e) => e.event_type === 'call_analyzed');
   const chats = events.filter((e) => e.event_type === 'sms_chat_analyzed');
   const conversations = [...calls, ...chats];
@@ -73,6 +104,10 @@ function computePortalStats(events, rangeDays) {
     .filter((d) => d > 0 && !isHungUpCall(d));
   const hangups = calls.filter((c) => isHungUpCall(c.duration_sec || 0)).length;
   const count = (type) => events.filter((e) => e.event_type === type).length;
+  const hoursAnswered = hoursFromDurations(realDurations);
+  const windowLeads = leadsInWindow(leads, rangeDays, { offsetDays: 0 });
+  const appointmentsBooked = windowLeads.filter((l) => l.status === 'booked').length;
+  const leadsCaptured = windowLeads.length;
 
   const bucket = (field) => {
     const out = {};
@@ -96,8 +131,27 @@ function computePortalStats(events, rangeDays) {
     chatsByDay[day] = (chatsByDay[day] || 0) + 1;
   }
   for (let i = days - 1; i >= 0; i--) {
-    const day = new Date(Date.now() - i * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+    const day = new Date(Date.now() - i * MS_DAY).toISOString().slice(0, 10);
     series.push({ day, calls: byDay[day] || 0, chats: chatsByDay[day] || 0 });
+  }
+
+  let deltas = null;
+  if (prevEvents) {
+    const prevCalls = prevEvents.filter((e) => e.event_type === 'call_analyzed');
+    const prevDurations = prevCalls
+      .map((c) => c.duration_sec || 0)
+      .filter((d) => d > 0 && !isHungUpCall(d));
+    const prevHours = hoursFromDurations(prevDurations);
+    const prevLeadRows = prevLeads != null
+      ? prevLeads
+      : leadsInWindow(leads, rangeDays, { offsetDays: rangeDays });
+    const prevBooked = prevLeadRows.filter((l) => l.status === 'booked').length;
+    deltas = {
+      totalCalls: pctDelta(calls.length, prevCalls.length),
+      leadsCaptured: pctDelta(leadsCaptured, prevLeadRows.length),
+      appointmentsBooked: pctDelta(appointmentsBooked, prevBooked),
+      hoursAnswered: pctDelta(hoursAnswered, prevHours),
+    };
   }
 
   return {
@@ -109,9 +163,13 @@ function computePortalStats(events, rangeDays) {
     hangups,
     emailsSent: count('email_sent'),
     smsSent: count('owner_sms_sent') + count('customer_sms_sent'),
+    hoursAnswered,
+    leadsCaptured,
+    appointmentsBooked,
     sentiment: bucket('sentiment'),
     leadQuality: bucket('lead_quality'),
     series,
+    deltas,
   };
 }
 
@@ -318,19 +376,32 @@ export async function GET(request) {
   if (view === 'portal') {
     const range = url.searchParams.get('range') || '30d';
     const rangeDays = RANGES[range] || 30;
+    // Skip previous-window fetch for "all" — no meaningful baseline.
+    const wantPrev = range !== 'all' && rangeDays < 3650;
     try {
-      const [events, rawLeads] = await Promise.all([
+      const [events, rawLeads, prevEvents] = await Promise.all([
         fetchSlotEvents(slot.id, rangeDays),
         fetchLeads({ includeDone: true, slotId: slot.id }),
+        wantPrev
+          ? fetchSlotEvents(slot.id, rangeDays, { offsetDays: rangeDays })
+          : Promise.resolve(null),
       ]);
+      const leads = rawLeads.map(enrichLeadForClient);
+      const prevLeads = wantPrev
+        ? leadsInWindow(rawLeads, rangeDays, { offsetDays: rangeDays })
+        : null;
       return json(200, {
         mode: 'portal',
         readOnly: true,
         slot: publicSlot(slot),
         user: { id: user.id, email: user.email, displayName: user.display_name },
-        stats: computePortalStats(events, rangeDays),
+        stats: computePortalStats(events, rangeDays, {
+          leads: rawLeads,
+          prevEvents,
+          prevLeads,
+        }),
         events,
-        leads: rawLeads.map(enrichLeadForClient),
+        leads,
       });
     } catch (err) {
       console.error('sales portal fetch failed:', err.message);

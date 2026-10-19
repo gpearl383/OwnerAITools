@@ -76,6 +76,10 @@ th{text-align:left;font-family:var(--display);font-size:11px;letter-spacing:.06e
 td{padding:10px 6px;border-bottom:1px solid var(--border);vertical-align:top}
 .badge{display:inline-block;font-family:var(--display);font-weight:800;font-size:11px;padding:3px 8px;border-radius:999px;background:var(--primary-50);color:var(--primary-600)}
 .readonly-banner{background:#fff7ed;border:1px solid rgba(180,83,9,.25);color:var(--warn);border-radius:12px;padding:12px 16px;font-size:14px;margin-bottom:20px;font-weight:600}
+.pager{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:14px;padding-top:12px;border-top:1px solid var(--border)}
+.pager-label{font-size:13px;color:var(--muted);font-weight:600}
+.pager-btns{display:flex;gap:8px}
+.pager-btns .btn:disabled{opacity:.4;cursor:not-allowed}
 @media (max-width:900px){.stats{grid-template-columns:1fr 1fr}.breakdowns{grid-template-columns:1fr}}
 </style>
 </head>
@@ -177,6 +181,13 @@ td{padding:10px 6px;border-bottom:1px solid var(--border);vertical-align:top}
       </table>
     </div>
     <div class="empty" id="events-empty" hidden>No events in this range yet.</div>
+    <div class="pager" id="events-pager" hidden>
+      <div class="pager-btns">
+        <button type="button" class="btn btn-outline" id="events-prev">Previous</button>
+        <button type="button" class="btn btn-outline" id="events-next">Next</button>
+      </div>
+      <span class="pager-label" id="events-pager-label"></span>
+    </div>
   </div>
 </main>
 
@@ -184,8 +195,10 @@ td{padding:10px 6px;border-bottom:1px solid var(--border);vertical-align:top}
 (function () {
   'use strict';
   var API = '/api/sales';
-  var state = { range: '30d', filter: '', queue: 'open', data: null };
+  var PAGE_SIZE = 25;
+  var state = { range: '30d', filter: '', queue: 'open', data: null, eventPage: 0 };
   var $ = function (id) { return document.getElementById(id); };
+
   function esc(s) {
     return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
       return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
@@ -229,6 +242,7 @@ td{padding:10px 6px;border-bottom:1px solid var(--border);vertical-align:top}
         if (!data) return;
         if (data.error) { showLogin(data.error); return; }
         state.data = data;
+        state.eventPage = 0;
         showDash();
         render();
       })
@@ -302,9 +316,17 @@ td{padding:10px 6px;border-bottom:1px solid var(--border);vertical-align:top}
   }
   function renderEvents(events) {
     var filtered = (events || []).filter(matchesFilter);
-    $('event-count').textContent = filtered.length + ' event' + (filtered.length === 1 ? '' : 's');
-    $('events-empty').hidden = filtered.length > 0;
-    $('events-body').innerHTML = filtered.slice(0, 100).map(function (e) {
+    var total = filtered.length;
+    var pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+    if (state.eventPage >= pages) state.eventPage = pages - 1;
+    if (state.eventPage < 0) state.eventPage = 0;
+    var start = state.eventPage * PAGE_SIZE;
+    var pageRows = filtered.slice(start, start + PAGE_SIZE);
+    var end = start + pageRows.length;
+
+    $('event-count').textContent = total + ' event' + (total === 1 ? '' : 's');
+    $('events-empty').hidden = total > 0;
+    $('events-body').innerHTML = pageRows.map(function (e) {
       var t = new Date(e.created_at);
       var time = t.toLocaleDateString([], { month: 'short', day: 'numeric' }) + ' ' +
         t.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
@@ -314,6 +336,17 @@ td{padding:10px 6px;border-bottom:1px solid var(--border);vertical-align:top}
         (e.event_type === 'call_analyzed' ? esc(fmtDur(e.duration_sec)) : '—') +
         '</td><td>' + esc(e.status) + '</td></tr>';
     }).join('');
+
+    var pager = $('events-pager');
+    if (total === 0) {
+      pager.hidden = true;
+      return;
+    }
+    pager.hidden = false;
+    $('events-pager-label').textContent =
+      (total ? (start + 1) + '-' + end : '0') + ' of ' + total;
+    $('events-prev').disabled = state.eventPage <= 0;
+    $('events-next').disabled = state.eventPage >= pages - 1;
   }
   function render() {
     var slot = state.data.slot || {};
@@ -363,7 +396,18 @@ td{padding:10px 6px;border-bottom:1px solid var(--border);vertical-align:top}
     $('filters').querySelectorAll('.chip').forEach(function (c) { c.classList.remove('active'); });
     chip.classList.add('active');
     state.filter = chip.dataset.type;
+    state.eventPage = 0;
     if (state.data) renderEvents(state.data.events || []);
+  });
+  $('events-prev').addEventListener('click', function () {
+    if (state.eventPage <= 0 || !state.data) return;
+    state.eventPage -= 1;
+    renderEvents(state.data.events || []);
+  });
+  $('events-next').addEventListener('click', function () {
+    if (!state.data) return;
+    state.eventPage += 1;
+    renderEvents(state.data.events || []);
   });
   load();
 })();

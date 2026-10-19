@@ -106,25 +106,57 @@ function json(status, body, extraHeaders = {}) {
 
 const RANGES = { '7d': 7, '30d': 30, '90d': 90, all: 3650 };
 
-async function fetchEvents(rangeDays) {
+const MS_DAY = 24 * 60 * 60 * 1000;
+
+/** Events in [now - offsetDays - rangeDays, now - offsetDays). */
+async function fetchEvents(rangeDays, { offsetDays = 0 } = {}) {
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!url || !key) throw new Error('Supabase env vars missing');
 
-  const since = new Date(Date.now() - rangeDays * 24 * 60 * 60 * 1000).toISOString();
+  const untilMs = Date.now() - offsetDays * MS_DAY;
+  const sinceMs = untilMs - rangeDays * MS_DAY;
+  const since = new Date(sinceMs).toISOString();
+  const until = new Date(untilMs).toISOString();
+
   const qs = new URLSearchParams({
     select: '*',
     order: 'created_at.desc',
     limit: '2000',
   });
-  const res = await fetch(`${url}/rest/v1/audit_events?${qs}&created_at=gte.${since}`, {
+  if (offsetDays > 0) {
+    qs.set('and', `(created_at.gte.${since},created_at.lt.${until})`);
+  } else {
+    qs.set('created_at', `gte.${since}`);
+  }
+  const res = await fetch(`${url}/rest/v1/audit_events?${qs}`, {
     headers: { apikey: key, Authorization: `Bearer ${key}` },
   });
   if (!res.ok) throw new Error(`Supabase ${res.status}: ${await res.text()}`);
   return res.json();
 }
 
-function computeStats(events, rangeDays) {
+function pctDelta(current, previous) {
+  if (previous == null || previous === 0) return null;
+  return Math.round(((current - previous) / previous) * 100);
+}
+
+function hoursFromDurations(secList) {
+  const sum = secList.reduce((a, b) => a + b, 0);
+  return Math.round((sum / 3600) * 10) / 10;
+}
+
+function leadsInWindow(leads, rangeDays, { offsetDays = 0 } = {}) {
+  const untilMs = Date.now() - offsetDays * MS_DAY;
+  const sinceMs = untilMs - rangeDays * MS_DAY;
+  return (leads || []).filter((l) => {
+    const t = new Date(l.last_event_at || l.created_at || 0).getTime();
+    if (!t) return false;
+    return t >= sinceMs && t < untilMs;
+  });
+}
+
+function computeStats(events, rangeDays, { leads = [], prevEvents = null, prevLeads = null } = {}) {
   const calls = events.filter((e) => e.event_type === 'call_analyzed');
   const chats = events.filter((e) => e.event_type === 'sms_chat_analyzed');
   const conversations = [...calls, ...chats];
@@ -134,6 +166,10 @@ function computeStats(events, rangeDays) {
     .filter((d) => d > 0 && !isHungUpCall(d));
   const hangups = calls.filter((c) => isHungUpCall(c.duration_sec || 0)).length;
   const count = (type) => events.filter((e) => e.event_type === type).length;
+  const hoursAnswered = hoursFromDurations(realDurations);
+  const windowLeads = leadsInWindow(leads, rangeDays, { offsetDays: 0 });
+  const appointmentsBooked = windowLeads.filter((l) => l.status === 'booked').length;
+  const leadsCaptured = windowLeads.length;
 
   // Sentiment/lead-quality buckets cover voice calls AND text conversations.
   const bucket = (field) => {
@@ -159,7 +195,7 @@ function computeStats(events, rangeDays) {
     chatsByDay[day] = (chatsByDay[day] || 0) + 1;
   }
   for (let i = days - 1; i >= 0; i--) {
-    const day = new Date(Date.now() - i * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+    const day = new Date(Date.now() - i * MS_DAY).toISOString().slice(0, 10);
     series.push({ day, calls: byDay[day] || 0, chats: chatsByDay[day] || 0 });
   }
 
@@ -171,6 +207,24 @@ function computeStats(events, rangeDays) {
     if (t) tierInterest[t] = (tierInterest[t] || 0) + 1;
   }
   const booked = count('setup_call_booked');
+
+  let deltas = null;
+  if (prevEvents) {
+    const prevCalls = prevEvents.filter((e) => e.event_type === 'call_analyzed');
+    const prevDurations = prevCalls
+      .map((c) => c.duration_sec || 0)
+      .filter((d) => d > 0 && !isHungUpCall(d));
+    const prevHours = hoursFromDurations(prevDurations);
+    const prevLeadRows =
+      prevLeads != null ? prevLeads : leadsInWindow(leads, rangeDays, { offsetDays: rangeDays });
+    const prevBooked = prevLeadRows.filter((l) => l.status === 'booked').length;
+    deltas = {
+      totalCalls: pctDelta(calls.length, prevCalls.length),
+      leadsCaptured: pctDelta(leadsCaptured, prevLeadRows.length),
+      appointmentsBooked: pctDelta(appointmentsBooked, prevBooked),
+      hoursAnswered: pctDelta(hoursAnswered, prevHours),
+    };
+  }
 
   return {
     totalCalls: calls.length,
@@ -192,6 +246,9 @@ function computeStats(events, rangeDays) {
       count('unverified_info_flagged'),
     rolePlays,
     rolePlayConversion: rolePlays ? Math.round((booked / rolePlays) * 100) : null,
+    hoursAnswered,
+    leadsCaptured,
+    appointmentsBooked,
     tierInterest,
     funnel: {
       conversations: conversations.length,
@@ -201,6 +258,7 @@ function computeStats(events, rangeDays) {
     sentiment: bucket('sentiment'),
     leadQuality: bucket('lead_quality'),
     series,
+    deltas,
   };
 }
 
@@ -245,13 +303,18 @@ export async function GET(request) {
   const rangeDays = RANGES[range] || 30;
   const includeDone = url.searchParams.get('queue') === 'all';
 
+  const wantPrev = range !== 'all' && rangeDays < 3650;
   try {
-    const [events, rawLeads, incidents] = await Promise.all([
+    const [events, rawLeads, incidents, prevEvents] = await Promise.all([
       fetchEvents(rangeDays),
       fetchLeads({ includeDone }),
       listIncidents(),
+      wantPrev ? fetchEvents(rangeDays, { offsetDays: rangeDays }) : Promise.resolve(null),
     ]);
     const leads = rawLeads.map(enrichLeadForClient);
+    const prevLeads = wantPrev
+      ? leadsInWindow(rawLeads, rangeDays, { offsetDays: rangeDays })
+      : null;
     const health = {
       checks: incidents.map((i) => ({
         key: i.check_key,
@@ -269,7 +332,16 @@ export async function GET(request) {
         return t > max ? t : max;
       }, ''),
     };
-    return json(200, { stats: computeStats(events, rangeDays), events, leads, health });
+    return json(200, {
+      stats: computeStats(events, rangeDays, {
+        leads: rawLeads,
+        prevEvents,
+        prevLeads,
+      }),
+      events,
+      leads,
+      health,
+    });
   } catch (err) {
     console.error('dashboard fetch failed:', err.message);
     return json(500, { error: 'Failed to load data' });

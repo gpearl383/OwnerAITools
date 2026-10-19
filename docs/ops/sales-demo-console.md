@@ -35,9 +35,16 @@ Non-technical sales surface for 14-day trials. **Not** the Control Plane and **n
 3. Leave website `RETELL_API_KEY` unchanged.
 4. Create a sales user login:
    ```bash
-   # needs SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY
+   # needs SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY + SALES_SESSION_SECRET
+   # Preferred: email them a set-password link (also needs RESEND_API_KEY)
+   node scripts/create-sales-user.mjs --invite sales@example.com Sales
+   # Re-send / rotate a pending invite:
+   node scripts/create-sales-user.mjs --invite --resend sales@example.com
+
+   # Or set a known password yourself:
    node scripts/create-sales-user.mjs sales@example.com 'strong-password' Sales
    ```
+   Invitees open `/set-password?token=…` on demo.owneraitools.com, then sign in at `/sales`.
    Or first-login bootstrap with `SALES_BOOTSTRAP_EMAIL` + `SALES_BOOTSTRAP_PASSWORD`.
 
 ## Demo script
@@ -48,3 +55,20 @@ Non-technical sales surface for 14-day trials. **Not** the Control Plane and **n
 4. Give the prospect the trial number; **call** it live (SMS later when registered)
 5. Open **Client view** — the conversation appears with transcript links
 6. After 14 days (or when done) → **Reset slot**
+
+## Seed portal history (showcase)
+
+`/portal` only looks lived-in when Demo Slot 1 has `audit_events` / `leads` tagged with that slot. To show a prospect what a used client dashboard looks like without waiting for live traffic:
+
+```bash
+# needs SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY
+node scripts/seed-portal-demo.mjs              # wipe prior seed, then insert ~30d of varied caller activity
+node scripts/seed-portal-demo.mjs --wipe       # remove seed rows only
+node scripts/seed-portal-demo.mjs --paint-slot # also force slot company_name=Harbor Plumbing (trial client)
+```
+
+- Slot header can stay **Harbor Plumbing**; recent callers use **different** prospect businesses (cafes, contractors, residences, etc.).
+- Seeded phones are fake `+1555010xxxx` (not real callers).
+- Events carry `payload.demo_seed=true` so wipe is safe.
+- A **live trial on the same slot mixes** with seed data until you `--wipe`.
+- Transcript buttons stay empty (no fake `call_records` in v1).

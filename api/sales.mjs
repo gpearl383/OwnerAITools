@@ -16,9 +16,12 @@ import {
   clearSalesSessionCookie,
   createSalesUser,
   findSalesUserByEmail,
+  hasPendingInvite,
+  lookupSalesInvite,
   makeSalesSessionCookie,
   requireSalesUser,
   salesSessionSecret,
+  setSalesPasswordFromInvite,
   verifyPassword,
 } from './lib/sales-auth.mjs';
 import {
@@ -202,6 +205,29 @@ export async function POST(request) {
     return json(200, { ok: true }, { 'Set-Cookie': clearSalesSessionCookie() });
   }
 
+  // Public invite: look up email for set-password page (rate-limited).
+  if (body.inviteLookup && body.token) {
+    if (!allowSalesLogin(clientIp(request))) {
+      return json(429, { error: 'Too many attempts — try again in 15 minutes.' });
+    }
+    const looked = await lookupSalesInvite(String(body.token));
+    if (looked.error) return json(400, { error: looked.error });
+    return json(200, { ok: true, email: looked.user.email, displayName: looked.user.display_name });
+  }
+
+  // Public invite: set password from one-time link (rate-limited).
+  if (body.setPassword && body.token) {
+    if (!allowSalesLogin(clientIp(request))) {
+      return json(429, { error: 'Too many attempts — try again in 15 minutes.' });
+    }
+    const result = await setSalesPasswordFromInvite({
+      token: String(body.token),
+      password: body.password,
+    });
+    if (result.error) return json(400, { error: result.error });
+    return json(200, { ok: true });
+  }
+
   // Login
   if (body.email && body.password && !body.action) {
     if (!allowSalesLogin(clientIp(request))) {
@@ -225,6 +251,10 @@ export async function POST(request) {
           console.error('sales bootstrap failed:', err.message);
         }
       }
+    }
+
+    if (user && hasPendingInvite(user)) {
+      return json(401, { error: 'Check your email for the set-password link before signing in.' });
     }
 
     if (!user || !user.active || !verifyPassword(body.password, user.password_salt, user.password_hash)) {

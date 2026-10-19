@@ -133,6 +133,8 @@ export async function createSalesUser({ email, password, displayName }) {
       password_hash: hash,
       display_name: displayName || null,
       active: true,
+      invite_token_hash: null,
+      invite_expires_at: null,
     }),
   });
   if (!res.ok) {
@@ -140,6 +142,146 @@ export async function createSalesUser({ email, password, displayName }) {
   }
   const rows = await res.json();
   return rows[0] || null;
+}
+
+const INVITE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+
+function hashInviteToken(token) {
+  return crypto.createHash('sha256').update(String(token)).digest('hex');
+}
+
+/** Opaque invite: exp.userId.sig — verified with SALES_SESSION_SECRET. */
+export function makeInviteToken(userId, secret = salesSessionSecret()) {
+  if (!secret) throw new Error('SALES_SESSION_SECRET missing');
+  const exp = String(Date.now() + INVITE_TTL_MS);
+  const uid = String(userId);
+  const payload = `${exp}.${uid}`;
+  return `${payload}.${sign(payload, secret)}`;
+}
+
+export function parseInviteToken(token, secret = salesSessionSecret()) {
+  if (!secret || !token) return null;
+  const parts = String(token).split('.');
+  if (parts.length !== 3) return null;
+  const [exp, userId, sig] = parts;
+  if (!exp || !userId || !sig) return null;
+  if (Number(exp) < Date.now()) return null;
+  const payload = `${exp}.${userId}`;
+  const expected = sign(payload, secret);
+  try {
+    if (!crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expected))) return null;
+  } catch {
+    return null;
+  }
+  return { userId, exp: Number(exp) };
+}
+
+async function patchSalesUser(id, fields) {
+  const client = sb();
+  if (!client) throw new Error('Supabase env vars missing');
+  const res = await fetch(`${client.url}/rest/v1/sales_users?id=eq.${id}`, {
+    method: 'PATCH',
+    headers: { ...client.headers, Prefer: 'return=representation' },
+    body: JSON.stringify({ ...fields, updated_at: new Date().toISOString() }),
+  });
+  if (!res.ok) throw new Error(`patchSalesUser ${res.status}: ${await res.text()}`);
+  const rows = await res.json();
+  return rows[0] || null;
+}
+
+/**
+ * Create (or refresh invite for) a sales user who must set a password via link.
+ * Returns { user, token }. Errors if the user already has a set password (no pending invite).
+ */
+export async function createSalesInviteUser({ email, displayName, resend = false }) {
+  const client = sb();
+  if (!client) throw new Error('Supabase env vars missing');
+  const secret = salesSessionSecret();
+  if (!secret) throw new Error('SALES_SESSION_SECRET missing');
+
+  const normalized = String(email || '')
+    .trim()
+    .toLowerCase();
+  if (!normalized) throw new Error('email required');
+
+  let user = await findSalesUserByEmail(normalized);
+  if (user) {
+    const pending = Boolean(user.invite_token_hash);
+    if (!pending && !resend) {
+      throw new Error('User already exists with a password set — refuse invite overwrite');
+    }
+    if (!pending && resend) {
+      throw new Error('User already has a password — cannot re-invite; create a reset flow separately');
+    }
+  } else {
+    // Unusable password until they complete set-password.
+    const throwaway = crypto.randomBytes(32).toString('hex');
+    const { salt, hash } = hashPassword(throwaway);
+    const res = await fetch(`${client.url}/rest/v1/sales_users`, {
+      method: 'POST',
+      headers: { ...client.headers, Prefer: 'return=representation' },
+      body: JSON.stringify({
+        email: normalized,
+        password_salt: salt,
+        password_hash: hash,
+        display_name: displayName || null,
+        active: true,
+      }),
+    });
+    if (!res.ok) throw new Error(`createSalesInviteUser ${res.status}: ${await res.text()}`);
+    const rows = await res.json();
+    user = rows[0];
+    if (!user) throw new Error('createSalesInviteUser returned no row');
+  }
+
+  const token = makeInviteToken(user.id, secret);
+  const expiresAt = new Date(Date.now() + INVITE_TTL_MS).toISOString();
+  const updated = await patchSalesUser(user.id, {
+    invite_token_hash: hashInviteToken(token),
+    invite_expires_at: expiresAt,
+    display_name: displayName || user.display_name || null,
+  });
+  return { user: updated || user, token, expiresAt };
+}
+
+export async function lookupSalesInvite(token) {
+  const parsed = parseInviteToken(token);
+  if (!parsed) return { error: 'Invalid or expired invite link' };
+  const user = await findSalesUserById(parsed.userId);
+  if (!user || user.active === false) return { error: 'Invalid or expired invite link' };
+  if (!user.invite_token_hash) return { error: 'This invite was already used' };
+  if (user.invite_expires_at && new Date(user.invite_expires_at).getTime() < Date.now()) {
+    return { error: 'This invite has expired' };
+  }
+  const expected = hashInviteToken(token);
+  try {
+    if (!crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(user.invite_token_hash))) {
+      return { error: 'Invalid or expired invite link' };
+    }
+  } catch {
+    return { error: 'Invalid or expired invite link' };
+  }
+  return { user };
+}
+
+export async function setSalesPasswordFromInvite({ token, password }) {
+  const pw = String(password || '');
+  if (pw.length < 10) return { error: 'Password must be at least 10 characters' };
+  const looked = await lookupSalesInvite(token);
+  if (looked.error) return looked;
+  const { salt, hash } = hashPassword(pw);
+  const updated = await patchSalesUser(looked.user.id, {
+    password_salt: salt,
+    password_hash: hash,
+    invite_token_hash: null,
+    invite_expires_at: null,
+  });
+  return { user: updated || looked.user };
+}
+
+/** True when the user still must set a password via invite. */
+export function hasPendingInvite(user) {
+  return Boolean(user?.invite_token_hash);
 }
 
 export async function requireSalesUser(request) {

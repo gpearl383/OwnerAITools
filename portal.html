@@ -136,6 +136,13 @@ td{padding:10px 6px;border-bottom:1px solid var(--border);vertical-align:top}
     </div>
     <div id="queue-body"></div>
     <div class="empty" id="queue-empty" hidden>No leads yet — call or text the trial number.</div>
+    <div class="pager" id="queue-pager" hidden>
+      <div class="pager-btns">
+        <button type="button" class="btn btn-outline" id="queue-prev">Previous</button>
+        <button type="button" class="btn btn-outline" id="queue-next">Next</button>
+      </div>
+      <span class="pager-label" id="queue-pager-label"></span>
+    </div>
   </div>
 
   <div class="panel">
@@ -196,7 +203,8 @@ td{padding:10px 6px;border-bottom:1px solid var(--border);vertical-align:top}
   'use strict';
   var API = '/api/sales';
   var PAGE_SIZE = 25;
-  var state = { range: '30d', filter: '', queue: 'open', data: null, eventPage: 0 };
+  var QUEUE_PAGE_SIZE = 5;
+  var state = { range: '30d', filter: '', queue: 'open', data: null, eventPage: 0, queuePage: 0 };
   var $ = function (id) { return document.getElementById(id); };
 
   function esc(s) {
@@ -243,6 +251,7 @@ td{padding:10px 6px;border-bottom:1px solid var(--border);vertical-align:top}
         if (data.error) { showLogin(data.error); return; }
         state.data = data;
         state.eventPage = 0;
+        state.queuePage = 0;
         showDash();
         render();
       })
@@ -292,8 +301,16 @@ td{padding:10px 6px;border-bottom:1px solid var(--border);vertical-align:top}
       if (state.queue === 'open') return l.status !== 'done';
       return l.status === state.queue;
     });
-    $('queue-empty').hidden = rows.length > 0;
-    $('queue-body').innerHTML = rows.map(function (l) {
+    var total = rows.length;
+    var pages = Math.max(1, Math.ceil(total / QUEUE_PAGE_SIZE));
+    if (state.queuePage >= pages) state.queuePage = pages - 1;
+    if (state.queuePage < 0) state.queuePage = 0;
+    var start = state.queuePage * QUEUE_PAGE_SIZE;
+    var pageRows = rows.slice(start, start + QUEUE_PAGE_SIZE);
+    var end = start + pageRows.length;
+
+    $('queue-empty').hidden = total > 0;
+    $('queue-body').innerHTML = pageRows.map(function (l) {
       var meta = [l.last_channel || '—', l.phone || l.email || '', relTime(l.last_event_at)].filter(Boolean).join(' · ');
       var summary = l.last_reason || l.last_summary || '';
       if (summary.length > 180) summary = summary.slice(0, 177) + '…';
@@ -306,6 +323,17 @@ td{padding:10px 6px;border-bottom:1px solid var(--border);vertical-align:top}
         (summary ? '<div class="queue-summary">' + esc(summary) + '</div>' : '') +
         '</div><div class="queue-actions">' + actions + '</div></div>';
     }).join('');
+
+    var pager = $('queue-pager');
+    if (total === 0) {
+      pager.hidden = true;
+      return;
+    }
+    pager.hidden = false;
+    $('queue-pager-label').textContent =
+      (total ? (start + 1) + '-' + end : '0') + ' of ' + total;
+    $('queue-prev').disabled = state.queuePage <= 0;
+    $('queue-next').disabled = state.queuePage >= pages - 1;
   }
   function matchesFilter(e) {
     var f = state.filter;
@@ -388,6 +416,7 @@ td{padding:10px 6px;border-bottom:1px solid var(--border);vertical-align:top}
     $('queue-filters').querySelectorAll('.chip').forEach(function (c) { c.classList.remove('active'); });
     chip.classList.add('active');
     state.queue = chip.dataset.queue;
+    state.queuePage = 0;
     if (state.data) renderQueue(state.data.leads || []);
   });
   $('filters').addEventListener('click', function (e) {
@@ -408,6 +437,16 @@ td{padding:10px 6px;border-bottom:1px solid var(--border);vertical-align:top}
     if (!state.data) return;
     state.eventPage += 1;
     renderEvents(state.data.events || []);
+  });
+  $('queue-prev').addEventListener('click', function () {
+    if (state.queuePage <= 0 || !state.data) return;
+    state.queuePage -= 1;
+    renderQueue(state.data.leads || []);
+  });
+  $('queue-next').addEventListener('click', function () {
+    if (!state.data) return;
+    state.queuePage += 1;
+    renderQueue(state.data.leads || []);
   });
   load();
 })();

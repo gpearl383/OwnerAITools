@@ -279,7 +279,8 @@ $('login-form').addEventListener('submit', async (e) => {
     $('login-err').textContent = data.error || 'Sign-in failed';
     return;
   }
-  await loadConsole();
+  // Client view is the default post-login surface; ops can open Demo console from /portal.
+  window.location.href = '/portal';
 });
 
 $('forgot-btn').addEventListener('click', async () => {

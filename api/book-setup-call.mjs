@@ -16,6 +16,7 @@
 import crypto from 'node:crypto';
 import { upsertLead } from './lib/leads.mjs';
 import { notifyOwner } from './lib/notify.mjs';
+import { retellVerifyKeys } from './lib/retell-verify.mjs';
 
 const TZ = 'America/New_York';
 
@@ -346,7 +347,7 @@ async function handleBook(args, call) {
 export async function POST(request) {
   const rawBody = await request.text();
   const signature = request.headers.get('x-retell-signature');
-  const verifyKeys = [process.env.RETELL_WEBHOOK_KEY, process.env.RETELL_API_KEY].filter(Boolean);
+  const verifyKeys = retellVerifyKeys();
   if (!verifyKeys.some((k) => verifyRetellSignature(rawBody, k, signature))) {
     return new Response(JSON.stringify({ error: 'Invalid signature' }), { status: 401 });
   }

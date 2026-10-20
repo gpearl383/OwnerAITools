@@ -12,7 +12,6 @@
 
 import {
   allowSalesLogin,
-  clientIp,
   clearSalesSessionCookie,
   createSalesUser,
   findSalesUserByEmail,
@@ -21,6 +20,7 @@ import {
   makeSalesSessionCookie,
   requireSalesUser,
   salesSessionSecret,
+  salesUsersEmpty,
   setSalesPasswordFromInvite,
   verifyPassword,
 } from './lib/sales-auth.mjs';
@@ -207,7 +207,7 @@ export async function POST(request) {
 
   // Public invite: look up email for set-password page (rate-limited).
   if (body.inviteLookup && body.token) {
-    if (!allowSalesLogin(clientIp(request))) {
+    if (!(await allowSalesLogin(request))) {
       return json(429, { error: 'Too many attempts — try again in 15 minutes.' });
     }
     const looked = await lookupSalesInvite(String(body.token));
@@ -217,7 +217,7 @@ export async function POST(request) {
 
   // Public invite: set password from one-time link (rate-limited).
   if (body.setPassword && body.token) {
-    if (!allowSalesLogin(clientIp(request))) {
+    if (!(await allowSalesLogin(request))) {
       return json(429, { error: 'Too many attempts — try again in 15 minutes.' });
     }
     const result = await setSalesPasswordFromInvite({
@@ -230,13 +230,14 @@ export async function POST(request) {
 
   // Login
   if (body.email && body.password && !body.action) {
-    if (!allowSalesLogin(clientIp(request))) {
+    if (!(await allowSalesLogin(request))) {
       return json(429, { error: 'Too many attempts — try again in 15 minutes.' });
     }
     let user = await findSalesUserByEmail(body.email);
 
-    // One-time bootstrap: if no users exist and env credentials match, create the first sales user.
-    if (!user) {
+    // One-time bootstrap: only when sales_users is empty and env credentials match.
+    // Remove SALES_BOOTSTRAP_* from Vercel after the first user exists.
+    if (!user && (await salesUsersEmpty())) {
       const bootEmail = (process.env.SALES_BOOTSTRAP_EMAIL || '').trim().toLowerCase();
       const bootPass = process.env.SALES_BOOTSTRAP_PASSWORD || '';
       const want = String(body.email).trim().toLowerCase();

@@ -2,9 +2,10 @@
 // Routes owner alerts to the active demo_slots owner — never OWNERAI_ALERT_PHONE.
 // Tags audit_events.payload.slot_id and leads.slot_id so /portal stays clean.
 //
-// Required: TRIAL_RETELL_API_KEY (ownerai-demo), RESEND_API_KEY, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
-// Optional: RETELL_API_KEY (fallback verify only), RETELL_ALERT_AGENT_ID, OWNERAI_RESEND_FROM
-// Do not use website RETELL_API_KEY for trial paint/SMS — that is a different Retell workspace.
+// Required: TRIAL_RETELL_API_KEY (ownerai-demo), RESEND_API_KEY, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY,
+//           CALL_LINK_SECRET
+// Optional: TRIAL_RETELL_WEBHOOK_KEY (preferred verify), RETELL_ALERT_AGENT_ID, OWNERAI_RESEND_FROM
+// Do not use website RETELL_API_KEY for trial verify/paint/SMS — that is a different Retell workspace.
 
 import crypto from 'node:crypto';
 import { upsertLead, callDetailUrl as sharedCallDetailUrl } from './lib/leads.mjs';
@@ -15,6 +16,8 @@ import {
   refreshExpired,
   trialRetellApiKey,
 } from './lib/demo-slots.mjs';
+import { callLinkSecret } from './lib/call-link-secret.mjs';
+import { trialRetellVerifyKeys } from './lib/retell-verify.mjs';
 
 const IN_FLIGHT_MS = 2 * 60 * 1000;
 
@@ -71,13 +74,6 @@ function callDurationSec(call) {
   const end = call?.end_timestamp;
   if (!start || !end) return 0;
   return Math.max(0, Math.round((end - start) / 1000));
-}
-
-function callLinkSecret() {
-  if (process.env.CALL_LINK_SECRET) return process.env.CALL_LINK_SECRET;
-  const srk = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!srk) return null;
-  return crypto.createHash('sha256').update(`ownerai-call-link:${srk}`).digest('hex');
 }
 
 function callLinkToken(id) {
@@ -720,11 +716,8 @@ async function handleChatAnalyzed(event, slot) {
 export async function POST(request) {
   const rawBody = await request.text();
   const signature = request.headers.get('x-retell-signature') || '';
-  const trialKey = trialRetellApiKey();
-  const websiteKey = process.env.RETELL_API_KEY;
-  const ok =
-    (trialKey && verifyRetellSignature(rawBody, trialKey, signature)) ||
-    (websiteKey && verifyRetellSignature(rawBody, websiteKey, signature));
+  const verifyKeys = trialRetellVerifyKeys();
+  const ok = verifyKeys.some((k) => verifyRetellSignature(rawBody, k, signature));
 
   if (!ok) {
     return json(401, { error: 'Invalid signature' });

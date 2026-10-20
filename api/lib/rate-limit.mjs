@@ -1,7 +1,10 @@
 // Durable rate limits via Supabase RPC (with in-memory fallback).
 import crypto from 'node:crypto';
+import { clientIp } from './client-ip.mjs';
 
 const memory = new Map();
+
+export { clientIp };
 
 function memAllow(key, windowMs, max) {
   const now = Date.now();
@@ -58,4 +61,13 @@ export async function allowRate(bucket, { windowMs, max }) {
 
 export function hashIp(ip) {
   return crypto.createHash('sha256').update(String(ip || 'unknown')).digest('hex').slice(0, 24);
+}
+
+const LOGIN_WINDOW_MS = 15 * 60 * 1000;
+const LOGIN_MAX = 10;
+
+/** Durable login throttle (dashboard / sales / invite). */
+export async function allowLoginAttempt(scope, request) {
+  const ipKey = hashIp(clientIp(request));
+  return allowRate(`login:${scope}:${ipKey}`, { windowMs: LOGIN_WINDOW_MS, max: LOGIN_MAX });
 }

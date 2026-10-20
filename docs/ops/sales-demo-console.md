@@ -45,7 +45,7 @@ Non-technical sales surface for 14-day trials. **Not** the Control Plane and **n
    node scripts/create-sales-user.mjs sales@example.com 'strong-password' Sales
    ```
    Invitees open `/set-password?token=…` on demo.owneraitools.com, then sign in at `/sales`.
-   Or first-login bootstrap with `SALES_BOOTSTRAP_EMAIL` + `SALES_BOOTSTRAP_PASSWORD`.
+   Optional first-login bootstrap (`SALES_BOOTSTRAP_EMAIL` + `SALES_BOOTSTRAP_PASSWORD`) runs **only when `sales_users` is empty** — remove those env vars from Vercel after the first user exists.
 
 ## Demo script
 

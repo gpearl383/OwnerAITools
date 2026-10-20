@@ -8,22 +8,15 @@
 // purged separately at 120 days by /api/purge-call-records.
 //
 // Required env vars:
-//   CALL_LINK_SECRET          — HMAC key shared with the webhook
+//   CALL_LINK_SECRET          — HMAC key shared with the webhook (required)
 //   SUPABASE_URL              — https://<ref>.supabase.co
 //   SUPABASE_SERVICE_ROLE_KEY — server-side only
 
 import crypto from 'node:crypto';
+import { callLinkSecret } from './lib/call-link-secret.mjs';
 
 const LINK_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 
-// Must mirror callLinkSecret() in api/retell-webhook.mjs: prefer
-// CALL_LINK_SECRET, otherwise derive from the Supabase service-role key.
-function callLinkSecret() {
-  if (process.env.CALL_LINK_SECRET) return process.env.CALL_LINK_SECRET;
-  const srk = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!srk) return null;
-  return crypto.createHash('sha256').update(`ownerai-call-link:${srk}`).digest('hex');
-}
 
 function validToken(id, token) {
   const secret = callLinkSecret();

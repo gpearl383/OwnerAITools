@@ -1,8 +1,12 @@
 // Sales Console auth — separate from ops DASHBOARD_PASSWORD / oat_dash.
 import crypto from 'node:crypto';
+import { allowLoginAttempt, clientIp } from './rate-limit.mjs';
 
 export const SALES_COOKIE = 'oat_sales';
+export { clientIp };
 const SESSION_TTL_MS = 24 * 60 * 60 * 1000;
+/** Cap before scrypt to avoid CPU DoS from huge password bodies. */
+export const MAX_PASSWORD_LENGTH = 128;
 
 function sign(value, secret) {
   return crypto.createHmac('sha256', secret).update(value).digest('base64url');
@@ -17,13 +21,17 @@ export function salesSessionSecret() {
 }
 
 export function hashPassword(password, salt = crypto.randomBytes(16).toString('hex')) {
-  const hash = crypto.scryptSync(String(password), salt, 64).toString('hex');
+  const pw = String(password);
+  if (pw.length > MAX_PASSWORD_LENGTH) throw new Error('Password too long');
+  const hash = crypto.scryptSync(pw, salt, 64).toString('hex');
   return { salt, hash };
 }
 
 export function verifyPassword(password, salt, hash) {
   if (!password || !salt || !hash) return false;
-  const next = crypto.scryptSync(String(password), salt, 64).toString('hex');
+  const pw = String(password);
+  if (pw.length > MAX_PASSWORD_LENGTH) return false;
+  const next = crypto.scryptSync(pw, salt, 64).toString('hex');
   try {
     return crypto.timingSafeEqual(Buffer.from(next, 'hex'), Buffer.from(hash, 'hex'));
   } catch {
@@ -98,6 +106,22 @@ export async function findSalesUserByEmail(email) {
   if (!res.ok) return null;
   const rows = await res.json();
   return rows[0] || null;
+}
+
+/** True when no sales_users rows exist (bootstrap may create the first account). */
+export async function salesUsersEmpty() {
+  const client = sb();
+  if (!client) return false;
+  const qs = new URLSearchParams({ select: 'id', limit: '1' });
+  const res = await fetch(`${client.url}/rest/v1/sales_users?${qs}`, {
+    headers: { ...client.headers, Prefer: 'count=exact' },
+  });
+  if (!res.ok) return false;
+  const range = res.headers.get('content-range') || '';
+  const total = Number((range.split('/')[1] || '').trim());
+  if (Number.isFinite(total)) return total === 0;
+  const rows = await res.json();
+  return !rows?.length;
 }
 
 export async function findSalesUserById(id) {
@@ -267,6 +291,9 @@ export async function lookupSalesInvite(token) {
 export async function setSalesPasswordFromInvite({ token, password }) {
   const pw = String(password || '');
   if (pw.length < 10) return { error: 'Password must be at least 10 characters' };
+  if (pw.length > MAX_PASSWORD_LENGTH) {
+    return { error: `Password must be at most ${MAX_PASSWORD_LENGTH} characters` };
+  }
   const looked = await lookupSalesInvite(token);
   if (looked.error) return looked;
   const { salt, hash } = hashPassword(pw);
@@ -293,22 +320,7 @@ export async function requireSalesUser(request) {
   return user;
 }
 
-const attempts = new Map();
-export function allowSalesLogin(ip) {
-  const now = Date.now();
-  const rec = attempts.get(ip);
-  if (!rec || now - rec.start >= 15 * 60 * 1000) {
-    attempts.set(ip, { start: now, count: 1 });
-    return true;
-  }
-  rec.count += 1;
-  return rec.count <= 10;
-}
-
-export function clientIp(request) {
-  return (
-    (request.headers.get('x-forwarded-for') || '').split(',')[0].trim() ||
-    request.headers.get('x-real-ip') ||
-    'unknown'
-  );
+/** Durable sales login / invite throttle (Supabase-backed with memory fallback). */
+export async function allowSalesLogin(request) {
+  return allowLoginAttempt('sales', request);
 }

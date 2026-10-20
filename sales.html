@@ -43,6 +43,11 @@ h1,h2,h3{font-family:var(--display);color:var(--navy)}
 .login-card input:focus{outline:2px solid var(--primary);border-color:var(--primary)}
 .login-card .btn{width:100%;padding:13px}
 .login-err{color:var(--bad);font-size:14px;margin-top:12px;min-height:18px}
+.login-ok{color:var(--ok);font-size:14px;margin-top:12px;min-height:18px;line-height:1.4}
+.forgot-row{margin-top:14px}
+.forgot-btn{background:none;border:none;color:var(--primary);font-family:var(--display);font-weight:700;font-size:14px;cursor:pointer;padding:0;text-decoration:underline;text-underline-offset:3px}
+.forgot-btn:hover{color:var(--primary-600)}
+.forgot-btn:disabled{opacity:.55;cursor:not-allowed}
 .eyebrow{color:var(--primary-600);font-family:var(--display);font-weight:900;font-size:11px;letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
 .subhead{color:var(--muted);font-size:15px;margin-top:4px}
 .panel{background:rgba(255,255,255,.94);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-card);padding:22px;margin-bottom:20px}
@@ -86,7 +91,11 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--primary);border-
       <input type="password" id="pw" placeholder="Password" autocomplete="current-password" required>
       <button class="btn btn-orange" type="submit">Sign in</button>
     </form>
+    <div class="forgot-row">
+      <button type="button" class="forgot-btn" id="forgot-btn">Forgot password?</button>
+    </div>
     <div class="login-err" id="login-err"></div>
+    <div class="login-ok" id="login-ok" hidden></div>
   </div>
 </div>
 
@@ -261,6 +270,7 @@ async function loadConsole() {
 $('login-form').addEventListener('submit', async (e) => {
   e.preventDefault();
   $('login-err').textContent = '';
+  $('login-ok').hidden = true;
   const { res, data } = await api('POST', {
     email: $('email').value,
     password: $('pw').value,
@@ -270,6 +280,27 @@ $('login-form').addEventListener('submit', async (e) => {
     return;
   }
   await loadConsole();
+});
+
+$('forgot-btn').addEventListener('click', async () => {
+  $('login-err').textContent = '';
+  $('login-ok').hidden = true;
+  const email = ($('email').value || '').trim();
+  if (!email) {
+    $('login-err').textContent = 'Enter your email above, then tap Forgot password.';
+    $('email').focus();
+    return;
+  }
+  $('forgot-btn').disabled = true;
+  const { res, data } = await api('POST', { forgotPassword: true, email });
+  $('forgot-btn').disabled = false;
+  if (!res.ok) {
+    $('login-err').textContent = data.error || 'Could not send reset email';
+    return;
+  }
+  $('login-ok').hidden = false;
+  $('login-ok').textContent =
+    data.message || 'If that email has an account, we sent a reset link. Check your inbox.';
 });
 
 $('logout-btn').addEventListener('click', async () => {

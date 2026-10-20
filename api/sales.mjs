@@ -13,6 +13,7 @@
 import {
   allowSalesLogin,
   clearSalesSessionCookie,
+  createSalesInviteUser,
   createSalesUser,
   findSalesUserByEmail,
   hasPendingInvite,
@@ -42,6 +43,49 @@ function json(status, body, extraHeaders = {}) {
     status,
     headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', ...extraHeaders },
   });
+}
+
+function escapeHtml(s) {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+async function sendPasswordResetEmail({ to, displayName, link }) {
+  const apiKey = process.env.RESEND_API_KEY;
+  const from = process.env.OWNERAI_RESEND_FROM || 'OwnerAI <info@owneraitools.com>';
+  if (!apiKey) {
+    console.warn('forgotPassword: RESEND_API_KEY missing — email not sent');
+    return false;
+  }
+  const name = displayName || 'there';
+  const html = `
+    <p>Hi ${escapeHtml(name)},</p>
+    <p>Here's a link to reset your OwnerAI demo console password (expires in 7 days):</p>
+    <p><a href="${escapeHtml(link)}">${escapeHtml(link)}</a></p>
+    <p>After you set a new password, sign in at <a href="https://demo.owneraitools.com/sales">demo.owneraitools.com/sales</a> using your email as the username.</p>
+    <p>— OwnerAI</p>
+  `;
+  const res = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      from,
+      to: [to],
+      subject: 'Reset your OwnerAI demo password',
+      html,
+    }),
+  });
+  if (!res.ok) {
+    console.error('forgotPassword Resend failed:', res.status, await res.text());
+    return false;
+  }
+  return true;
 }
 
 const RANGES = { '7d': 7, '30d': 30, '90d': 90, all: 3650 };
@@ -226,6 +270,45 @@ export async function POST(request) {
     });
     if (result.error) return json(400, { error: result.error });
     return json(200, { ok: true });
+  }
+
+  // Public forgot-password: email a set-password link (rate-limited; no email enumeration).
+  if (body.forgotPassword) {
+    if (!(await allowSalesLogin(request))) {
+      return json(429, { error: 'Too many attempts — try again in 15 minutes.' });
+    }
+    const email = String(body.email || '')
+      .trim()
+      .toLowerCase();
+    const generic = {
+      ok: true,
+      message: 'If that email has an account, we sent a reset link. Check your inbox.',
+    };
+    if (!email || !email.includes('@')) {
+      return json(200, generic);
+    }
+    try {
+      const existing = await findSalesUserByEmail(email);
+      if (existing && existing.active !== false) {
+        const { user, token } = await createSalesInviteUser({
+          email,
+          displayName: existing.display_name || undefined,
+          resend: true,
+        });
+        const base =
+          (process.env.DEMO_BASE_URL || '').replace(/\/$/, '') ||
+          `https://${request.headers.get('host') || 'demo.owneraitools.com'}`;
+        const link = `${base}/set-password?token=${encodeURIComponent(token)}`;
+        await sendPasswordResetEmail({
+          to: user.email,
+          displayName: user.display_name || 'there',
+          link,
+        });
+      }
+    } catch (err) {
+      console.error('forgotPassword failed:', err.message);
+    }
+    return json(200, generic);
   }
 
   // Login

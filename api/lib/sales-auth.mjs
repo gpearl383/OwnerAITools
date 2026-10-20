@@ -118,6 +118,7 @@ export async function salesUsersEmpty() {
   });
   if (!res.ok) return false;
   const range = res.headers.get('content-range') || '';
+  // content-range: */0 or 0-0/N
   const total = Number((range.split('/')[1] || '').trim());
   if (Number.isFinite(total)) return total === 0;
   const rows = await res.json();
@@ -231,11 +232,9 @@ export async function createSalesInviteUser({ email, displayName, resend = false
   let user = await findSalesUserByEmail(normalized);
   if (user) {
     const pending = Boolean(user.invite_token_hash);
+    // Fresh invite refused if they already completed signup; --resend rotates a reset link.
     if (!pending && !resend) {
-      throw new Error('User already exists with a password set — refuse invite overwrite');
-    }
-    if (!pending && resend) {
-      throw new Error('User already has a password — cannot re-invite; create a reset flow separately');
+      throw new Error('User already exists with a password set — use --invite --resend to email a reset link');
     }
   } else {
     // Unusable password until they complete set-password.

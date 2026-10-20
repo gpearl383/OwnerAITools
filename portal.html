@@ -208,7 +208,7 @@ td{padding:11px 6px;border-bottom:1px solid var(--line);vertical-align:middle}
 <div id="login-view">
   <div class="login-card">
     <h1>Client view</h1>
-    <p>Sign in on the <a href="/sales">Demo console</a> first. This page shows what a client sees for the active trial.</p>
+    <p>Sign in on the <a href="/sales">sales login</a> first. This page shows what a client sees for the active trial.</p>
     <div class="login-err" id="login-err"></div>
   </div>
 </div>
@@ -263,7 +263,7 @@ td{padding:11px 6px;border-bottom:1px solid var(--line);vertical-align:middle}
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
           </button>
           <div class="user-drop" id="user-drop" hidden>
-            <a href="/sales">Demo console</a>
+            <a href="/sales">Setup a new client</a>
             <button type="button" id="refresh-btn">Refresh</button>
             <button type="button" id="logout-btn">Sign out</button>
             <div class="hint">Read-only client view of this trial — calls, leads, and owner alerts for the painted slot.</div>
@@ -507,7 +507,7 @@ td{padding:11px 6px;border-bottom:1px solid var(--line);vertical-align:middle}
   function load() {
     fetch(API + '?view=portal&range=' + state.range, { credentials: 'same-origin' })
       .then(function (r) {
-        if (r.status === 401) { showLogin('Sign in on the Demo console first.'); return null; }
+        if (r.status === 401) { showLogin('Sign in first (use the sales login).'); return null; }
         return r.json();
       })
       .then(function (data) {

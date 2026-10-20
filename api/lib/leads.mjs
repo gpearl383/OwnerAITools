@@ -1,6 +1,7 @@
 // Shared lead upsert + action-token helpers for the OwnerAI demo queue.
 import crypto from 'node:crypto';
 import { isHungUpCall } from './alerts.mjs';
+import { callLinkSecret } from './call-link-secret.mjs';
 
 const ACTION_TTL_SEC = 7 * 24 * 60 * 60;
 
@@ -37,12 +38,6 @@ export function needsAttention({ sentiment, durationSec = 0, prospectMessages = 
   return durationSec >= 60 || prospectMessages >= 3;
 }
 
-function callLinkSecret() {
-  if (process.env.CALL_LINK_SECRET) return process.env.CALL_LINK_SECRET;
-  const srk = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!srk) return null;
-  return crypto.createHash('sha256').update(`ownerai-call-link:${srk}`).digest('hex');
-}
 
 export function callDetailUrl(callId) {
   const secret = callLinkSecret();

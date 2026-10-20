@@ -38,6 +38,8 @@ import {
   buildHangupNurtureSms,
 } from './lib/alerts.mjs';
 import { notifyOwner } from './lib/notify.mjs';
+import { callLinkSecret } from './lib/call-link-secret.mjs';
+import { retellVerifyKeys } from './lib/retell-verify.mjs';
 import { evaluateRescueSignals } from './lib/rescue-signals.mjs';
 import { bookingConfirmConsent, hangupNurtureConsent } from './lib/sms-consent.mjs';
 import { sendAdminMonitorEmail } from './lib/admin-monitor.mjs';
@@ -324,17 +326,6 @@ function flagAuditRows(base, data) {
 }
 
 /* ---------- call record persistence (durable transcript + recording) ---------- */
-
-// Signing key for /api/call links. Prefers CALL_LINK_SECRET; otherwise
-// derives a key from the Supabase service-role key (already in the env) so
-// no extra configuration is needed. Note: rotating the Supabase key breaks
-// previously emailed links unless CALL_LINK_SECRET is set.
-function callLinkSecret() {
-  if (process.env.CALL_LINK_SECRET) return process.env.CALL_LINK_SECRET;
-  const srk = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!srk) return null;
-  return crypto.createHash('sha256').update(`ownerai-call-link:${srk}`).digest('hex');
-}
 
 function callLinkToken(id) {
   const secret = callLinkSecret();
@@ -957,7 +948,7 @@ export async function POST(request) {
 
   // Retell signs webhooks with the workspace's designated "webhook key",
   // which may differ from the API key used for sends. Accept either.
-  const verifyKeys = [process.env.RETELL_WEBHOOK_KEY, process.env.RETELL_API_KEY].filter(Boolean);
+  const verifyKeys = retellVerifyKeys();
   if (!verifyKeys.some((k) => verifyRetellSignature(rawBody, k, signature))) {
     console.warn('retell-webhook: signature verification failed');
     return json(401, { error: 'Invalid signature' });

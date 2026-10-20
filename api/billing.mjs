@@ -8,6 +8,7 @@
 // Auth reuses DASHBOARD_PASSWORD + DASHBOARD_SESSION_SECRET.
 
 import crypto from 'node:crypto';
+import { allowLoginAttempt } from './lib/rate-limit.mjs';
 
 const SESSION_TTL_MS = 24 * 60 * 60 * 1000;
 const COOKIE_NAME = 'oat_dash';
@@ -55,26 +56,6 @@ function constantTimeEquals(a, b) {
   const ha = crypto.createHash('sha256').update(String(a)).digest();
   const hb = crypto.createHash('sha256').update(String(b)).digest();
   return crypto.timingSafeEqual(ha, hb);
-}
-
-const attempts = new Map();
-function allowLogin(ip) {
-  const now = Date.now();
-  const rec = attempts.get(ip);
-  if (!rec || now - rec.start >= 15 * 60 * 1000) {
-    attempts.set(ip, { start: now, count: 1 });
-    return true;
-  }
-  rec.count += 1;
-  return rec.count <= 10;
-}
-
-function clientIp(request) {
-  return (
-    (request.headers.get('x-forwarded-for') || '').split(',')[0].trim() ||
-    request.headers.get('x-real-ip') ||
-    'unknown'
-  );
 }
 
 function json(status, body, extraHeaders = {}) {
@@ -271,7 +252,7 @@ export async function POST(request) {
     return json(200, { ok: true }, { 'Set-Cookie': clearSessionCookie() });
   }
 
-  if (!allowLogin(clientIp(request))) {
+  if (!(await allowLoginAttempt('billing', request))) {
     return json(429, { error: 'Too many attempts — try again in 15 minutes.' });
   }
 

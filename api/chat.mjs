@@ -3,7 +3,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { upsertLead, leadActionUrl, normalizePhone } from './lib/leads.mjs';
 import { notifyOwner } from './lib/notify.mjs';
-import { allowRate, hashIp } from './lib/rate-limit.mjs';
+import { allowRate, clientIp, hashIp } from './lib/rate-limit.mjs';
 
 // OwnerAI Assistant — Vercel serverless proxy for Anthropic, plus chat lead
 // capture emailed via Resend.
@@ -105,14 +105,6 @@ function isAllowedOrigin(origin) {
     if (/^https?:\/\/127\.0\.0\.1(:\d+)?$/.test(origin)) return true;
   }
   return false;
-}
-
-function clientIp(request) {
-  return (
-    (request.headers.get('x-forwarded-for') || '').split(',')[0].trim() ||
-    request.headers.get('x-real-ip') ||
-    'unknown'
-  );
 }
 
 function json(status, body, origin) {

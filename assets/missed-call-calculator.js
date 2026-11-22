@@ -49,7 +49,8 @@
   }
 
   function nText(n, one, many) {
-    return n === 1 ? one : n + ' ' + many;
+    // Callers already put the count in `many` ("10 customer calls").
+    return n === 1 ? one : many;
   }
 
   function paint(result) {

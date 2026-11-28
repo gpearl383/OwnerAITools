@@ -37,3 +37,5 @@ jobs:
         run: node scripts/test-retell-transfer-phone.mjs
       - name: Security helper unit tests
         run: node scripts/test-security-helpers.mjs
+      - name: HubSpot caller greeting unit tests
+        run: node scripts/test-hubspot-caller.mjs

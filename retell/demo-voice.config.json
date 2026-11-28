@@ -290,7 +290,7 @@
       {
         "type": "boolean",
         "name": "agent_stated_unlisted_fact",
-        "description": "True if the AGENT (not the user) stated a specific factual claim that is not part of its standard script \u2014 for example a person's name (owner, staff), a price or discount not in its pricing list, a company policy, or a source like 'company records'. This flags potential agent errors for review. False for facts the agent is clearly scripted to know (pricing tiers, features, that we offer broader AI/IT consulting and support)."
+        "description": "True if the AGENT (not the user) stated a specific factual claim that is not part of its standard script \u2014 for example a person's name (owner, staff), a price or discount not in its pricing list, a company policy, or a source like 'company records'. This flags potential agent errors for review. False for facts the agent is clearly scripted to know (pricing tiers, features, that we offer broader AI/IT consulting and support). Also false when the only personal name used was the scripted inbound opening that greets the caller by first name from caller_first_name (e.g. 'Hi Geoff, thanks for calling OwnerAI…')."
       }
     ],
     "webhook_url": "https://owneraitools.com/api/retell-webhook",

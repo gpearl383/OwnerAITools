@@ -9,6 +9,7 @@ import {
   phonesMatch,
   pickNamedCaller,
   buildCallInboundResponse,
+  searchContactsByPhone,
 } from '../api/lib/hubspot-caller.mjs';
 import { handleInboundPayload } from '../api/inbound-caller.mjs';
 
@@ -135,5 +136,43 @@ assert.deepEqual(
   ),
   { call_inbound: {} }
 );
+
+// Search body must use EQ on E.164 / searchable last-10 — not CONTAINS_TOKEN last-10.
+{
+  let captured;
+  const fetchImpl = async (_url, init) => {
+    captured = JSON.parse(init.body);
+    return {
+      ok: true,
+      async json() {
+        return {
+          results: [
+            {
+              id: '9',
+              properties: {
+                firstname: 'Geoff',
+                phone: '+15165551212',
+                mobilephone: '',
+              },
+            },
+          ],
+        };
+      },
+    };
+  };
+  const results = await searchContactsByPhone('+15165551212', {
+    token: 'test-token',
+    fetchImpl,
+  });
+  assert.equal(results.length, 1);
+  const ops = captured.filterGroups.flatMap((g) =>
+    g.filters.map((f) => [f.propertyName, f.operator, f.value])
+  );
+  assert.deepEqual(ops, [
+    ['phone', 'EQ', '+15165551212'],
+    ['mobilephone', 'EQ', '+15165551212'],
+    ['hs_searchable_calculated_phone_number', 'EQ', '5165551212'],
+  ]);
+}
 
 console.log('test-hubspot-caller: ok');

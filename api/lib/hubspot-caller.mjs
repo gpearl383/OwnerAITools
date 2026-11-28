@@ -86,18 +86,26 @@ export async function searchContactsByPhone(fromNumber, opts = {}) {
   const digits = phone.replace(/\D/g, '');
   const last10 = digits.length >= 10 ? digits.slice(-10) : digits;
 
+  // HubSpot stores phones in mixed formats. CONTAINS_TOKEN on the last 10
+  // digits returns nothing; EQ on E.164 + searchable calculated last-10 works.
+  // Client-side normalizePhone in pickNamedCaller still enforces an exact match.
   const body = {
     filterGroups: [
       {
         filters: [
-          { propertyName: 'phone', operator: 'CONTAINS_TOKEN', value: last10 },
+          { propertyName: 'phone', operator: 'EQ', value: phone },
+        ],
+      },
+      {
+        filters: [
+          { propertyName: 'mobilephone', operator: 'EQ', value: phone },
         ],
       },
       {
         filters: [
           {
-            propertyName: 'mobilephone',
-            operator: 'CONTAINS_TOKEN',
+            propertyName: 'hs_searchable_calculated_phone_number',
+            operator: 'EQ',
             value: last10,
           },
         ],
